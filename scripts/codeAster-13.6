@@ -1,0 +1,15 @@
+#!/bin/bash
+
+cp export.org export
+
+mkdir base-stage1
+
+nProc="$(grep -c ^processor /proc/cpuinfo)"
+echo "CASE: $(pwd) $(date) - nProc=$nProc"
+sed -i "/ncpus/c\P ncpus $nProc" export
+
+RAM="$(($(grep MemTotal /proc/meminfo | awk '{print $2}') * 9 / 10 / 1000))"
+echo "RAM: $RAM"
+sed -i "/memory_limit/c\P memory_limit $RAM" export
+
+/opt/salome*/appli_V2018*_public/salome shell "as_run export" 2> log.astererror
