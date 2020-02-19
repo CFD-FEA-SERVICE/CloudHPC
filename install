@@ -1,1 +1,117 @@
-../../CASI-TEST/install
+#!/bin/bash
+
+###############################################################################
+#
+#   Script developped in 2019 by
+#   CFD FEA SERVICE SRL - via Borgo Grande 19, 37044 Cologna Veneta VR
+#
+#   License: GPLv3
+#
+###############################################################################
+
+# OpenFOAM v6 installation ####################################################
+sudo sh -c "wget -O - http://dl.openfoam.org/gpg.key | apt-key add -"
+sudo add-apt-repository http://dl.openfoam.org/ubuntu
+
+sudo apt-get update
+sudo apt-get -y upgrade   #non so se serve
+
+sudo apt-get -y install openfoam6 openfoam7
+
+# GNU plot installation #######################################################
+sudo apt-get -y install gnuplot
+
+# XML file manipulation #######################################################
+sudo apt-get -y install libxml2-utils
+
+# error while loading shared libraries ########################################
+sudo apt-get -y install libxss1 rename
+
+# Floating point operations in shell ##########################################
+sudo apt-get -y install bc libxft-dev imagemagick
+
+# STL file management #########################################################
+git clone https://github.com/CFD-FEA-SERVICE/stl_cmd.git
+
+cd stl_cmd/
+make
+sudo make install
+cd ..
+rm -rf stl_cmd
+
+# SALOME-MECA 2018.0.1 ########################################################
+wget https://www.code-aster.org/FICHIERS/salome_meca-2018.0.1-LGPL-1.tgz
+tar -zxvf salome_meca-2018.0.1-LGPL-1.tgz
+rm salome_meca-2018.0.1-LGPL-1.tgz
+
+chmod +x salome_meca-2018.0.1-LGPL-1.run    #rendilo chmod +x
+
+sudo ./salome_meca-2018.0.1-LGPL-1.run -t /opt/salome -l English
+rm salome_meca-2018.0.1-LGPL-1.run
+
+# SALOME-MECA 2019.0.1 ########################################################
+wget https://www.code-aster.org/FICHIERS/salome_meca-2019.0.1-2-LGPL.tgz
+tar -zxvf salome_meca-2019.0.1-2-LGPL.tgz
+rm salome_meca-2019.0.1-2-LGPL.tgz
+
+chmod +x salome_meca-2019.0.1-2-LGPL.run    #rendilo chmod +x
+
+sudo ./salome_meca-2019.0.1-2-LGPL.run -t /opt/salome -l English
+rm salome_meca-2019.0.1-2-LGPL.run
+
+# SALOME 9.3.0 ################################################################
+wget https://files.salome-platform.org/Salome/Salome9.3.0/SALOME-9.3.0-UB18.04-SRC.tgz
+
+tar -zxvf SALOME-9.3.0-UB18.04-SRC.tgz
+
+sudo mkdir /opt/salome
+sudo mv SALOME-9.3.0-UB18.04-SRC /opt/salome/
+
+rm SALOME-9.3.0-UB18.04-SRC.tgz
+
+# FDS 6.7.3 ###################################################################
+wget https://github.com/firemodels/fds/releases/download/FDS6.7.3/FDS6.7.3_SMV6.7.10_linux64.sh
+
+chmod ugo+x FDS6.7.3_SMV6.7.10_linux64.sh
+
+./FDS6.7.3_SMV6.7.10_linux64.sh y
+rm FDS6.7.3_SMV6.7.10_linux64.sh
+
+sudo mkdir /opt/FDS
+sudo mv $HOME/FDS/* /opt/FDS/FDS673
+
+sed -i "s/\/home\/$(basename $HOME)/\/opt/g" /opt/FDS/FDS673/bin/FDS6VARS.sh
+sed -i "s/FDS6/FDS673/g" /opt/FDS/FDS673/bin/FDS6VARS.sh
+sed -i "s/\/home\/$(basename $HOME)/\/opt/g" /opt/FDS/FDS673/bin/modules/FDS6
+sed -i "s/FDS6/FDS673/g" /opt/FDS/FDS673/bin/modules/FDS6
+
+#Bug Fix
+ln -s /opt/FDS/FDS673/bin/INTEL/mpi/intel64/lib/libmpifort.so.12.0.0 /opt/FDS/FDS673/bin/INTEL/mpi/intel64/lib/libmpifort.so.12
+
+# FDS 6.7.1 ###################################################################
+wget https://github.com/firemodels/fds/releases/download/FDS6.7.1/FDS6.7.1-SMV6.7.5_linux64.sh
+
+chmod ugo+x FDS6.7.1-SMV6.7.5_linux64.sh
+
+./FDS6.7.1-SMV6.7.5_linux64.sh y
+rm FDS6.7.1-SMV6.7.5_linux64.sh
+
+sudo mkdir /opt/FDS
+sudo mv $HOME/FDS/* /opt/FDS/FDS671
+
+rm -rf $HOME/FDS
+rm -rf FDS6.7.1-SMV6.7.5_linux64.sh
+
+sed -i "s/\/home\/$(basename $HOME)/\/opt/g" /opt/FDS/FDS671/bin/FDS6VARS.sh
+sed -i "s/FDS6/FDS671/g" /opt/FDS/FDS671/bin/FDS6VARS.sh
+
+# GMSH 4.4.1 ##################################################################
+wget http://gmsh.info/bin/Linux/gmsh-4.4.1-Linux64.tgz
+tar -zxvf gmsh-4.4.1-Linux64.tgz
+
+sudo mkdir /opt/gmsh
+
+mv gmsh-4.4.1-Linux64 /opt/gmsh/
+rm gmsh-4.4.1-Linux64.tgz
+
+###############################################################################
