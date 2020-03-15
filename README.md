@@ -7,6 +7,9 @@ OS: Ubuntu 18.04 LTS
 ### File: install
 installation script - The same one used on the remote virtual servers. Use it to reproduce the environment in your local machine
 
+### Folder: template
+*template* folder with suggested settings for the most common solvers
+
 ### Folder: scripts
 *scripts* folder with scripts available on the web app - add files on this folder in order to create your own script
 
