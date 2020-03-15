@@ -1,9 +1,9 @@
 # CloudHPCScript
 This is the official repository linked to the cloudHPC offered by CFD FEA SERVICE hosted at https://cloud.cfdfeaservice.it. With this repository you can access advanced functionalities of the platform such as:
 
-* download the recommended to use **template** for the most common solver available online
-* create and upload your personal script to the cloudHPC platform
-* check the API usage and take advantage of the example reported here
+* download the recommended to use *template* for the most common solvers available online
+* create and upload *your personal scripts* to the cloudHPC platform
+* check the *API usage* and take advantage of the example reported here
 
 The whole content of this under the [GPLv3 license](https://github.com/CFD-FEA-SERVICE/CloudHPCScript/blob/master/LICENSE).
 
