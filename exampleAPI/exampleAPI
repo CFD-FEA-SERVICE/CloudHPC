@@ -1,0 +1,100 @@
+#!/bin/bash
+
+###############################################################################
+#
+#   Script developped in 2019 by
+#   CFD FEA SERVICE SRL - via Borgo Grande 19, 37044 Cologna Veneta VR
+#
+#   License: GPLv3
+#
+###############################################################################
+
+#INPUT DATA ###################################################################
+# TODO insert in this section your input data
+apikey='INSERT_API_KEY'
+simulationid=XXXX
+
+dirname="FDS-EXAMPLE"
+filename="Askervein_TU03A_16m.fds"
+
+fileid=XXXX
+
+#LIST ALL SIMULATIONS #########################################################
+#curl -X GET \
+#  https://cloud.cfdfeaservice.it/api/v1/simulation \
+#  -H "api-key: $apikey" \
+#  -H 'Content-Type: application/json' \
+#  -H 'Accept: application/json'
+
+#LIST SINGLE SIMULATION #######################################################
+#curl -X GET \
+#  https://cloud.cfdfeaservice.it/api/v1/simulation/$simulationid \
+#  -H "api-key: $apikey" \
+#  -H 'Content-Type: application/json' \
+#  -H 'Accept: application/json'
+
+#INDIRECT UPLOAD ##############################################################
+#curl -X POST \
+#  https://cloud.cfdfeaservice.it/api/v1/storage/upload/url \
+#  -H "api-key: $apikey" \
+#  -H 'Content-Type: application/json' \
+#  -H 'Accept: application/json' \
+#  -d '{ "data": 
+#            { "dirname": "", 
+#              "basename": "FDS-CASE/FDS-direct.fds", 
+#              "contentType": "application/octet-stream" 
+#            } 
+#      }'
+
+#curl -X PUT \
+#  -H 'Content-Type: application/octet-stream' \
+#  -T Askervein_TU03A_16m.fds 'INSERT_URL_FROM_PREVIOUS_API'
+
+#DIRECT UPLOAD ################################################################
+#curl -X POST \
+#  https://cloud.cfdfeaservice.it/api/v1/storage \
+#  -H "api-key: $apikey" \
+#  -H 'Content-Type: multipart/form-data' \
+#  -H 'Accept: application/json' \
+#  -F dirname=$dirname \
+#  -F basename=@$filename
+
+# DELETE FILE/FOLDER ##########################################################
+#curl -X DELETE \
+#  https://cloud.cfdfeaservice.it/api/v1/storage/$fileid \
+#  -H "api-key: $apikey" \
+#  -H 'Accept: application/json'
+
+#EXECUTE ANALYSIS #############################################################
+#curl -X POST \
+#  https://cloud.cfdfeaservice.it/api/v1/simulation \
+#  -H "api-key: $apikey" \
+#  -H 'Content-Type: application/json' \
+#  -H 'Accept: application/json' \
+#  -d '{
+#        "data": {
+#                "cpu":    "2", 
+#                "ram":    "standard",
+#                "folder": "FDS-CASE-API",
+#                "script": "fds6.7.1"
+#                }
+#      }'
+
+#LIST OF FILES IN ROOT DIRECTORY ##############################################
+#curl -X GET \
+#   https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+#   -H "api-key: $apikey" \
+#   --header 'Accept: application/json' | python -m json.tool
+
+#LIST OF ALL FILES ############################################################
+#curl -X GET \
+#   https://cloud.cfdfeaservice.it/api/v1/storage \
+#   -H "api-key: $apikey" \
+#   --header 'Accept: application/json' | python -m json.tool
+
+#DOWNLOAD OF FILE #############################################################
+#curl -X GET \
+#https://cloud.cfdfeaservice.it/api/v1/storage/$fileid/download/url \
+#  -H "api-key: $apikey" \
+#  -H 'Content-Type: application/json' \
+#  -H 'Accept: application/json'
