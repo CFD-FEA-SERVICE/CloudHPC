@@ -17,7 +17,7 @@ simulationid=XXXX
 dirname="FDS-EXAMPLE"
 filename="Askervein_TU03A_16m.fds"
 
-fileid=XXXX
+fileid=XXXXX
 
 #LIST ALL SIMULATIONS #########################################################
 #curl -X GET \
@@ -34,23 +34,25 @@ fileid=XXXX
 #  -H 'Accept: application/json'
 
 #INDIRECT UPLOAD ##############################################################
-#curl -X POST \
+#UPLOAD_URL=$( curl -X POST \
 #  https://cloud.cfdfeaservice.it/api/v1/storage/upload/url \
 #  -H "api-key: $apikey" \
 #  -H 'Content-Type: application/json' \
 #  -H 'Accept: application/json' \
 #  -d '{ "data": 
-#            { "dirname": "", 
-#              "basename": "FDS-CASE/FDS-direct.fds", 
+#            { "dirname": "DIRECTORY", 
+#              "basename": "FDS-direct.fds", 
 #              "contentType": "application/octet-stream" 
 #            } 
-#      }'
-
+#      }' | jq .url | tr -d \")
+#
+#echo "UPLOAD URL: $UPLOAD_URL"
+#
 #curl -X PUT \
 #  -H 'Content-Type: application/octet-stream' \
-#  -T Askervein_TU03A_16m.fds 'INSERT_URL_FROM_PREVIOUS_API'
+#  -T $filename $UPLOAD_URL
 
-#DIRECT UPLOAD ################################################################
+#DIRECT UPLOAD [MAX FILE SIZE: 2MB] ###########################################
 #curl -X POST \
 #  https://cloud.cfdfeaservice.it/api/v1/storage \
 #  -H "api-key: $apikey" \
