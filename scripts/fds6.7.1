@@ -1,4 +1,5 @@
 #!/bin/bash
+shopt -s extglob
 
 ###############################################################################
 #
@@ -29,6 +30,9 @@ grep "T_END" "$FDS_FILE"
 if grep "&MISC" "$FDS_FILE" | grep -q RESTART
 then
    echo "** RESTART TRUE **"
+else
+   #Ripuliamo la directory da eventuali file precedenti
+   rm -rf !(*.fds|*.FDS|fds*|foamMonitor|plot_and_graphs)
 fi
 
 #Se si mette il numero di cores come argomento usa quello, altrimenti prendi quelli richiesti dal file
@@ -50,6 +54,13 @@ if [ $# -eq 0 ]; then
    fi
 else
    nProc=$1
+fi
+
+#Verifica della presenza di almeno una MESH nel file
+if ! grep -q MESH "$FDS_FILE"
+then
+   echo "No &MESH on FDS file"
+   exit
 fi
 
 #PREPARAZIONE FILE PER LO STOP
