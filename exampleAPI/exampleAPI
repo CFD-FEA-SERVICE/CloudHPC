@@ -11,13 +11,13 @@
 
 #INPUT DATA ###################################################################
 # TODO insert in this section your input data
-apikey='INSERT_API_KEY'
+apikey='XXXX'
 simulationid=XXXX
 
 dirname="FDS-EXAMPLE"
 filename="Askervein_TU03A_16m.fds"
 
-fileid=XXXXX
+fileid=XXXX
 
 #LIST ALL SIMULATIONS #########################################################
 #curl -X GET \
@@ -94,9 +94,16 @@ fileid=XXXXX
 #   -H "api-key: $apikey" \
 #   --header 'Accept: application/json' | python -m json.tool
 
+
+
 #DOWNLOAD OF FILE #############################################################
 #curl -X GET \
 #https://cloud.cfdfeaservice.it/api/v1/storage/$fileid/download/url \
 #  -H "api-key: $apikey" \
 #  -H 'Content-Type: application/json' \
 #  -H 'Accept: application/json'
+
+#DIRECT DOWNLOAD OF FILE ######################################################
+#curl -X GET https://cloud.cfdfeaservice.it/api/storage/$fileid/download/file \
+#   -H 'Accept: application/json' \
+#   -H "api-key: $apikey" 
