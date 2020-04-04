@@ -44,7 +44,7 @@ maxDeltaT   1.0;
 
 functions
 {
-        cell_max
+        cellMax
         {
               type            volFieldValue;
               libs            ("libfieldFunctionObjects.so");
