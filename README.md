@@ -20,4 +20,4 @@ installation script - The same one used on the remote virtual servers. Use it to
 *scripts* folder with scripts available on the web app - add files on this folder in order to create your own script
 
 ## Folder: exampleAPI
-*exampleAPI* example of API usage withing the web application. For a detailed guide [check here](https://docs.google.com/document/d/1wK0u48ZJCJDlb40HWYj8_8dhlS3x-FRAGGN11gXAfsw/edit#heading=h.mrqb9yr26wjj)
+*exampleAPI* example of API usage withing the web application. For a detailed guide [check here](https://github.com/CFD-FEA-SERVICE/CloudHPC/wiki).
