@@ -1,0 +1,132 @@
+#!/bin/bash
+
+###############################################################################
+#
+#   Script developped in 2020 by
+#   CFD FEA SERVICE SRL - via Borgo Grande 19, 37044 Cologna Veneta VR
+#
+#   License: GPLv3
+#
+###############################################################################
+
+
+#CHECKING EXTRA PACKAGES TO INSTALL############################################
+if [ -z $(command -v dialog) ]
+then
+   sudo apt-get install dialog
+fi
+if [ -z $(command -v jq) ]
+then
+   sudo apt-get install jq
+fi
+
+#GETTING/STORING APIKEY #######################################################
+if [ -f $HOME/.cfscloudhpc/apikey ]
+then
+   apikey=$(head -n 1 $HOME/.cfscloudhpc/apikey)
+else
+   read -p "Insert APIKEY: " apikey
+   mkdir $HOME/.cfscloudhpc
+   echo "$apikey" > $HOME/.cfscloudhpc/apikey
+fi
+
+#EXECUTION AND API CALL #######################################################
+FOLDER=$(basename $(pwd))
+
+cpuoptions=(  1 "1 CPU" \
+              2 "2 CPU" \
+              4 "4 CPU" \
+              8 "8 CPU" \
+            16 "16 CPU" \
+            32 "32 CPU" \
+	    64 "64 CPU" \
+	    96 "96 CPU" )
+cpu=$(dialog --clear --nocancel --menu "Pick the CPU you need" 15 60 12 "${cpuoptions[@]}" 2>&1 >/dev/tty)
+
+ramoptions=( standard "standard" highcpu "highcpu" highmem "highmem" )
+ram=$(dialog --clear --nocancel --menu "Pick the RAM you need" 11 60 12 "${ramoptions[@]}" 2>&1 >/dev/tty)
+
+scriptoptions=( openFoam-of7      "OpenFOAM v7"   \
+                openFoam-of6      "OpenFOAM v6"   \
+		snappyHexMesh-of7 "snappyHexMesh v7" \
+	       	fds6.7.4          "FDS v6.7.4"        \
+	       	fds6.7.1          "FDS v6.7.1"        \
+	       	fds6.7.0          "FDS v6.7.0"        )
+script=$(dialog --clear --nocancel --menu "Pick the solver you use" 13 60 12 "${scriptoptions[@]}" 2>&1 >/dev/tty)
+
+#FOLDER LIST EXTRACTION FROM CLOUD ############################################
+folder_storage_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+                           -H "api-key: $apikey" \
+			   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | jq .[].basename| tr -d \" )
+
+folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
+
+folder_options=()
+count=0
+
+count=$[count+1]
+folder_options+=( ${count} "Add new folder ..." )
+
+for i in "${folder_storage_options[@]}"
+do :
+	count=$[count+1]
+	folder_options+=( ${count} $i )
+done
+
+folder_storage=$(dialog --clear --nocancel --menu "Pick the STORAGE FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
+clear
+
+if [ "$folder_storage" = "1" ]
+then
+	read -p "Insert folder: " folder_storage
+else
+        #TODO maybe we want to delete the folder/file?
+	folder_storage=${folder_storage_options[$(($folder_storage - 2))]}
+fi
+
+#LOADING CURRENT FOLDER AS TAR FILE ###########################################
+echo "Loading Current folder: $FOLDER / destination: $folder_storage"
+
+tar -zcvf $FOLDER.tar.gz --transform="s/$FOLDER/$folder_storage/" ../$FOLDER > log.tmp 2>&1
+
+JSON_STRING=$( jq -n \
+                  --arg dirname       "" \
+                  --arg basename      "$folder_storage.tar.gz" \
+                  --arg contentType   "application/octet-stream" \
+                  '{data: {dirname: $dirname, basename: $basename, contentType: $contentType}}' )
+
+UPLOAD_URL=$( curl -X POST \
+  https://cloud.cfdfeaservice.it/api/v1/storage/upload/url \
+  -H "api-key: $apikey" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -d "$JSON_STRING" | jq .url | tr -d \")
+
+curl -X PUT \
+  -H 'Content-Type: application/octet-stream' \
+  -T $FOLDER.tar.gz $UPLOAD_URL
+
+rm $FOLDER.tar.gz
+
+#EXECUTE ANALYSIS #############################################################
+echo "Executing $script on $cpu CPU with $ram RAM"
+
+JSON_STRING=$( jq -n \
+                  --arg cpu    "$cpu" \
+                  --arg ram    "$ram" \
+                  --arg script "$script" \
+                  --arg folder "$folder_storage.tar.gz" \
+                  --arg nopre  "0" \
+                  --arg mesh   "" \
+                  '{data: {cpu: $cpu, ram: $ram, folder: $folder, script: $script, nopre: $nopre, mesh: $mesh}}' )
+
+curl -X POST \
+  https://cloud.cfdfeaservice.it/api/v1/simulation \
+  -H "api-key: $apikey" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -d "$JSON_STRING"
+
+rm log.tmp
+
+echo ""
