@@ -43,7 +43,7 @@ if [ -f $HOME/.cfscloudhpc/apikey ]
 then
    apikey=$(head -n 1 $HOME/.cfscloudhpc/apikey)
 else
-   read -p "Insert APIKEY: " apikey
+   read -e -p "Insert APIKEY: " apikey
    mkdir $HOME/.cfscloudhpc
    echo "$apikey" > $HOME/.cfscloudhpc/apikey
 fi
@@ -98,7 +98,7 @@ clear
 
 if [ "$folder_storage" = "1" ]
 then
-	read -p "Insert folder: " folder_storage
+	read -e -p "Insert folder: " folder_storage
 else
         #TODO maybe we want to delete the folder/file?
 	folder_storage=${folder_storage_options[$(($folder_storage - 2))]}
