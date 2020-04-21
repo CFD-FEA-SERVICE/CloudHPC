@@ -22,9 +22,9 @@ then
    echo "Checking for updates & installation ..."
    wget https://raw.githubusercontent.com/CFD-FEA-SERVICE/CloudHPC/master/exampleAPI/cloudHPCexec
    chmod ugo+x cloudHPCexec
-   sudo cp cloudHPCexec /usr/local/bin
+   sudo rm /usr/local/bin/cloudHPCexec
+   sudo mv cloudHPCexec /usr/local/bin
    echo "cloudHPCexec updated and installed successfully - Available for usage"
-   rm cloudHPCexec
    exit
 fi
 
