@@ -64,11 +64,13 @@ cpu=$(dialog --clear --nocancel --menu "Pick the CPU you need" 15 60 12 "${cpuop
 ramoptions=( standard "standard" highcpu "highcpu" highmem "highmem" )
 ram=$(dialog --clear --nocancel --menu "Pick the RAM you need" 11 60 12 "${ramoptions[@]}" 2>&1 >/dev/tty)
 
-scriptoptions=( openFoam-of7      "OpenFOAM v7"   \
-                openFoam-of6      "OpenFOAM v6"   \
+scriptoptions=( openFoam-of7      "OpenFOAM v7"      \
+                openFoam-of6      "OpenFOAM v6"      \
 		snappyHexMesh-of7 "snappyHexMesh v7" \
-	       	fds6.7.4          "FDS v6.7.4"        \
-	       	fds6.7.1          "FDS v6.7.1"        \
+	       	codeAster-13.4    "Code_Aster v13.4" \
+	       	codeAster-13.6    "Code_Aster v13.6" \
+	       	fds6.7.4          "FDS v6.7.4"       \
+	       	fds6.7.1          "FDS v6.7.1"       \
 	       	fds6.7.0          "FDS v6.7.0"        )
 script=$(dialog --clear --nocancel --menu "Pick the solver you use" 13 60 12 "${scriptoptions[@]}" 2>&1 >/dev/tty)
 
