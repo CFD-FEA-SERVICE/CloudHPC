@@ -9,6 +9,24 @@
 #
 ###############################################################################
 
+#OPTIONS and INSTRUCTIONS #####################################################
+option=""
+if [ ! $# -eq 0 ]
+then
+   option=$1
+fi
+
+#DOWNLOADING RECENT VERSION OF SCRIPT##########################################
+if [ "$option" = "-update" ]
+then
+   echo "Checking for updates & installation ..."
+   wget https://raw.githubusercontent.com/CFD-FEA-SERVICE/CloudHPC/master/exampleAPI/cloudHPCexec
+   chmod ugo+x cloudHPCexec
+   sudo cp cloudHPCexec /usr/local/bin
+   echo "cloudHPCexec updated and installed successfully - Available for usage"
+   rm cloudHPCexec
+   exit
+fi
 
 #CHECKING EXTRA PACKAGES TO INSTALL############################################
 if [ -z $(command -v dialog) ]
