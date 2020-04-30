@@ -9,6 +9,9 @@
 #
 ###############################################################################
 
+#TODO default OpenFOAM CFD  -> sceglie la macchina e PRE
+#TODO default Snappy   MESH -> sceglie la macchina e PRE
+
 #OPTIONS and INSTRUCTIONS #####################################################
 option=""
 if [ ! $# -eq 0 ]
@@ -16,7 +19,7 @@ then
    option=$1
 fi
 
-#DOWNLOADING RECENT VERSION OF SCRIPT##########################################
+#DOWNLOADING RECENT VERSION OF SCRIPT #########################################
 if [ "$option" = "-update" ]
 then
    echo "Checking for updates & installation ..."
@@ -25,6 +28,24 @@ then
    sudo rm /usr/local/bin/cloudHPCexec
    sudo mv cloudHPCexec /usr/local/bin
    echo "cloudHPCexec updated and installed successfully - Available for usage"
+   exit
+fi
+
+#APIKEY RESET #################################################################
+if [ "$option" = "-apikey" ]
+then
+   echo "APIKEY reset ..."
+   rm -rf $HOME/.cfscloudhpc/apikey
+fi
+
+#HELP OPTIONS #################################################################
+if [ "$option" = "-help" ]
+then
+   echo "List of options available:"
+   echo ""
+   echo "-apikey          Reset your APIKEY"
+   echo "-update          Update the software"
+   echo "-help            Return this menu"
    exit
 fi
 
