@@ -22,12 +22,21 @@ fi
 #DOWNLOADING RECENT VERSION OF SCRIPT #########################################
 if [ "$option" = "-update" ]
 then
+   #Updating to new version and installation
    echo "Checking for updates & installation ..."
    wget https://raw.githubusercontent.com/CFD-FEA-SERVICE/CloudHPC/master/exampleAPI/cloudHPCexec
    chmod ugo+x cloudHPCexec
    sudo rm /usr/local/bin/cloudHPCexec
    sudo mv cloudHPCexec /usr/local/bin
+
+   #setting autocomplete
+   sudo sh -c "echo '#/usr/bin/env bash'                                        > /etc/bash_completion.d/cloudHPCexec"
+   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+
+   echo "#####################################################################"
    echo "cloudHPCexec updated and installed successfully - Available for usage"
+   echo "#####################################################################"
+
    exit
 fi
 
@@ -42,10 +51,13 @@ fi
 if [ "$option" = "-help" ]
 then
    echo "List of options available:"
+   echo "CLOUDHPC OPTIONS  ###################################################"
+   echo "-mesh             Select mesh directory"
    echo ""
-   echo "-apikey          Reset your APIKEY"
-   echo "-update          Update the software"
-   echo "-help            Return this menu"
+   echo "SCRIPT MANAGEMENT ###################################################"
+   echo "-apikey           Reset your APIKEY"
+   echo "-update           Update the software"
+   echo "-help             Return this menu"
    exit
 fi
 
@@ -57,6 +69,10 @@ fi
 if [ -z $(command -v jq) ]
 then
    sudo apt-get install jq
+fi
+if [ -z $(command -v pigz) ]
+then
+   sudo apt-get install pigz
 fi
 
 #GETTING/STORING APIKEY #######################################################
@@ -80,6 +96,7 @@ cpuoptions=(  1 "1 CPU" \
             32 "32 CPU" \
 	    64 "64 CPU" \
 	    96 "96 CPU" )
+
 cpu=$(dialog --clear --nocancel --menu "Pick the CPU you need" 15 60 12 "${cpuoptions[@]}" 2>&1 >/dev/tty)
 
 ramoptions=( standard "standard" highcpu "highcpu" highmem "highmem" )
@@ -93,42 +110,45 @@ scriptoptions=( openFoam-of7      "OpenFOAM v7"      \
 	       	fds6.7.4          "FDS v6.7.4"       \
 	       	fds6.7.1          "FDS v6.7.1"       \
 	       	fds6.7.0          "FDS v6.7.0"        )
+
 script=$(dialog --clear --nocancel --menu "Pick the solver you use" 13 60 12 "${scriptoptions[@]}" 2>&1 >/dev/tty)
 
-#FOLDER LIST EXTRACTION FROM CLOUD ############################################
-folder_storage_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+#FOLDER LIST EXTRACTION FROM CLOUD [MESH PART] ################################
+if [ "$option" = "-mesh" ]
+then
+   folder_storage_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
                            -H "api-key: $apikey" \
-			   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | jq .[].basename| tr -d \" )
+  			   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | jq .[].basename| tr -d \" )
 
-folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
+   folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
 
-folder_options=()
-count=0
+   folder_options=()
+   count=0
 
-count=$[count+1]
-folder_options+=( ${count} "Add new folder ..." )
+   for i in "${folder_storage_options[@]}"
+   do :
+   	count=$[count+1]
+   	folder_options+=( ${count} $i )
+   done
 
-for i in "${folder_storage_options[@]}"
-do :
-	count=$[count+1]
-	folder_options+=( ${count} $i )
-done
+   mesh_storage=$(dialog --clear --nocancel --menu "Pick the MESH FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
 
-folder_storage=$(dialog --clear --nocancel --menu "Pick the STORAGE FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
+   mesh_storage=${folder_storage_options[$(($folder_storage - 2))]}
+
+else
+   mesh_storage=""
+
+fi
+
+#SELECT CASE FOLDER ###########################################################
 clear
 
-if [ "$folder_storage" = "1" ]
-then
-	read -e -p "Insert folder: " folder_storage
-else
-        #TODO maybe we want to delete the folder/file?
-	folder_storage=${folder_storage_options[$(($folder_storage - 2))]}
-fi
+read -e -p "Insert folder name [to use in cloud HPC]: " folder_storage
 
 #LOADING CURRENT FOLDER AS TAR FILE ###########################################
 echo "Loading Current folder: $FOLDER / destination: $folder_storage"
 
-tar -zcvf $FOLDER.tar.gz --transform="s/$FOLDER/$folder_storage/" ../$FOLDER > log.tmp 2>&1
+tar -I pigz -cf $FOLDER.tar.gz --transform="s/$FOLDER/$folder_storage/" ../$FOLDER > log.tmp 2>&1
 
 JSON_STRING=$( jq -n \
                   --arg dirname       "" \
@@ -158,7 +178,7 @@ JSON_STRING=$( jq -n \
                   --arg script "$script" \
                   --arg folder "$folder_storage.tar.gz" \
                   --arg nopre  "0" \
-                  --arg mesh   "" \
+                  --arg mesh   "$mesh_storage" \
                   '{data: {cpu: $cpu, ram: $ram, folder: $folder, script: $script, nopre: $nopre, mesh: $mesh}}' )
 
 curl -X POST \
