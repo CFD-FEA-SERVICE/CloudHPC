@@ -10,7 +10,7 @@ shopt -s extglob
 #
 ###############################################################################
 
-source /opt/FDS/FDS671/bin/FDS6VARS.sh
+source /opt/FDS/FDS674/bin/FDS6VARS.sh
 
 #Lasciamo lo stack unlimited
 ulimit -s unlimited
@@ -27,19 +27,19 @@ echo "TIME string"
 
 grep "T_END" "$FDS_FILE"
 
+#Rimozione file .stop per evitare errore di avvio
+rm *.stop
+
 if grep "&MISC" "$FDS_FILE" | grep -q RESTART
 then
    echo "** RESTART TRUE **"
 else
    #Ripuliamo la directory da eventuali file precedenti
-   rm -rf !(*.fds|*.FDS|fds*|foamMonitor|plot_and_graphs)
+   rm -rf !(*.fds|*.FDS)
 fi
 
 #Se si mette il numero di cores come argomento usa quello, altrimenti prendi quelli richiesti dal file
 if [ $# -eq 0 ]; then
-   #MPI cores disponibili nel sistema
-   #nProc="$(($(grep -c ^processor /proc/cpuinfo) / $OMP_NUM_THREADS))"
-
    if grep -q MPI_PROCESS "$FDS_FILE"
    then
       #MPI cores richiesti dal file FDS
@@ -52,6 +52,16 @@ if [ $# -eq 0 ]; then
       echo "Detected $nProc &MESH blocks"
 
    fi
+
+   #MPI cores disponibili nel sistema per verifica che ve ne siano di disponibili
+   nProc_loc="$(grep -c ^processor /proc/cpuinfo)"
+
+   if [ $nProc_loc -lt $nProc ]
+   then
+      nProc=$nProc_loc
+      echo "Reducing MPI because availability: $nProc"
+   fi
+
 else
    nProc=$1
 fi
@@ -64,9 +74,9 @@ then
 fi
 
 #PREPARAZIONE FILE PER LO STOP
-STOPFILE=$(grep CHID *.fds | head -n 1 | sed 's/\TITLE.*//' | grep -o "'.*'" | sed "s/'//g")
-echo "STOPFILE = $STOPFILE"
-touch $STOPFILE.tostop
+CHID=$(grep CHID *.fds | head -n 1 | sed 's/\TITLE.*//' | grep -o "'.*'" | sed "s/'//g")
+echo "CHID = $CHID"
+touch "$CHID.tostop"
 grep "CHID" "$FDS_FILE"
 
 #Calcolo THREADS (completamento tra i CORE richiesti e quelli disponibili)
@@ -78,11 +88,11 @@ OMP_NUM_THREADS="$(($OMP_NUM_THREADS > 0 ? $OMP_NUM_THREADS : 1))"
 echo "MPI cores: $nProc - MP threads: $OMP_NUM_THREADS"
 
 #Esecuzione in backgroud dell'analisi e cattura del PID
-mpiexec -np $nProc fds "$FDS_FILE" > log.fds 2>&1  &
+mpiexec -np $nProc fds "$FDS_FILE" > "$CHID.log" 2>&1  &
 process_id=$!
 
 sleep 3
-tail -f log.fds &
+tail -f "$CHID.log" &
 process_tail=$!
 
 #Attesa del completamento del processo

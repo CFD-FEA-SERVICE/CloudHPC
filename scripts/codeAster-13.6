@@ -9,16 +9,46 @@
 #
 ###############################################################################
 
-cp export.org export
+#Cattura file export
+export_file=($(ls *export))
 
-mkdir base-stage1
+echo "Found Export file: $export_file"
 
+#Aggiornamento file EXPORT togliendo i paths
+strings=($(grep 'comm\|libr\|mess\|base' $export_file))
+
+for string in "${strings[@]}"
+do
+   new_string=""
+
+   for one_thing in $string; do
+      new_string="$new_string $(basename $one_thing)"
+   done
+
+   read -rd '' new_string <<< "$new_string"
+
+   sed -i "s/${string//\//\\/}/$new_string/g" $export_file
+done
+
+#Cattura delle cartelle BASE
+string=$(grep 'base' $export_file)
+string=$(echo $string | sed 's/^.*base /base /')
+string=${string:5}
+string=$(echo $string | sed 's/\s.*$//' )
+
+echo "Working directory: $string"
+
+mkdir -p $string
+
+#Determinazione PROCESSOR e RAM
 nProc="$(grep -c ^processor /proc/cpuinfo)"
 echo "CASE: $(pwd) $(date) - nProc=$nProc"
-sed -i "/ncpus/c\P ncpus $nProc" export
+sed -i "/ncpus/c\P ncpus $nProc" $export_file
 
 RAM="$(($(grep MemTotal /proc/meminfo | awk '{print $2}') * 9 / 10 / 1000))"
 echo "RAM: $RAM"
-sed -i "/memory_limit/c\P memory_limit $RAM" export
+sed -i "/memory_limit/c\P memory_limit $RAM" $export_file
 
-/opt/salome*/appli_V2018*_public/salome shell "as_run export" 2> log.astererror
+#Esecuzione Code Aster
+echo "Running Code Aster ... check log on STORAGE"
+/opt/salome*/appli_V2018*_public/salome shell "as_run $export_file" > code_aster.log 2> log.astererror

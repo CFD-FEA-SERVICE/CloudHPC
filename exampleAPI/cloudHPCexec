@@ -149,11 +149,11 @@ read -e -p "Insert folder name [to use in cloud HPC]: " folder_storage
 #LOADING CURRENT FOLDER AS TAR FILE ###########################################
 echo "Loading Current folder: $FOLDER / destination: $folder_storage"
 
-tar -I pigz -cf $FOLDER.tar.gz --transform="s/$FOLDER/$folder_storage/" ../$FOLDER > log.tmp 2>&1
+tar -I pigz -cf $FOLDER.tar.gz * > log.tmp 2>&1
 
 JSON_STRING=$( jq -n \
-                  --arg dirname       "" \
-                  --arg basename      "$folder_storage.tar.gz" \
+                  --arg dirname       "$folder_storage" \
+                  --arg basename      "$FOLDER.tar.gz" \
                   --arg contentType   "application/octet-stream" \
                   '{data: {dirname: $dirname, basename: $basename, contentType: $contentType}}' )
 
@@ -177,7 +177,7 @@ JSON_STRING=$( jq -n \
                   --arg cpu    "$cpu" \
                   --arg ram    "$ram" \
                   --arg script "$script" \
-                  --arg folder "$folder_storage.tar.gz" \
+                  --arg folder "$folder_storage" \
                   --arg nopre  "0" \
                   --arg mesh   "$mesh_storage" \
                   '{data: {cpu: $cpu, ram: $ram, folder: $folder, script: $script, nopre: $nopre, mesh: $mesh}}' )
