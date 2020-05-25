@@ -30,8 +30,8 @@ then
    sudo mv cloudHPCexec /usr/local/bin
 
    #setting autocomplete
-   sudo sh -c "echo '#/usr/bin/env bash'                                        > /etc/bash_completion.d/cloudHPCexec"
-   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+   sudo sh -c "echo '#/usr/bin/env bash'                                                  > /etc/bash_completion.d/cloudHPCexec"
+   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
 
    echo "#####################################################################"
    echo "cloudHPCexec updated and installed successfully - Available for usage"
@@ -52,6 +52,7 @@ if [ "$option" = "-help" ]
 then
    echo "List of options available:"
    echo "CLOUDHPC OPTIONS  ###################################################"
+   echo "-download         Download results from STORAGE"
    echo "-mesh             Select mesh directory"
    echo ""
    echo "SCRIPT MANAGEMENT ###################################################"
@@ -85,6 +86,55 @@ else
    echo "$apikey" > $HOME/.cfscloudhpc/apikey
 fi
 
+#DOWNLOAD RESULTS #############################################################
+if [ "$option" = "-download" ]
+then
+   #PART 1 -> selection of folder to download TAR.GZ files from
+   folder_storage_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+                           -H "api-key: $apikey" \
+  			   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | jq .[].basename| tr -d \" )
+
+   folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
+
+   folder_options=()
+   count=0
+
+   for i in "${folder_storage_options[@]}"
+   do :
+   	count=$[count+1]
+   	folder_options+=( ${count} $i )
+   done
+
+   folder_storage_number=$(dialog --clear --nocancel --menu "Pick the FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
+
+   #PART 2  > selections of all files inside folder ending with "TAR.GZ"
+   folder_id=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+                                   -H "api-key: $apikey" \
+				   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | jq .[$(($folder_storage_number - 1))].id )
+
+   file_ids=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$folder_id/list \
+                                   -H "api-key: $apikey" \
+				   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | \
+				    jq '.[] | .basename , .id' | grep 'tar.gz' -A 1 | grep -v 'tar.gz' )
+
+   file_ids=($(echo $file_ids | tr " " "\n"))
+
+   #PART 3 > downloading selected files
+   for file in "${file_ids[@]}"
+   do : 
+      url=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$file/download/url \
+                   -H "api-key: $apikey" \
+                   -H 'Content-Type: application/json' \
+		   -H 'Accept: application/json'  2> log.tmp | python -m json.tool | jq .url | sed 's/"//g' )
+
+      wget $url
+   done
+
+   rm log.tmp
+
+   exit
+fi
+
 #EXECUTION AND API CALL #######################################################
 FOLDER=$(basename $(pwd))
 
@@ -106,7 +156,7 @@ ram=$(dialog --clear --nocancel --menu "Pick the RAM you need" 11 60 12 "${ramop
 
 scriptoptions=( openFoam-of7      "OpenFOAM v7"      \
 		snappyHexMesh-of7 "snappyHexMesh v7" \
-	       	codeAster-13.6    "Code_Aster v13.6" \
+	       	codeAster-14.4    "Code_Aster v14.4" \
 	       	codeSaturne-5.2   "Code_Saturne v5.2" \
 	       	fds6.7.4          "FDS v6.7.4"       \
 	       	fds6.7.1          "FDS v6.7.1"       \
@@ -134,7 +184,7 @@ then
 
    mesh_storage=$(dialog --clear --nocancel --menu "Pick the MESH FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
 
-   mesh_storage=${folder_storage_options[$(($folder_storage - 2))]}
+   mesh_storage=${folder_storage_options[$(($mesh_storage - 1))]}
 
 else
    mesh_storage=""
