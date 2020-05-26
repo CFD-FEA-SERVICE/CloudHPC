@@ -220,6 +220,9 @@ curl -X PUT \
 
 rm $FOLDER.tar.gz
 
+#added sleep to avoid cache problems
+sleep 10
+
 #EXECUTE ANALYSIS #############################################################
 echo "Executing $script on $cpu CPU with $ram RAM"
 
