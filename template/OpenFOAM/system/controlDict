@@ -1,11 +1,19 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  7
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
 FoamFile
 {
-	version     2.0;
-	format      ascii;
-	class       dictionary;
-	location    "system";
-	object      controlDict;
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
 }
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 application   simpleFoam;
 //application   pimpleFoam;
@@ -17,7 +25,6 @@ application   simpleFoam;
 startFrom   latestTime;
 startTime   0;
 stopAt   endTime;
-//stopAt   writeNow;
 endTime   3000;
 deltaT   1.0000000000000000;
 
@@ -27,7 +34,7 @@ writeControl   timeStep;
 writeInterval   100;
 purgeWrite   0;
 
-//custom CFD FEA SERVICE -> tiene solo iterazioni "multiple"
+//custom CFD FEA SERVICE [only keep multiple Intervals]
 keepInterval    0;
 
 writeFormat   binary;
