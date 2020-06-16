@@ -115,7 +115,7 @@ then
    file_ids=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$folder_id/list \
                                    -H "api-key: $apikey" \
 				   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | \
-				    jq '.[] | .basename , .id' | grep 'tar.gz' -A 1 | grep -v 'tar.gz' )
+				    jq '.[] | .basename , .id' | grep 'tar.gz\|rmed' -A 1 | grep -v 'tar.gz' | grep -v 'rmed' | grep -v '\-\-' )
 
    file_ids=($(echo $file_ids | tr " " "\n"))
 
@@ -196,9 +196,24 @@ clear
 
 read -e -p "Insert folder name [to use in cloud HPC]: " folder_storage
 
+##DELETING FOLDER IF EXISTS ALREAD #############################################
+#folder_id=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+#                                   -H "api-key: $apikey" \
+#   				   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | \
+#				    jq '.[] | .basename , .id' | grep "$folder_storage" -A 1 | grep -v "$folder_storage" )
+#
+#if [ ! "$folder_id" = "" ]
+#then
+#   echo "Detected $folder_storage on STORAGE. Deleting it ..."
+#   curl -X DELETE https://cloud.cfdfeaservice.it/api/v1/storage/$folder_id \
+#		-H "api-key: $apikey" \
+#		-H 'Accept: application/json'
+#
+#   sleep 10
+#fi
+
 #LOADING CURRENT FOLDER AS TAR FILE ###########################################
 echo "Loading Current folder: $FOLDER / destination: $folder_storage"
-
 tar -I pigz -cf $FOLDER.tar.gz * > log.tmp 2>&1
 
 JSON_STRING=$( jq -n \
