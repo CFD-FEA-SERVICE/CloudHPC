@@ -156,6 +156,7 @@ ram=$(dialog --clear --nocancel --menu "Pick the RAM you need" 11 60 12 "${ramop
 
 scriptoptions=( openFoam-of7      "OpenFOAM v7"      \
 		snappyHexMesh-of7 "snappyHexMesh v7" \
+		openFoam-v1912    "openFoam-v1912"   \
 	       	codeAster-14.4    "Code_Aster v14.4" \
 	       	codeSaturne-5.2   "Code_Saturne v5.2" \
 	       	fds6.7.4          "FDS v6.7.4"       \
