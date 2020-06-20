@@ -63,17 +63,36 @@ then
 fi
 
 #CHECKING EXTRA PACKAGES TO INSTALL############################################
-if [ -z $(command -v dialog) ]
+#installation for Debian/Ubuntu
+if [ $(command -v apt-get) ]
 then
-   sudo apt-get install dialog
-fi
-if [ -z $(command -v jq) ]
-then
-   sudo apt-get install jq
-fi
-if [ -z $(command -v pigz) ]
-then
-   sudo apt-get install pigz
+   if [ -z $(command -v dialog) ]
+   then
+      sudo apt-get install dialog
+   fi
+   if [ -z $(command -v jq) ]
+   then
+      sudo apt-get install jq
+   fi
+   if [ -z $(command -v pigz) ]
+   then
+      sudo apt-get install pigz
+   fi
+
+#installation for CENTOS
+elif [ $(command -v yum) ]
+   if [ -z $(command -v dialog) ]
+   then
+      sudo yum install dialog
+   fi
+   if [ -z $(command -v jq) ]
+   then
+      sudo yum install jq
+   fi
+   if [ -z $(command -v pigz) ]
+   then
+      sudo yum install pigz
+   fi
 fi
 
 #GETTING/STORING APIKEY #######################################################
