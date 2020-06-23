@@ -78,6 +78,10 @@ then
    then
       sudo apt-get install pigz
    fi
+   if [ -z $(command -v curl) ]
+   then
+      sudo apt-get install curl
+   fi
 
 #installation for CENTOS
 elif [ $(command -v yum) ]
@@ -93,6 +97,10 @@ then
    if [ -z $(command -v pigz) ]
    then
       sudo yum install pigz
+   fi
+   if [ -z $(command -v curl) ]
+   then
+      sudo yum install curl
    fi
 fi
 
