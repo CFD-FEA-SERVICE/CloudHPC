@@ -81,6 +81,7 @@ then
 
 #installation for CENTOS
 elif [ $(command -v yum) ]
+then
    if [ -z $(command -v dialog) ]
    then
       sudo yum install dialog
