@@ -166,20 +166,20 @@ fi
 #EXECUTION AND API CALL #######################################################
 FOLDER=$(basename $(pwd))
 
-cpuoptions=(  1 "1 CPU" \
-              2 "2 CPU" \
-              4 "4 CPU" \
-              8 "8 CPU" \
-            16 "16 CPU" \
-            32 "32 CPU" \
-	    64 "64 CPU" \
-	    96 "96 CPU" \
-	   128 "128 CPU" \
-	   224 "224 CPU" )
+cpuoptions=(  1 "1 vCPU" \
+              2 "2 vCPU" \
+              4 "4 vCPU" \
+              8 "8 vCPU" \
+            16 "16 vCPU" \
+            32 "32 vCPU" \
+	    64 "64 vCPU" \
+	    96 "96 vCPU" \
+	   128 "128 vCPU" \
+	   224 "224 vCPU" )
 
-cpu=$(dialog --clear --nocancel --menu "Pick the CPU you need" 15 60 12 "${cpuoptions[@]}" 2>&1 >/dev/tty)
+cpu=$(dialog --clear --nocancel --menu "Pick the vCPU you need" 15 60 12 "${cpuoptions[@]}" 2>&1 >/dev/tty)
 
-ramoptions=( standard "4 Gb per CPU" highcpu "1 Gb per CPU" highmem "8 GB per CPU" )
+ramoptions=( standard "4 Gb per vCPU" highcpu "1 Gb per vCPU" highmem "8 GB per vCPU" )
 ram=$(dialog --clear --nocancel --menu "Pick the RAM you need" 11 60 12 "${ramoptions[@]}" 2>&1 >/dev/tty)
 
 scriptoptions=( openFoam-of7      "OpenFOAM v7"      \
@@ -268,7 +268,7 @@ rm $FOLDER.tar.gz
 sleep 10
 
 #EXECUTE ANALYSIS #############################################################
-echo "Executing $script on $cpu CPU with $ram RAM"
+echo "Executing $script on $cpu vCPU with $ram RAM"
 
 JSON_STRING=$( jq -n \
                   --arg cpu    "$cpu" \
