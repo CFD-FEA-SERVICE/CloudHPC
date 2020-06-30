@@ -183,6 +183,7 @@ do :
 done
 
 cpu=$(dialog --clear --nocancel --menu "Pick the vCPU you need" 15 60 12 "${cpuoptions[@]}" 2>&1 >/dev/tty)
+cpu=${cpu_options[$(($cpu - 1))]}
 
 # RAM selection
 ram_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/ram \
@@ -201,6 +202,7 @@ do :
 done
 
 ram=$(dialog --clear --nocancel --menu "Pick the RAM you need" 11 60 12 "${ramoptions[@]}" 2>&1 >/dev/tty)
+ram=${ram_options[$(($ram - 1))]}
 
 # Script selection
 script_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/scripts \
@@ -219,8 +221,7 @@ do :
 done
 
 script=$(dialog --clear --nocancel --menu "Pick the solver you use" 13 60 12 "${scriptoptions[@]}" 2>&1 >/dev/tty)
-
-echo $script
+script=${script_options[$(($script - 1))]}
 
 #FOLDER LIST EXTRACTION FROM CLOUD [MESH PART] ################################
 if [ "$option" = "-mesh" ]
@@ -241,7 +242,6 @@ then
    done
 
    mesh_storage=$(dialog --clear --nocancel --menu "Pick the MESH FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
-
    mesh_storage=${folder_storage_options[$(($mesh_storage - 1))]}
 
 else
