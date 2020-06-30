@@ -166,32 +166,61 @@ fi
 #EXECUTION AND API CALL #######################################################
 FOLDER=$(basename $(pwd))
 
-cpuoptions=(  1 "1 vCPU" \
-              2 "2 vCPU" \
-              4 "4 vCPU" \
-              8 "8 vCPU" \
-            16 "16 vCPU" \
-            32 "32 vCPU" \
-	    64 "64 vCPU" \
-	    96 "96 vCPU" \
-	   128 "128 vCPU" \
-	   224 "224 vCPU" )
+# CPU selection
+cpu_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/cpu \
+              -H "api-key: $apikey" \
+             --header 'Accept: application/json' 2> log.tmp | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
+
+cpu_options=($(echo $cpu_options | tr " " "\n"))
+
+cpuoptions=()
+count=0
+
+for i in "${cpu_options[@]}"
+do :
+	count=$[count+1]
+   	cpuoptions+=( ${count} $i )
+done
 
 cpu=$(dialog --clear --nocancel --menu "Pick the vCPU you need" 15 60 12 "${cpuoptions[@]}" 2>&1 >/dev/tty)
 
-ramoptions=( standard "4 Gb per vCPU" highcpu "1 Gb per vCPU" highmem "8 GB per vCPU" )
+# RAM selection
+ram_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/ram \
+              -H "api-key: $apikey" \
+             --header 'Accept: application/json' 2> log.tmp | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
+
+ram_options=($(echo $ram_options | tr " " "\n"))
+
+ramoptions=()
+count=0
+
+for i in "${ram_options[@]}"
+do :
+	count=$[count+1]
+   	ramoptions+=( ${count} $i )
+done
+
 ram=$(dialog --clear --nocancel --menu "Pick the RAM you need" 11 60 12 "${ramoptions[@]}" 2>&1 >/dev/tty)
 
-scriptoptions=( openFoam-of7      "OpenFOAM v7"      \
-		snappyHexMesh-of7 "snappyHexMesh v7" \
-		openFoam-v1912    "openFoam-v1912"   \
-	       	codeAster-14.4    "Code_Aster v14.4" \
-	       	codeSaturne-5.2   "Code_Saturne v5.2" \
-	       	fds6.7.4          "FDS v6.7.4"       \
-	       	fds6.7.1          "FDS v6.7.1"       \
-	       	fds6.7.0          "FDS v6.7.0"        )
+# Script selection
+script_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/scripts \
+                         -H "api-key: $apikey" \
+		   --header 'Accept: application/json' 2> log.tmp | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
+
+script_options=($(echo $script_options | tr " " "\n"))
+
+scriptoptions=()
+count=0
+
+for i in "${script_options[@]}"
+do :
+	count=$[count+1]
+   	scriptoptions+=( ${count} $i )
+done
 
 script=$(dialog --clear --nocancel --menu "Pick the solver you use" 13 60 12 "${scriptoptions[@]}" 2>&1 >/dev/tty)
+
+echo $script
 
 #FOLDER LIST EXTRACTION FROM CLOUD [MESH PART] ################################
 if [ "$option" = "-mesh" ]
