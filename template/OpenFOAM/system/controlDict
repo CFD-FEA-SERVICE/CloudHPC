@@ -63,6 +63,12 @@ functions
               fields (U p T);
         }
 
+        yPlus
+        {
+              type            yPlus;
+              libs            ("libfieldFunctionObjects.so");
+        }
+
 	residuals
 	{
 		type   residuals;
