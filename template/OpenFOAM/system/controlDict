@@ -67,6 +67,7 @@ functions
         {
               type            yPlus;
               libs            ("libfieldFunctionObjects.so");
+	      writeControl    writeTime;
         }
 
 	residuals
