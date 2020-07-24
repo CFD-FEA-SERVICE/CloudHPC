@@ -30,8 +30,8 @@ then
    sudo mv cloudHPCexec /usr/local/bin
 
    #setting autocomplete
-   sudo sh -c "echo '#/usr/bin/env bash'                                                  > /etc/bash_completion.d/cloudHPCexec"
-   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+   sudo sh -c "echo '#/usr/bin/env bash'                                                         > /etc/bash_completion.d/cloudHPCexec"
+   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
 
    echo "#####################################################################"
    echo "cloudHPCexec updated and installed successfully - Available for usage"
@@ -54,6 +54,9 @@ then
    echo "CLOUDHPC OPTIONS  ###################################################"
    echo "-download         Download results from STORAGE"
    echo "-mesh             Select mesh directory"
+   echo "-batch            Insert command from batch without dialogs"
+   echo "                       Expected 4 arguments: vCPU, RAM, SCRIPT and FOLDER"
+   echo "                       Example: cloudHPCexec -batch 1 standard fds6.7.1 FOLDER-NAME"
    echo ""
    echo "SCRIPT MANAGEMENT ###################################################"
    echo "-apikey           Reset your APIKEY"
@@ -166,109 +169,104 @@ fi
 #EXECUTION AND API CALL #######################################################
 FOLDER=$(basename $(pwd))
 
-# CPU selection
-cpu_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/cpu \
-              -H "api-key: $apikey" \
-             --header 'Accept: application/json' 2> log.tmp | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
-
-cpu_options=($(echo $cpu_options | tr " " "\n"))
-
-cpuoptions=()
-count=0
-
-for i in "${cpu_options[@]}"
-do :
-	count=$[count+1]
-   	cpuoptions+=( ${count} $i )
-done
-
-cpu=$(dialog --clear --nocancel --menu "Pick the vCPU you need" 15 60 12 "${cpuoptions[@]}" 2>&1 >/dev/tty)
-cpu=${cpu_options[$(($cpu - 1))]}
-
-# RAM selection
-ram_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/ram \
-              -H "api-key: $apikey" \
-             --header 'Accept: application/json' 2> log.tmp | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
-
-ram_options=($(echo $ram_options | tr " " "\n"))
-
-ramoptions=()
-count=0
-
-for i in "${ram_options[@]}"
-do :
-	count=$[count+1]
-   	ramoptions+=( ${count} $i )
-done
-
-ram=$(dialog --clear --nocancel --menu "Pick the RAM you need" 11 60 12 "${ramoptions[@]}" 2>&1 >/dev/tty)
-ram=${ram_options[$(($ram - 1))]}
-
-# Script selection
-script_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/scripts \
-                         -H "api-key: $apikey" \
-		   --header 'Accept: application/json' 2> log.tmp | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
-
-script_options=($(echo $script_options | tr " " "\n"))
-
-scriptoptions=()
-count=0
-
-for i in "${script_options[@]}"
-do :
-	count=$[count+1]
-   	scriptoptions+=( ${count} $i )
-done
-
-script=$(dialog --clear --nocancel --menu "Pick the solver you use" 13 60 12 "${scriptoptions[@]}" 2>&1 >/dev/tty)
-script=${script_options[$(($script - 1))]}
-
-#FOLDER LIST EXTRACTION FROM CLOUD [MESH PART] ################################
-if [ "$option" = "-mesh" ]
+if [ "$option" = "-batch" ]
 then
-   folder_storage_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
-                           -H "api-key: $apikey" \
-  			   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | jq .[].basename| tr -d \" )
-
-   folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
-
-   folder_options=()
-   count=0
-
-   for i in "${folder_storage_options[@]}"
-   do :
-   	count=$[count+1]
-   	folder_options+=( ${count} $i )
-   done
-
-   mesh_storage=$(dialog --clear --nocancel --menu "Pick the MESH FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
-   mesh_storage=${folder_storage_options[$(($mesh_storage - 1))]}
+   cpu=$2
+   ram=$3
+   script=$4 
+   folder_storage=$5
 
 else
-   mesh_storage=""
+
+   # CPU selection
+   cpu_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/cpu \
+                 -H "api-key: $apikey" \
+                --header 'Accept: application/json' 2> log.tmp | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
+
+   cpu_options=($(echo $cpu_options | tr " " "\n"))
+
+   cpuoptions=()
+   count=0
+
+   for i in "${cpu_options[@]}"
+   do :
+   	count=$[count+1]
+   	cpuoptions+=( ${count} $i )
+   done
+
+   cpu=$(dialog --clear --nocancel --menu "Pick the vCPU you need" 15 60 12 "${cpuoptions[@]}" 2>&1 >/dev/tty)
+   cpu=${cpu_options[$(($cpu - 1))]}
+
+   # RAM selection
+   ram_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/ram \
+               -H "api-key: $apikey" \
+              --header 'Accept: application/json' 2> log.tmp | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
+
+   ram_options=($(echo $ram_options | tr " " "\n"))
+
+   ramoptions=()
+   count=0
+
+   for i in "${ram_options[@]}"
+   do :
+	count=$[count+1]
+   	ramoptions+=( ${count} $i )
+   done
+
+   ram=$(dialog --clear --nocancel --menu "Pick the RAM you need" 11 60 12 "${ramoptions[@]}" 2>&1 >/dev/tty)
+   ram=${ram_options[$(($ram - 1))]}
+
+   # Script selection
+   script_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/scripts \
+                            -H "api-key: $apikey" \
+   		   --header 'Accept: application/json' 2> log.tmp | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
+
+   script_options=($(echo $script_options | tr " " "\n"))
+
+   scriptoptions=()
+   count=0
+ 
+   for i in "${script_options[@]}"
+   do :
+ 	count=$[count+1]
+   	scriptoptions+=( ${count} $i )
+   done
+
+   script=$(dialog --clear --nocancel --menu "Pick the solver you use" 13 60 12 "${scriptoptions[@]}" 2>&1 >/dev/tty)
+   script=${script_options[$(($script - 1))]}
+ 
+   #FOLDER LIST EXTRACTION FROM CLOUD [MESH PART] ################################
+   if [ "$option" = "-mesh" ]
+   then
+      folder_storage_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+                              -H "api-key: $apikey" \
+     			   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | jq .[].basename| tr -d \" )
+
+      folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
+  
+      folder_options=()
+      count=0
+
+      for i in "${folder_storage_options[@]}"
+      do :
+   	count=$[count+1]
+    	folder_options+=( ${count} $i )
+      done
+
+      mesh_storage=$(dialog --clear --nocancel --menu "Pick the MESH FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
+      mesh_storage=${folder_storage_options[$(($mesh_storage - 1))]}
+  
+   else
+      mesh_storage=""
+
+   fi
+
+   #SELECT CASE FOLDER ###########################################################
+   clear
+
+   read -e -p "Insert folder name [to use in cloud HPC]: " folder_storage
 
 fi
-
-#SELECT CASE FOLDER ###########################################################
-clear
-
-read -e -p "Insert folder name [to use in cloud HPC]: " folder_storage
-
-##DELETING FOLDER IF EXISTS ALREAD #############################################
-#folder_id=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
-#                                   -H "api-key: $apikey" \
-#   				   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | \
-#				    jq '.[] | .basename , .id' | grep "$folder_storage" -A 1 | grep -v "$folder_storage" )
-#
-#if [ ! "$folder_id" = "" ]
-#then
-#   echo "Detected $folder_storage on STORAGE. Deleting it ..."
-#   curl -X DELETE https://cloud.cfdfeaservice.it/api/v1/storage/$folder_id \
-#		-H "api-key: $apikey" \
-#		-H 'Accept: application/json'
-#
-#   sleep 10
-#fi
 
 #LOADING CURRENT FOLDER AS TAR FILE ###########################################
 echo "Loading Current folder: $FOLDER / destination: $folder_storage"
