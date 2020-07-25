@@ -55,8 +55,8 @@ then
    echo "-download         Download results from STORAGE"
    echo "-mesh             Select mesh directory"
    echo "-batch            Insert command from batch without dialogs"
-   echo "                       Expected 4 arguments: vCPU, RAM, SCRIPT and FOLDER"
-   echo "                       Example: cloudHPCexec -batch 1 standard fds6.7.1 FOLDER-NAME"
+   echo "                       Expected 4+1 arguments: vCPU, RAM, SCRIPT and FOLDER + MESH [optional]"
+   echo "                       Example: cloudHPCexec -batch 1 standard fds6.7.1 FOLDER-NAME [MESH-FOLDER-NAME]"
    echo ""
    echo "SCRIPT MANAGEMENT ###################################################"
    echo "-apikey           Reset your APIKEY"
@@ -175,6 +175,12 @@ then
    ram=$3
    script=$4 
    folder_storage=$5
+
+   if [ ! -z "$6" ]
+   then
+      mesh_storage=$6
+      echo "Given mesh: $mesh_storage"
+   fi
 
 else
 
