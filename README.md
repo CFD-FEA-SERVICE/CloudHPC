@@ -8,16 +8,29 @@ This is the official repository linked to the cloudHPC offered by CFD FEA SERVIC
 The whole content of this under the [GPLv3 license](https://github.com/CFD-FEA-SERVICE/CloudHPCScript/blob/master/LICENSE).
 
 # Description
-OS: Ubuntu 18.04 LTS
+OS: Ubuntu 16.04/18.04/20.04 LTS - CENTOS 6.10/7/8
 
-## File: install
-installation script - The same one used on the remote virtual servers. Use it to reproduce the environment in your local machine
+## cloudHPCexec
+This is a script which allows you to execute simulation directly from your Linux Terminal. To install it just follow the procedure here written:
 
-## Folder: template
-*template* folder with suggested settings for the most common solvers
+```bash
+wget https://raw.githubusercontent.com/CFD-FEA-SERVICE/CloudHPC/master/exampleAPI/cloudHPCexec
+chmod ugo+x cloudHPCexec
+sudo rm /usr/local/bin/cloudHPCexec
+sudo mv cloudHPCexec /usr/local/bin
 
-## Folder: scripts
-*scripts* folder with scripts available on the web app - add files on this folder in order to create your own script
+sudo sh -c "echo '#/usr/bin/env bash'                                                         > /etc/bash_completion.d/cloudHPCexec"
+sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+```
 
-## Folder: exampleAPI
-*exampleAPI* example of API usage withing the web application. For a detailed guide [check here](https://github.com/CFD-FEA-SERVICE/CloudHPC/wiki).
+In order to get a help on using it:
+
+```bash
+cloudHPCexec -help
+```
+
+## Installation
+It is possible to replicate the system managed by CFD FEA SERVICE Cloud HPC directly on your own computer. To do that you can use the [installation script](https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/install) which guides you on installing most of the software available on the platform.
+
+### Execution scripts
+CFD FEA SERVICE provides the opensource version of the scripts made available on the cluster which allows you to use some of the software. These scripts are present in the [script](https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/scripts) folder of this repository. Make sure you complete the "installation" point in order to take advantage of these scripts.
