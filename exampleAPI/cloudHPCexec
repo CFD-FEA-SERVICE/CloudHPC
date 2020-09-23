@@ -297,9 +297,6 @@ curl -X PUT \
 
 rm $FOLDER.tar.gz
 
-#added sleep to avoid cache problems
-sleep 15
-
 #EXECUTE ANALYSIS #############################################################
 echo "Executing $script on $cpu vCPU with $ram RAM"
 
