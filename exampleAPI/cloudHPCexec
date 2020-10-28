@@ -30,8 +30,8 @@ then
    sudo mv cloudHPCexec /usr/local/bin
 
    #setting autocomplete
-   sudo sh -c "echo '#/usr/bin/env bash'                                                         > /etc/bash_completion.d/cloudHPCexec"
-   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+   sudo sh -c "echo '#/usr/bin/env bash'                                                               > /etc/bash_completion.d/cloudHPCexec"
+   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -wait\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
 
    echo "#####################################################################"
    echo "cloudHPCexec updated and installed successfully - Available for usage"
@@ -50,15 +50,20 @@ fi
 #HELP OPTIONS #################################################################
 if [ "$option" = "-help" ]
 then
-   echo "List of options available:"
-   echo "CLOUDHPC OPTIONS  ###################################################"
-   echo "-download         Download results from STORAGE"
-   echo "-mesh             Select mesh directory"
-   echo "-batch            Insert command from batch without dialogs"
-   echo "                       Expected 4+1 arguments: vCPU, RAM, SCRIPT and FOLDER + MESH [optional]"
-   echo "                       Example: cloudHPCexec -batch 1 standard fds6.7.1 FOLDER-NAME [MESH-FOLDER-NAME]"
+   echo "USE: cloudHPCexec [OPTION] [ARGUMENTS]"
    echo ""
-   echo "SCRIPT MANAGEMENT ###################################################"
+   echo "List of options available:"
+   echo ""
+   echo "CLOUDHPC ARGUMENTS #######################################################################################"
+   echo "-download             Download results from STORAGE"
+   echo "-mesh                 Select mesh directory"
+   echo "-batch                Insert command from batch without dialogs"
+   echo "                          Expected 4+1 arguments: vCPU, RAM, SCRIPT and FOLDER + MESH [optional]"
+   echo "                          Example: cloudHPCexec -batch 1 standard fds6.7.1 FOLDER-NAME [MESH-FOLDER-NAME]"
+   echo "-wait ID              Wait for simulation ID to finish"
+   echo "                          ID is returned when simulation is launched"
+   echo ""
+   echo "SCRIPT MANAGEMENT ########################################################################################"
    echo "-apikey           Reset your APIKEY"
    echo "-update           Update the software"
    echo "-help             Return this menu"
@@ -121,9 +126,9 @@ fi
 if [ "$option" = "-download" ]
 then
    #PART 1 -> selection of folder to download TAR.GZ files from
-   folder_storage_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+   folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
                            -H "api-key: $apikey" \
-  			   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | jq .[].basename| tr -d \" )
+  			   --header 'Accept: application/json' | python -m json.tool | jq .[].basename| tr -d \" )
 
    folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
 
@@ -139,13 +144,13 @@ then
    folder_storage_number=$(dialog --clear --nocancel --menu "Pick the FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
 
    #PART 2  > selections of all files inside folder ending with "TAR.GZ"
-   folder_id=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+   folder_id=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
                                    -H "api-key: $apikey" \
-				   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | jq .[$(($folder_storage_number - 1))].id )
+				   --header 'Accept: application/json' | python -m json.tool | jq .[$(($folder_storage_number - 1))].id )
 
-   file_ids=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$folder_id/list \
+   file_ids=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$folder_id/list \
                                    -H "api-key: $apikey" \
-				   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | \
+				   --header 'Accept: application/json' | python -m json.tool | \
 				    jq '.[] | .basename , .id' | grep 'tar.gz\|rmed' -A 1 | grep -v 'tar.gz' | grep -v 'rmed' | grep -v '\-\-' )
 
    file_ids=($(echo $file_ids | tr " " "\n"))
@@ -153,15 +158,41 @@ then
    #PART 3 > downloading selected files
    for file in "${file_ids[@]}"
    do : 
-      url=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$file/download/url \
+      url=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$file/download/url \
                    -H "api-key: $apikey" \
                    -H 'Content-Type: application/json' \
-		   -H 'Accept: application/json'  2> log.tmp | python -m json.tool | jq .url | sed 's/"//g' )
+		   -H 'Accept: application/json' | python -m json.tool | jq .url | sed 's/"//g' )
 
       wget $url
    done
 
-   rm log.tmp
+   exit
+fi
+
+if [ "$option" = "-wait" ]
+then
+
+   if [ ! -z "$2" ]
+   then
+      ID=$2
+   else
+      echo "Missing ID"
+      exit
+   fi
+
+   while :
+   do
+      sleep 60
+
+      status=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/$ID -H "api-key: $apikey" -H 'Accept: application/json' |  \
+				    python -m json.tool | jq .status)
+
+      if [ ! "$status" = "30" ]
+      then
+         echo "Status != 30 detected for $ID"
+         break
+      fi
+   done
 
    exit
 fi
@@ -185,9 +216,9 @@ then
 else
 
    # CPU selection
-   cpu_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/cpu \
+   cpu_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/cpu \
                  -H "api-key: $apikey" \
-                --header 'Accept: application/json' 2> log.tmp | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
+                --header 'Accept: application/json' | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
 
    cpu_options=($(echo $cpu_options | tr " " "\n"))
 
@@ -204,9 +235,9 @@ else
    cpu=${cpu_options[$(($cpu - 1))]}
 
    # RAM selection
-   ram_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/ram \
+   ram_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/ram \
                -H "api-key: $apikey" \
-              --header 'Accept: application/json' 2> log.tmp | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
+              --header 'Accept: application/json' | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
 
    ram_options=($(echo $ram_options | tr " " "\n"))
 
@@ -223,9 +254,9 @@ else
    ram=${ram_options[$(($ram - 1))]}
 
    # Script selection
-   script_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/scripts \
+   script_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/scripts \
                             -H "api-key: $apikey" \
-   		   --header 'Accept: application/json' 2> log.tmp | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
+   		   --header 'Accept: application/json' | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
 
    script_options=($(echo $script_options | tr " " "\n"))
 
@@ -244,9 +275,9 @@ else
    #FOLDER LIST EXTRACTION FROM CLOUD [MESH PART] ################################
    if [ "$option" = "-mesh" ]
    then
-      folder_storage_options=$(curl -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
                               -H "api-key: $apikey" \
-     			   --header 'Accept: application/json' 2> log.tmp | python -m json.tool | jq .[].basename| tr -d \" )
+     			   --header 'Accept: application/json' | python -m json.tool | jq .[].basename| tr -d \" )
 
       folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
   
@@ -277,6 +308,7 @@ fi
 #LOADING CURRENT FOLDER AS TAR FILE ###########################################
 echo "Loading Current folder: $FOLDER / destination: $folder_storage"
 tar -I pigz -cf $FOLDER.tar.gz * > log.tmp 2>&1
+rm log.tmp
 
 JSON_STRING=$( jq -n \
                   --arg dirname       "$folder_storage" \
@@ -284,14 +316,14 @@ JSON_STRING=$( jq -n \
                   --arg contentType   "application/octet-stream" \
                   '{data: {dirname: $dirname, basename: $basename, contentType: $contentType}}' )
 
-UPLOAD_URL=$( curl -X POST \
+UPLOAD_URL=$( curl -s -X POST \
   https://cloud.cfdfeaservice.it/api/v1/storage/upload/url \
   -H "api-key: $apikey" \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json' \
   -d "$JSON_STRING" | jq .url | tr -d \")
 
-curl -X PUT \
+curl -s -X PUT \
   -H 'Content-Type: application/octet-stream' \
   -T $FOLDER.tar.gz $UPLOAD_URL
 
@@ -309,13 +341,11 @@ JSON_STRING=$( jq -n \
                   --arg mesh   "$mesh_storage" \
                   '{data: {cpu: $cpu, ram: $ram, folder: $folder, script: $script, nopre: $nopre, mesh: $mesh}}' )
 
-curl -X POST \
+ID=$(curl -s -X POST \
   https://cloud.cfdfeaservice.it/api/v1/simulation \
   -H "api-key: $apikey" \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json' \
-  -d "$JSON_STRING"
+  -d "$JSON_STRING" )
 
-rm log.tmp
-
-echo ""
+echo "Simulation launched with ID = $ID"
