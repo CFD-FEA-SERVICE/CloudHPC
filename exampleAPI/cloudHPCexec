@@ -55,7 +55,8 @@ then
    echo "List of options available:"
    echo ""
    echo "CLOUDHPC ARGUMENTS #######################################################################################"
-   echo "-download             Download results from STORAGE"
+   echo "-download [path]      Download results from STORAGE"
+   echo "                          path when specified download a specific file from the storage"
    echo "-mesh                 Select mesh directory"
    echo "-batch                Insert command from batch without dialogs"
    echo "                          Expected 4+1 arguments: vCPU, RAM, SCRIPT and FOLDER + MESH [optional]"
@@ -125,50 +126,73 @@ fi
 #DOWNLOAD RESULTS #############################################################
 if [ "$option" = "-download" ]
 then
-   #PART 1 -> selection of folder to download TAR.GZ files from
-   folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
-                           -H "api-key: $apikey" \
-  			   --header 'Accept: application/json' | python -m json.tool | jq .[].basename| tr -d \" )
+   if [ $# -eq 1 ]
+   then
+      #PART 1 -> selection of folder to download TAR.GZ files from
+      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+                              -H "api-key: $apikey" \
+     			   --header 'Accept: application/json' | python -m json.tool | jq .[].basename| tr -d \" )
+   
+      folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
+   
+      folder_options=()
+      count=0
+   
+      for i in "${folder_storage_options[@]}"
+      do :
+      	count=$[count+1]
+      	folder_options+=( ${count} $i )
+      done
+   
+      folder_storage_number=$(dialog --clear --nocancel --menu "Pick the FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
+   
+      #PART 2  > selections of all files inside folder ending with "TAR.GZ"
+      folder_id=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+                                      -H "api-key: $apikey" \
+   				   --header 'Accept: application/json' | python -m json.tool | jq .[$(($folder_storage_number - 1))].id )
+   
+      file_ids=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$folder_id/list \
+                                      -H "api-key: $apikey" \
+   				   --header 'Accept: application/json' | python -m json.tool | \
+   				    jq '.[] | .basename , .id' | grep 'tar.gz\|rmed' -A 1 | grep -v 'tar.gz' | grep -v 'rmed' | grep -v '\-\-' )
+   
+      file_ids=($(echo $file_ids | tr " " "\n"))
+   
+      #PART 3 > downloading selected files
+      for file in "${file_ids[@]}"
+      do : 
+         url=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$file/download/url \
+                      -H "api-key: $apikey" \
+                      -H 'Content-Type: application/json' \
+   		   -H 'Accept: application/json' | python -m json.tool | jq .url | sed 's/"//g' )
+   
+         wget $url
+      done
+   
+      exit
 
-   folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
+   #Download specific file given its path
+   else
+      filepath=$2
 
-   folder_options=()
-   count=0
+      echo "Downloading $filepath"
 
-   for i in "${folder_storage_options[@]}"
-   do :
-   	count=$[count+1]
-   	folder_options+=( ${count} $i )
-   done
+      JSON_STRING=$( jq -n --arg path   "$filepath" '{data: {path: $path}}' )
 
-   folder_storage_number=$(dialog --clear --nocancel --menu "Pick the FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
+      file_id=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v1/storage/view -H "api-key: $apikey" -H 'Accept: application/json' -H  'Content-Type: application/json' -d "$JSON_STRING" | \
+                 python -m json.tool | jq .id )
 
-   #PART 2  > selections of all files inside folder ending with "TAR.GZ"
-   folder_id=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
-                                   -H "api-key: $apikey" \
-				   --header 'Accept: application/json' | python -m json.tool | jq .[$(($folder_storage_number - 1))].id )
-
-   file_ids=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$folder_id/list \
-                                   -H "api-key: $apikey" \
-				   --header 'Accept: application/json' | python -m json.tool | \
-				    jq '.[] | .basename , .id' | grep 'tar.gz\|rmed' -A 1 | grep -v 'tar.gz' | grep -v 'rmed' | grep -v '\-\-' )
-
-   file_ids=($(echo $file_ids | tr " " "\n"))
-
-   #PART 3 > downloading selected files
-   for file in "${file_ids[@]}"
-   do : 
-      url=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$file/download/url \
+      url=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$file_id/download/url \
                    -H "api-key: $apikey" \
                    -H 'Content-Type: application/json' \
-		   -H 'Accept: application/json' | python -m json.tool | jq .url | sed 's/"//g' )
-
+   		   -H 'Accept: application/json' | python -m json.tool | jq .url | sed 's/"//g' )
+   
       wget $url
-   done
 
-   exit
+      exit
+   fi
 fi
-
+   
 if [ "$option" = "-wait" ]
 then
 
