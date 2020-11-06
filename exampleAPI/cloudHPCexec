@@ -161,7 +161,7 @@ then
       #PART 3 > downloading selected files
       for file in "${file_ids[@]}"
       do : 
-         url=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$file/download/url \
+         url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v1/storage/$file/download/url" \
                       -H "api-key: $apikey" \
                       -H 'Content-Type: application/json' \
    		   -H 'Accept: application/json' | python -m json.tool | jq .url | sed 's/"//g' )
@@ -182,7 +182,7 @@ then
       file_id=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v1/storage/view -H "api-key: $apikey" -H 'Accept: application/json' -H  'Content-Type: application/json' -d "$JSON_STRING" | \
                  python -m json.tool | jq .id )
 
-      url=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$file_id/download/url \
+      url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v1/storage/$file_id/download/url" \
                    -H "api-key: $apikey" \
                    -H 'Content-Type: application/json' \
    		   -H 'Accept: application/json' | python -m json.tool | jq .url | sed 's/"//g' )
