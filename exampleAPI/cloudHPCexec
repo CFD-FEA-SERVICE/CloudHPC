@@ -65,7 +65,8 @@ then
    echo "                          Example: cloudHPCexec -batch 1 standard fds6.7.1 FOLDER-NAME [MESH-FOLDER-NAME]"
    echo "-wait ID              Wait for simulation ID to finish"
    echo "                          ID is returned when simulation is launched"
-   echo "-ssh                  SSH connection to running simulations"
+   echo "-ssh [ID]             SSH connection to running simulations"
+   echo "                          ID when specified directly connects to given simulation ID"
    echo ""
    echo "SCRIPT MANAGEMENT ########################################################################################"
    echo "-apikey           Reset your APIKEY"
@@ -199,14 +200,19 @@ fi
 #SSH connection to instances ##################################################
 if [ "$option" = "-ssh" ]
 then
-   simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -c '.[] | select( .status == 30 )' )
+   if [ $# -eq 1 ]
+   then
+      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -c '.[] | select( .status == 30 )' )
 
-   echo "ID    | FOLDER"
-   echo "================================="
-   echo $simulations | jq -r '[ .id, .folder ] | @tsv'
-   echo ""
-   echo "Insert simulation ID to connect to:"
-   read -e simu_id
+      echo "ID    | FOLDER"
+      echo "================================="
+      echo $simulations | jq -r '[ .id, .folder ] | @tsv'
+      echo ""
+      echo "Insert simulation ID to connect to:"
+      read -e simu_id
+   else
+      simu_id=$2 
+   fi
 
    echo "connecting to simulation: $simu_id"
 
