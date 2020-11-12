@@ -31,7 +31,7 @@ then
 
    #setting autocomplete
    sudo sh -c "echo '#/usr/bin/env bash'                                                               > /etc/bash_completion.d/cloudHPCexec"
-   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -wait\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -ssh -wait\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
 
    echo "#####################################################################"
    echo "cloudHPCexec updated and installed successfully - Available for usage"
@@ -45,6 +45,8 @@ if [ "$option" = "-apikey" ]
 then
    echo "APIKEY reset ..."
    rm -rf $HOME/.cfscloudhpc/apikey
+
+   option=$2
 fi
 
 #HELP OPTIONS #################################################################
@@ -63,6 +65,7 @@ then
    echo "                          Example: cloudHPCexec -batch 1 standard fds6.7.1 FOLDER-NAME [MESH-FOLDER-NAME]"
    echo "-wait ID              Wait for simulation ID to finish"
    echo "                          ID is returned when simulation is launched"
+   echo "-ssh                  SSH connection to running simulations"
    echo ""
    echo "SCRIPT MANAGEMENT ########################################################################################"
    echo "-apikey           Reset your APIKEY"
@@ -164,7 +167,7 @@ then
          url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v1/storage/$file/download/url" \
                       -H "api-key: $apikey" \
                       -H 'Content-Type: application/json' \
-   		   -H 'Accept: application/json' | python -m json.tool | jq .url | sed 's/"//g' )
+   		   -H 'Accept: application/json' | python -m json.tool | jq -r .url )
    
          wget $url
       done
@@ -185,14 +188,36 @@ then
       url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v1/storage/$file_id/download/url" \
                    -H "api-key: $apikey" \
                    -H 'Content-Type: application/json' \
-   		   -H 'Accept: application/json' | python -m json.tool | jq .url | sed 's/"//g' )
+   		   -H 'Accept: application/json' | python -m json.tool | jq -r .url )
    
       wget $url
 
       exit
    fi
 fi
-   
+
+#SSH connection to instances ##################################################
+if [ "$option" = "-ssh" ]
+then
+   simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -c '.[] | select( .status == 30 )' )
+
+   echo "ID    | FOLDER"
+   echo "================================="
+   echo $simulations | jq -r '[ .id, .folder ] | @tsv'
+   echo ""
+   echo "Insert simulation ID to connect to:"
+   read -e simu_id
+
+   echo "connecting to simulation: $simu_id"
+
+   ip_address=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short/$simu_id -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -r .ip_address )
+
+   ssh -o "StrictHostKeyChecking no" cloudhpc@$ip_address
+
+   exit
+fi
+
+#WAIT for given simulation ID #################################################
 if [ "$option" = "-wait" ]
 then
 
