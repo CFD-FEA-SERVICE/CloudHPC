@@ -123,7 +123,7 @@ then
    apikey=$(head -n 1 $HOME/.cfscloudhpc/apikey)
 else
    read -e -p "Insert APIKEY: " apikey
-   mkdir $HOME/.cfscloudhpc
+   mkdir -p $HOME/.cfscloudhpc
    echo "$apikey" > $HOME/.cfscloudhpc/apikey
 fi
 
