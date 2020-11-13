@@ -218,6 +218,9 @@ then
 
    ip_address=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short/$simu_id -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -r .ip_address )
 
+   #Removing IP_ADDRESS: it may be already present in previous connection
+   ssh-keygen -f "$HOME/.ssh/known_hosts" -R $ip_address
+
    ssh -o "StrictHostKeyChecking no" cloudhpc@$ip_address
 
    exit
