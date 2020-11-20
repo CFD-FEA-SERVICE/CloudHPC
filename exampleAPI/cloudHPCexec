@@ -171,6 +171,8 @@ then
    		   -H 'Accept: application/json' | python -m json.tool | jq -r .url )
    
          wget $url
+
+         sleep 5
       done
    
       exit
@@ -192,6 +194,8 @@ then
    		   -H 'Accept: application/json' | python -m json.tool | jq -r .url )
    
       wget $url
+
+      sleep 5
 
       exit
    fi
