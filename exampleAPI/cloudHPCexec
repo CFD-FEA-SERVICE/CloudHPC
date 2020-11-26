@@ -165,14 +165,18 @@ then
       #PART 3 > downloading selected files
       for file in "${file_ids[@]}"
       do : 
-         url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v1/storage/$file/download/url" \
-                      -H "api-key: $apikey" \
-                      -H 'Content-Type: application/json' \
-   		   -H 'Accept: application/json' | python -m json.tool | jq -r .url )
+         while [ -z "$url" ]
+         do
+            curl -s -X DELETE https://cloud.cfdfeaservice.it/api/user/cache -H "api-key: $apikey"
+
+            url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v1/storage/$file/download/url" \
+                         -H "api-key: $apikey" \
+                         -H 'Content-Type: application/json' | python -m json.tool | jq -r .url )
+
+            sleep 2
+         done
    
          wget $url
-
-         sleep 5
       done
    
       exit
@@ -188,14 +192,18 @@ then
       file_id=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v1/storage/view -H "api-key: $apikey" -H 'Accept: application/json' -H  'Content-Type: application/json' -d "$JSON_STRING" | \
                  python -m json.tool | jq .id )
 
-      url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v1/storage/$file_id/download/url" \
-                   -H "api-key: $apikey" \
-                   -H 'Content-Type: application/json' \
-   		   -H 'Accept: application/json' | python -m json.tool | jq -r .url )
-   
-      wget $url
+      while [ -z "$url" ]
+      do
+         curl -s -X DELETE https://cloud.cfdfeaservice.it/api/user/cache -H "api-key: $apikey"
 
-      sleep 5
+         url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v1/storage/$file_id/download/url" \
+                      -H "api-key: $apikey" \
+                      -H 'Content-Type: application/json' | python -m json.tool | jq -r .url )
+
+         sleep 2
+      done
+  
+      wget $url
 
       exit
    fi
