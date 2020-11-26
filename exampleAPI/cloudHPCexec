@@ -167,8 +167,6 @@ then
       do : 
          while [ -z "$url" ]
          do
-            curl -s -X DELETE https://cloud.cfdfeaservice.it/api/user/cache -H "api-key: $apikey"
-
             url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v1/storage/$file/download/url" \
                          -H "api-key: $apikey" \
                          -H 'Content-Type: application/json' | python -m json.tool | jq -r .url )
@@ -194,8 +192,6 @@ then
 
       while [ -z "$url" ]
       do
-         curl -s -X DELETE https://cloud.cfdfeaservice.it/api/user/cache -H "api-key: $apikey"
-
          url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v1/storage/$file_id/download/url" \
                       -H "api-key: $apikey" \
                       -H 'Content-Type: application/json' | python -m json.tool | jq -r .url )
