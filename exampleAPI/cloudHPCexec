@@ -155,23 +155,17 @@ then
                                       -H "api-key: $apikey" \
    				   --header 'Accept: application/json' | python -m json.tool | jq .[$(($folder_storage_number - 1))].id )
    
-      file_ids=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$folder_id/list \
+      file_names=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/$folder_id/list \
                                       -H "api-key: $apikey" \
    				   --header 'Accept: application/json' | python -m json.tool | \
-   				    jq '.[] | .basename , .id' | grep 'tar.gz\|rmed' -A 1 | grep -v 'tar.gz' | grep -v 'rmed' | grep -v '\-\-' )
+   				    jq '.[] | .path' | grep 'tar.gz\|rmed'  | sed 's/"//g' )
    
-      file_ids=($(echo $file_ids | tr " " "\n"))
+      file_names=($(echo $file_names | tr " " "\n"))
    
       #PART 3 > downloading selected files
-      for file in "${file_ids[@]}"
+      for file in "${file_names[@]}"
       do : 
-         url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v1/storage/$file/download/url" \
-                      -H "api-key: $apikey" \
-                      -H 'Content-Type: application/json' | python -m json.tool | jq -r .url )
-
-         sleep 2
-   
-         wget $url
+         cloudHPCexec -download $file
       done
    
       exit
