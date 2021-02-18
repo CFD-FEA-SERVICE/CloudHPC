@@ -31,7 +31,7 @@ then
 
    #setting autocomplete
    sudo sh -c "echo '#/usr/bin/env bash'                                                               > /etc/bash_completion.d/cloudHPCexec"
-   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -ssh -vnc -wait\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -ssh -vnc -scp -wait\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
 
    echo "#####################################################################"
    echo "cloudHPCexec updated and installed successfully - Available for usage"
@@ -66,6 +66,8 @@ then
    echo "-wait ID              Wait for simulation ID to finish"
    echo "                          ID is returned when simulation is launched"
    echo "-ssh [ID]             SSH connection to running simulations"
+   echo "                          ID when specified directly connects to given simulation ID"
+   echo "-scp [ID]             Copy of the FOLDER via SCP connection"
    echo "                          ID when specified directly connects to given simulation ID"
    echo "-vnc [ID]             VNC connection to running simulations"
    echo "                          ID when specified directly connects to given simulation ID"
@@ -237,6 +239,36 @@ then
 fi
 
 #SSH connection to instances ##################################################
+if [ "$option" = "-scp" ]
+then
+   if [ $# -eq 1 ]
+   then
+      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -c '.[] | select( .status == 30 )' )
+
+      echo "ID    | FOLDER"
+      echo "================================="
+      echo $simulations | jq -r '[ .id, .folder ] | @tsv'
+      echo ""
+      echo "Insert simulation ID to download from:"
+      read -e simu_id
+   else
+      simu_id=$2 
+   fi
+
+   echo "Downloading from: $simu_id"
+
+   ip_address=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short/$simu_id -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -r .ip_address )
+   folder=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short/$simu_id -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -r .folder )
+
+   #Removing IP_ADDRESS: it may be already present in previous connection
+   ssh-keygen -f "$HOME/.ssh/known_hosts" -R $ip_address
+
+   scp -r -o "StrictHostKeyChecking no" cloudhpc@$ip_address:$folder .
+
+   exit
+fi
+
+#VNC connection to instances ##################################################
 if [ "$option" = "-vnc" ]
 then
    if [ $# -eq 1 ]
