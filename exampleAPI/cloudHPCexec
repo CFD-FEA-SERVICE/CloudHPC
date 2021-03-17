@@ -65,6 +65,10 @@ then
    echo "                          Example: cloudHPCexec -batch 1 standard fds6.7.1 FOLDER-NAME [MESH-FOLDER-NAME]"
    echo "-wait ID              Wait for simulation ID to finish"
    echo "                          ID is returned when simulation is launched"
+   echo "-soft [ID]            Soft STOP for simulation ID"
+   echo "                          ID of the simulation to stop"
+   echo "-hard [ID]            Hard STOP for simulation ID"
+   echo "                          ID of the simulation to stop"
    echo "-ssh [ID]             SSH connection to running simulations"
    echo "                          ID when specified directly connects to given simulation ID"
    echo "-scp [ID]             Copy of the FOLDER via SCP connection"
@@ -207,6 +211,35 @@ then
 
       exit
    fi
+fi
+
+#SOFT STOP of simulation ######################################################
+if [ "$option" = "-soft" -o "$option" = "-hard" ]
+then
+   if [ $# -eq 1 ]
+   then
+      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -c '.[] | select( .status == 30 )' )
+
+      echo "ID    | FOLDER"
+      echo "================================="
+      echo $simulations | jq -r '[ .id, .folder ] | @tsv'
+      echo ""
+      echo "Insert simulation ID to stop:"
+      read -e simu_id
+   else
+      simu_id=$2 
+   fi
+
+   echo "Stopping: $simu_id"
+
+   if [ "$option" = "-hard" ]
+   then
+      curl -s -X PUT https://cloud.cfdfeaservice.it/api/v1/simulation/$simu_id/stop -H "api-key: $apikey" -H 'Accept: application/json' -d '{ "data": { "signal": "SIGINT" } }'
+   else
+      curl -s -X PUT https://cloud.cfdfeaservice.it/api/v1/simulation/$simu_id/stop -H "api-key: $apikey" -H 'Accept: application/json' -d '{ "data": { "signal": "SIGTSTP" } }'
+   fi
+
+   exit
 fi
 
 #SSH connection to instances ##################################################
