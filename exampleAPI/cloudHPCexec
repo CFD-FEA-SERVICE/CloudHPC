@@ -320,42 +320,8 @@ then
 
    echo "connecting to simulation: $simu_id"
 
-   ip_address=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short/$simu_id -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -r .ip_address )
+   sensible-browser https://cloud.cfdfeaservice.it/en/simulation/edit-vnc/$simu_id &
 
-
-   echo "[remmina]" 				>  temp_$simu_id.remmina
-   echo "keymap="  				>> temp_$simu_id.remmina
-   echo "ssh_auth=1" 				>> temp_$simu_id.remmina
-   echo "quality=2"  				>> temp_$simu_id.remmina  
-   echo "disableencryption=0" 			>> temp_$simu_id.remmina
-   echo "postcommand=" 				>> temp_$simu_id.remmina
-   echo "ssh_privatekey=$HOME/.ssh/id_rsa" 	>> temp_$simu_id.remmina
-   echo "password=8vmsF2uz" 			>> temp_$simu_id.remmina
-   echo "ssh_charset=" 				>> temp_$simu_id.remmina
-   echo "group=" 				>> temp_$simu_id.remmina
-   echo "name=cloudHPC" 			>> temp_$simu_id.remmina 
-   echo "ssh_username=cloudhpc" 		>> temp_$simu_id.remmina
-   echo "precommand=" 				>> temp_$simu_id.remmina
-   echo "viewonly=0" 				>> temp_$simu_id.remmina
-   echo "proxy=" 				>> temp_$simu_id.remmina
-   echo "ssh_loopback=0" 			>> temp_$simu_id.remmina
-   echo "colordepth=24" 			>> temp_$simu_id.remmina
-   echo "protocol=VNC" 				>> temp_$simu_id.remmina
-   echo "ssh_server=$ip_address:22" 		>> temp_$simu_id.remmina
-   echo "ssh_enabled=1" 			>> temp_$simu_id.remmina
-   echo "showcursor=0" 				>> temp_$simu_id.remmina
-   echo "username=" 				>> temp_$simu_id.remmina
-   echo "disablepasswordstoring=0" 		>> temp_$simu_id.remmina
-   echo "server=127.0.0.1:5901" 		>> temp_$simu_id.remmina
-   echo "disableclipboard=0" 			>> temp_$simu_id.remmina
-   echo "disableserverinput=0" 			>> temp_$simu_id.remmina
-   echo "last_success=20210122" 		>> temp_$simu_id.remmina
-   echo "viewmode=1" 				>> temp_$simu_id.remmina
-   echo "window_maximize=1" 			>> temp_$simu_id.remmina
-
-   remmina -c temp_$simu_id.remmina
-
-   rm temp_$simu_id.remmina
    exit
 fi
 
