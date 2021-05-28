@@ -320,7 +320,7 @@ then
 
    echo "connecting to simulation: $simu_id"
 
-   sensible-browser https://cloud.cfdfeaservice.it/en/simulation/edit-vnc/$simu_id &
+   sensible-browser https://cloud.cfdfeaservice.it/en/simulation/view/$simu_id &
 
    exit
 fi
