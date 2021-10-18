@@ -341,9 +341,9 @@ then
       status=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/$ID -H "api-key: $apikey" -H 'Accept: application/json' |  \
 				    python -m json.tool | jq .status)
 
-      if [ ! "$status" = "30" ]
+      if [ ! "$status" = "30" -a ! "$status" = "40" ]
       then
-         echo "Status != 30 detected for $ID"
+         echo "Status != 30 and != 40 detected for $ID"
          break
       fi
    done
