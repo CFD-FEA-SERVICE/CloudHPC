@@ -31,7 +31,7 @@ then
 
    #setting autocomplete
    sudo sh -c "echo '#/usr/bin/env bash'                                                               > /etc/bash_completion.d/cloudHPCexec"
-   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -batchREG -ssh -vnc -scp -wait\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -batchREG -delete -deleteSIM -ssh -vnc -scp -wait\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
 
    echo "#####################################################################"
    echo "cloudHPCexec updated and installed successfully - Available for usage"
@@ -80,6 +80,9 @@ then
    echo "                          ID when specified directly connects to given simulation ID"
    echo "-vnc [ID]             VNC connection to running simulations"
    echo "                          ID when specified directly connects to given simulation ID"
+   echo "-delete [path]        Delete a file/folder from the storage"
+   echo "                          Add path to delete specific file/folder"
+   echo "-deleteSIM ID         Delete folders used by a specific simulation ID"
    echo ""
    echo "SCRIPT MANAGEMENT ########################################################################################"
    echo "-apikey           Reset your APIKEY"
@@ -208,6 +211,76 @@ then
 
       exit
    fi
+fi
+
+#DELETE FILE/FOLDER ###########################################################
+if [ "$option" = "-delete" ]
+then
+   if [ $# -eq 1 ]
+   then
+      #PART 1 -> selection of folder to delete 
+      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+                              -H "api-key: $apikey" \
+     			   --header 'Accept: application/json' | python -m json.tool | jq .[].basename| tr -d \" )
+   
+      folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
+   
+      folder_options=()
+      count=0
+   
+      for i in "${folder_storage_options[@]}"
+      do :
+      	count=$[count+1]
+      	folder_options+=( ${count} $i )
+      done
+   
+      folder_storage_number=$(dialog --clear --nocancel --menu "Pick the FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
+   
+      folder_id=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
+                                      -H "api-key: $apikey" \
+   				   --header 'Accept: application/json' | python -m json.tool | jq .[$(($folder_storage_number - 1))].id )
+
+      echo "$folder_storage_number $folder_id"
+
+      #TODO inserire DELETE BULK
+
+      exit   
+
+   #Download specific file given its path
+   else
+      folder_name=$2
+
+      JSON_STRING=$( jq -n --arg path   "$folder_name" '{data: {path: $path}}' )
+
+      folder_id=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v1/storage/view -H "api-key: $apikey" -H 'Accept: application/json' -H  'Content-Type: application/json' -d "$JSON_STRING" | \
+                 python -m json.tool | jq .id )
+
+      echo "$JSON_STRING $folder_id"
+
+      #TODO inserire DELETE BULK
+
+      exit
+   fi
+fi
+
+#DELETE folder of a specific simulation #######################################
+if [ "$option" = "-deleteSIM" ]
+then
+   if [ $# -eq 1 ]
+   then
+      echo "Insert the simulation ID used to retrieve the FOLDER name"
+      exit
+   fi
+
+   simu_id=$2 
+
+   echo "Delete: $simu_id"
+
+   folder=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short/$simu_id -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -r .folder )
+
+   cloudHPCexec -delete $folder
+
+   exit
 fi
 
 #SOFT STOP of simulation ######################################################
