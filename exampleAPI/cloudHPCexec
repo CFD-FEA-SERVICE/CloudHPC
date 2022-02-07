@@ -240,13 +240,11 @@ then
                                       -H "api-key: $apikey" \
    				   --header 'Accept: application/json' | python -m json.tool | jq .[$(($folder_storage_number - 1))].id )
 
-      echo "$folder_storage_number $folder_id"
-
-      #TODO inserire DELETE BULK
+      curl -s -X DELETE https://cloud.cfdfeaservice.it/api/v2/storage/delete/$folder_id  -H 'accept: application/json' -H "X-API-Key: $apikey"
 
       exit   
 
-   #Download specific file given its path
+   #Delete specific file given its path
    else
       folder_name=$2
 
@@ -255,9 +253,7 @@ then
       folder_id=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v1/storage/view -H "api-key: $apikey" -H 'Accept: application/json' -H  'Content-Type: application/json' -d "$JSON_STRING" | \
                  python -m json.tool | jq .id )
 
-      echo "$JSON_STRING $folder_id"
-
-      #TODO inserire DELETE BULK
+      curl -s -X DELETE https://cloud.cfdfeaservice.it/api/v2/storage/delete/$folder_id  -H 'accept: application/json' -H "X-API-Key: $apikey"
 
       exit
    fi
