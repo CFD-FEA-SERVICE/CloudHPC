@@ -9,7 +9,7 @@ import os, json
 
 # dependencies installation
 os.system("pip install touch requests")
-import touch, requests
+import touch, requests, shutil
 
 try:
     os.makedirs( os.path.join( str( Path.home() ) , '.cfscloudhpc') )
@@ -113,11 +113,20 @@ def select(APIKEY, DOTENV_FILE, cpu, ram, script, path):
     print(ram)
     print(script)
     print(path)
+
+    #Saving APIKEY
     env_file = open( DOTENV_FILE , 'w')
     env_file.write( APIKEY )
     env_file.close()
 
-ButtonOK = ttk.Button(root, text='Launch', command=lambda: select( apikey.get().rstrip("\n"), DOTENV_FILE , cpu_dropdown.get(), ram_dropdown.get(), scripts_dropdown.get(), folderPath.get() ) ).place( x=window_width-160, y=window_height-30 )
+    #Compress folder
+    print( os.path.join( os.path.join( path, os.pardir ), "simulation" ) )
+    shutil.make_archive( os.path.join( os.path.join( path, os.pardir ) , "simulation" ), 'zip', path )
+
+    #os.remove( os.path.join( os.path.join( path, os.pardir ) , "simulation.zip" ) )
+
+
+ButtonOK = ttk.Button(root, text='Launch', command=lambda: select( apikey.get().rstrip("\n") , DOTENV_FILE , cpu_dropdown.get(), ram_dropdown.get(), scripts_dropdown.get(), folderPath.get() ) ).place( x=window_width-160, y=window_height-30 )
 ButtonCancel = ttk.Button(root, text='Cancel', command=root.destroy).place( x=window_width-80, y=window_height-30 )
 
 # keep the window displaying

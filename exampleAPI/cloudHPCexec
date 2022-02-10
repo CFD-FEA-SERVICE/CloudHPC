@@ -25,17 +25,24 @@ then
    #Updating to new version and installation
    echo "Checking for updates & installation ..."
    wget https://raw.githubusercontent.com/CFD-FEA-SERVICE/CloudHPC/master/exampleAPI/cloudHPCexec
-   chmod ugo+x cloudHPCexec
-   sudo rm /usr/local/bin/cloudHPCexec
-   sudo mv cloudHPCexec /usr/local/bin
 
-   #setting autocomplete
-   sudo sh -c "echo '#/usr/bin/env bash'                                                               > /etc/bash_completion.d/cloudHPCexec"
-   sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -batchREG -delete -deleteSIM -ssh -vnc -scp -wait\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+   DIFF=$(diff cloudHPCexec /usr/local/bin/cloudHPCexec)
+   if [ "$DIFF" != "" ]
+   then
+      chmod ugo+x cloudHPCexec
+      sudo rm /usr/local/bin/cloudHPCexec
+      sudo mv cloudHPCexec /usr/local/bin
 
-   echo "#####################################################################"
-   echo "cloudHPCexec updated and installed successfully - Available for usage"
-   echo "#####################################################################"
+      #setting autocomplete
+      sudo sh -c "echo '#/usr/bin/env bash'                                                               > /etc/bash_completion.d/cloudHPCexec"
+      sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -batchREG -delete -deleteSIM -ssh -vnc -scp -wait\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+
+      echo "#####################################################################"
+      echo "cloudHPCexec updated and installed successfully - Available for usage"
+      echo "#####################################################################"
+   else
+      rm cloudHPCexec
+   fi
 
    exit
 fi
