@@ -201,8 +201,6 @@ then
       file_id=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v2/storage/view-by-path -H "X-API-key: $apikey" -H 'Accept: application/json' -H  'Content-Type: application/json' -d "$JSON_STRING" | \
                  python -m json.tool | jq .response.id )
 
-      echo $file_id
-
       while [ -z "$url" ]
       do
          url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v2/storage/view-url/$file_id" -H "api-key: $apikey" -H 'Content-Type: application/json' | python -m json.tool | jq -r .response.mediaLink )
