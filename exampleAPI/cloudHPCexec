@@ -203,12 +203,12 @@ then
 
       while [ -z "$url" ]
       do
-         url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v2/storage/view-url/$file_id" -H "api-key: $apikey" -H 'Content-Type: application/json' | python -m json.tool | jq -r .response.mediaLink )
+         url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v2/storage/view-url/$file_id" -H "X-API-key: $apikey" -H 'Content-Type: application/json' | python -m json.tool | jq -r .response.mediaLink )
 
          sleep 2
       done
   
-      wget "$url" -o $(basename $filepath)
+      wget "$url" -O $(basename $filepath)
 
       exit
    fi
