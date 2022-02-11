@@ -60,74 +60,86 @@ ttk.Label(root, text="APIKEY:").grid( row=3, column=0 )
 ttk.Entry(root, textvariable=apikey, width=30).grid( row=3, column=1, columnspan=2 )
 #apikey_entry.pack(fill='x', expand=True)
 
-#CPU DROP DOWN
-headers = { "X-API-key" : apikey.get().rstrip("\n"), "accept" : "application/json", }
-cpu_response = requests.get( 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-cpu', headers=headers)
+if ( apikey.get() != "" ):
 
-cpu_dropdown = tk.StringVar()
-cpu_dropdown.set( cpu_response.json()['response'][0] )
+   #CPU DROP DOWN
+   headers = { "X-API-key" : apikey.get().rstrip("\n"), "accept" : "application/json", }
+   cpu_response = requests.get( 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-cpu', headers=headers)
 
-ttk.Label(root, text="vCPU:").grid( row=4, column=0 )
-cpumenu = tk.OptionMenu( root, cpu_dropdown, *cpu_response.json()['response'] )
-cpumenu.grid( row=4, column=1, columnspan=2  )
-cpumenu.config(width=25)
+   cpu_dropdown = tk.StringVar()
+   cpu_dropdown.set( cpu_response.json()['response'][0] )
 
-#RAM DROP DOWN
-headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json', }
-ram_response = requests.get( 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-ram', headers=headers)
+   ttk.Label(root, text="vCPU:").grid( row=4, column=0 )
+   cpumenu = tk.OptionMenu( root, cpu_dropdown, *cpu_response.json()['response'] )
+   cpumenu.grid( row=4, column=1, columnspan=2  )
+   cpumenu.config(width=25)
 
-ram_dropdown = tk.StringVar()
-ram_dropdown.set( ram_response.json()['response'][0] )
+   #RAM DROP DOWN
+   headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json', }
+   ram_response = requests.get( 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-ram', headers=headers)
 
-ttk.Label(root, text="RAM:").grid( row=5, column=0 )
-rammenu = tk.OptionMenu( root, ram_dropdown, *ram_response.json()['response'] )
-rammenu.grid( row=5, column=1, columnspan=2 )
-rammenu.config(width=25)
+   ram_dropdown = tk.StringVar()
+   ram_dropdown.set( ram_response.json()['response'][0] )
 
-#SCRIPT DROP DOWN
-headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json', }
-scripts_response = requests.get( 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-scripts', headers=headers)
+   ttk.Label(root, text="RAM:").grid( row=5, column=0 )
+   rammenu = tk.OptionMenu( root, ram_dropdown, *ram_response.json()['response'] )
+   rammenu.grid( row=5, column=1, columnspan=2 )
+   rammenu.config(width=25)
 
-scripts_dropdown = tk.StringVar()
-scripts_dropdown.set( scripts_response.json()['response'][0] )
+   #SCRIPT DROP DOWN
+   headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json', }
+   scripts_response = requests.get( 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-scripts', headers=headers)
 
-ttk.Label(root, text="SCRIPT:").grid( row=6, column=0 )
-scriptmenu = tk.OptionMenu( root, scripts_dropdown, *scripts_response.json()['response'] )
-scriptmenu.grid( row=6, column=1, columnspan=2 )
-scriptmenu.config(width=25)
+   scripts_dropdown = tk.StringVar()
+   scripts_dropdown.set( scripts_response.json()['response'][0] )
 
-#FOLDER
-def getFolderPath():
-    folder_selected = filedialog.askdirectory()
-    folderPath.set(folder_selected)
+   ttk.Label(root, text="SCRIPT:").grid( row=6, column=0 )
+   scriptmenu = tk.OptionMenu( root, scripts_dropdown, *scripts_response.json()['response'] )
+   scriptmenu.grid( row=6, column=1, columnspan=2 )
+   scriptmenu.config(width=25)
 
-folderPath = tk.StringVar()
-ttk.Label(root, text="FOLDER:").grid( row=7, column=0 )
-ttk.Entry(root, textvariable=folderPath).grid( row=7, column=1 )
-ttk.Button(root, text="Browse Folder",command=getFolderPath).grid( row=7, column=2)
+   #FOLDER
+   def getFolderPath():
+       folder_selected = filedialog.askdirectory()
+       folderPath.set(folder_selected)
 
-#BOTTONE
-def select(APIKEY, DOTENV_FILE, cpu, ram, script, path):
-    print(APIKEY)
-    print(cpu)
-    print(ram)
-    print(script)
-    print(path)
+   folderPath = tk.StringVar()
+   ttk.Label(root, text="FOLDER:").grid( row=7, column=0 )
+   ttk.Entry(root, textvariable=folderPath).grid( row=7, column=1 )
+   ttk.Button(root, text="Browse Folder",command=getFolderPath).grid( row=7, column=2)
 
-    #Saving APIKEY
-    env_file = open( DOTENV_FILE , 'w')
-    env_file.write( APIKEY )
-    env_file.close()
+   #BOTTONE
+   def select(APIKEY, DOTENV_FILE, cpu, ram, script, path):
+       print(APIKEY)
+       print(cpu)
+       print(ram)
+       print(script)
+       print(path)
 
-    #Compress folder
-    print( os.path.join( os.path.join( path, os.pardir ), "simulation" ) )
-    shutil.make_archive( os.path.join( os.path.join( path, os.pardir ) , "simulation" ), 'zip', path )
+       #Saving APIKEY
+       env_file = open( DOTENV_FILE , 'w')
+       env_file.write( APIKEY )
+       env_file.close()
 
-    #os.remove( os.path.join( os.path.join( path, os.pardir ) , "simulation.zip" ) )
+       #Compress folder
+       print( os.path.join( os.path.join( path, os.pardir ), "simulation" ) )
+       shutil.make_archive( os.path.join( os.path.join( path, os.pardir ) , "simulation" ), 'zip', path )
+
+       #os.remove( os.path.join( os.path.join( path, os.pardir ) , "simulation.zip" ) )
 
 
-ButtonOK = ttk.Button(root, text='Launch', command=lambda: select( apikey.get().rstrip("\n") , DOTENV_FILE , cpu_dropdown.get(), ram_dropdown.get(), scripts_dropdown.get(), folderPath.get() ) ).place( x=window_width-160, y=window_height-30 )
-ButtonCancel = ttk.Button(root, text='Cancel', command=root.destroy).place( x=window_width-80, y=window_height-30 )
+   ButtonOK = ttk.Button(root, text='Launch', command=lambda: select( apikey.get().rstrip("\n") , DOTENV_FILE , cpu_dropdown.get(), ram_dropdown.get(), scripts_dropdown.get(), folderPath.get() ) ).place( x=window_width-160, y=window_height-30 )
+   ButtonCancel = ttk.Button(root, text='Cancel', command=root.destroy).place( x=window_width-80, y=window_height-30 )
+
+else:
+   def saveapikey(APIKEY):
+       #Saving APIKEY
+       env_file = open( DOTENV_FILE , 'w')
+       env_file.write( APIKEY )
+       env_file.close()
+
+   ButtonOK   = ttk.Button(root, text='Save', command=lambda: saveapikey( apikey.get().rstrip("\n") ) ).place( x=window_width-160, y=window_height-30 )
+   ButtonEXIT = ttk.Button(root, text='Exit', command=root.destroy).place( x=window_width-80, y=window_height-30 )
 
 # keep the window displaying
 root.mainloop()
