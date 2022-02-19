@@ -122,11 +122,36 @@ if ( apikey.get() != "" ):
        env_file.close()
 
        #Compress folder
-       print( os.path.join( os.path.join( path, os.pardir ), "simulation" ) )
        shutil.make_archive( os.path.join( os.path.join( path, os.pardir ) , "simulation" ), 'zip', path )
 
-       #os.remove( os.path.join( os.path.join( path, os.pardir ) , "simulation.zip" ) )
+       #URL upload
+       data = { "dirname": os.path.basename( path ), 
+                "filename": "simulation.zip",
+                "contentType": "application/gzip"
+               }
 
+       headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json',  'Content-Type' : 'application/json',  }
+       url_upload_response = requests.post( 'https://cloud.cfdfeaservice.it/api/v2/storage/upload-url', headers=headers, json=data )
+
+       files = {'file': open( os.path.join( os.path.join( path, os.pardir ) , "simulation.zip" ) ,'rb')}
+       headers = { 'content-type' : 'application/gzip',  }
+       upload_file = requests.put( url_upload_response.json()['response']['url'], files=files, headers=headers )
+
+       data = { "cpu": int( cpu),
+                "ram": ram,
+                "folder": os.path.basename( path ),
+                "script": script,
+              }
+       headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json',  'Content-Type' : 'application/json',  }
+       simulation_exec = requests.post( 'https://cloud.cfdfeaservice.it/api/v2/simulation/add', headers=headers, json=data )
+
+       print( "Esecution ID: " + str( simulation_exec.json(['response'] ) )
+
+       #if os.path.exists( os.path.join( os.path.join( path, os.pardir ) , "simulation.zip" ) ):
+       #   print( "Rimozione file ZIP" )
+       #   os.remove( os.path.join( path, os.pardir, "simulation.zip" ) )
+
+       tk.Toplevel().destroy
 
    ButtonOK = ttk.Button(root, text='Launch', command=lambda: select( apikey.get().rstrip("\n") , DOTENV_FILE , cpu_dropdown.get(), ram_dropdown.get(), scripts_dropdown.get(), folderPath.get() ) ).place( x=window_width-160, y=window_height-30 )
    ButtonCancel = ttk.Button(root, text='Cancel', command=root.destroy).place( x=window_width-80, y=window_height-30 )
