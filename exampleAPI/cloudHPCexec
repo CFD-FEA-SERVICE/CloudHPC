@@ -203,7 +203,7 @@ then
 
       while [ -z "$url" ]
       do
-         url=$(curl -s -X GET "https://cloud.cfdfeaservice.it/api/v2/storage/view-url/$file_id" -H "X-API-key: $apikey" -H 'Content-Type: application/json' | python -m json.tool | jq -r .response.mediaLink )
+         url=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/view-url/$file_id -H "X-API-key: $apikey" -H 'Content-Type: application/json' | python -m json.tool | jq -r .response.mediaLink )
 
          sleep 2
       done
@@ -220,9 +220,8 @@ then
    if [ $# -eq 1 ]
    then
       #PART 1 -> selection of folder to delete 
-      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
-                              -H "api-key: $apikey" \
-     			   --header 'Accept: application/json' | python -m json.tool | jq .[].basename| tr -d \" )
+      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/id/desc/1 -H "X-API-Key: $apikey" \
+     			   --header 'Accept: application/json' | python -m json.tool | jq .response[].basename | tr -d \" )
    
       folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
    
@@ -237,9 +236,8 @@ then
    
       folder_storage_number=$(dialog --clear --nocancel --menu "Pick the FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
    
-      folder_id=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
-                                      -H "api-key: $apikey" \
-   				   --header 'Accept: application/json' | python -m json.tool | jq .[$(($folder_storage_number - 1))].id )
+      folder_id=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/id/desc/1 -H "X-API-Key: $apikey" \
+   				   --header 'Accept: application/json' | python -m json.tool | jq .response[$(($folder_storage_number - 1))].id )
 
       curl -s -X DELETE https://cloud.cfdfeaservice.it/api/v2/storage/delete/$folder_id  -H 'accept: application/json' -H "X-API-Key: $apikey"
 
@@ -247,14 +245,16 @@ then
 
    #Delete specific file given its path
    else
-      folder_name=$2
+      filepath=$2
 
-      JSON_STRING=$( jq -n --arg path   "$folder_name" '{data: {path: $path}}' )
+      echo "Delete: $filepath"
 
-      folder_id=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v1/storage/view -H "api-key: $apikey" -H 'Accept: application/json' -H  'Content-Type: application/json' -d "$JSON_STRING" | \
-                 python -m json.tool | jq .id )
+      JSON_STRING=$( jq -n --arg path   "$filepath" '{path: $path}' )
 
-      curl -s -X DELETE https://cloud.cfdfeaservice.it/api/v2/storage/delete/$folder_id  -H 'accept: application/json' -H "X-API-Key: $apikey"
+      file_id=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v2/storage/view-by-path -H "X-API-key: $apikey" -H 'Accept: application/json' -H  'Content-Type: application/json' -d "$JSON_STRING" | \
+                 python -m json.tool | jq .response.id )
+
+      curl -s -X DELETE https://cloud.cfdfeaservice.it/api/v2/storage/delete/$file_id  -H 'accept: application/json' -H "X-API-Key: $apikey"
 
       exit
    fi
@@ -273,7 +273,7 @@ then
 
    echo "Delete: $simu_id"
 
-   folder=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short/$simu_id -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -r .folder )
+   folder=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id -H "X-API-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -r .response.folder )
 
    cloudHPCexec -delete $folder
 
