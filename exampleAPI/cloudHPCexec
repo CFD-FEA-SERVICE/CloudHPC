@@ -285,7 +285,7 @@ if [ "$option" = "-soft" -o "$option" = "-hard" ]
 then
    if [ $# -eq 1 ]
    then
-      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -c '.[] | select( .status == 30 )' )
+      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/index-short/edate/asc/1 -H "X-API-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -c '.response[] | select( .status == 30 )' )
 
       echo "ID    | FOLDER"
       echo "================================="
@@ -314,7 +314,7 @@ if [ "$option" = "-ssh" ]
 then
    if [ $# -eq 1 ]
    then
-      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -c '.[] | select( .status == 30 )' )
+      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/index-short/edate/asc/1 -H "X-API-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -c '.response[] | select( .status == 30 )' )
 
       echo "ID    | FOLDER"
       echo "================================="
@@ -343,7 +343,7 @@ if [ "$option" = "-scp" ]
 then
    if [ $# -eq 1 ]
    then
-      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -c '.[] | select( .status == 30 )' )
+      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/index-short/edate/asc/1 -H "X-API-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -c '.response[] | select( .status == 30 )' )
 
       echo "ID    | FOLDER"
       echo "================================="
@@ -373,7 +373,7 @@ if [ "$option" = "-vnc" ]
 then
    if [ $# -eq 1 ]
    then
-      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -c '.[] | select( .status == 30 )' )
+      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/index-short/edate/asc/1 -H "X-API-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -c '.response[] | select( .status == 30 )' )
 
       echo "ID    | FOLDER"
       echo "================================="
