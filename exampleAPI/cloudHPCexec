@@ -157,7 +157,7 @@ then
    if [ $# -eq 1 ]
    then
       #PART 1 -> selection of folder to download TAR.GZ files from
-      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/id/desc/1 -H "X-API-Key: $apikey" \
+      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1 -H "X-API-Key: $apikey" \
      			   --header 'Accept: application/json' | python -m json.tool | jq .response[].basename | tr -d \" )
    
       folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
@@ -174,10 +174,10 @@ then
       folder_storage_number=$(dialog --clear --nocancel --menu "Pick the FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
    
       #PART 2  > selections of all files inside folder ending with "TAR.GZ"
-      folder_id=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/id/desc/1 -H "X-API-Key: $apikey" \
+      folder_id=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1 -H "X-API-Key: $apikey" \
    				   --header 'Accept: application/json' | python -m json.tool | jq .response[$(($folder_storage_number - 1))].id )
   
-      file_names=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/id/desc/parent_id/$folder_id/1 -H "X-API-key: $apikey" \
+      file_names=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/parent_id/$folder_id/1 -H "X-API-key: $apikey" \
    				   --header 'Accept: application/json' | python -m json.tool | jq '.response[] | .name' | grep 'tar.gz\|rmed'  | sed 's/"//g' )
    
       file_names=($(echo $file_names | tr " " "\n"))
@@ -220,7 +220,7 @@ then
    if [ $# -eq 1 ]
    then
       #PART 1 -> selection of folder to delete 
-      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/id/desc/1 -H "X-API-Key: $apikey" \
+      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1 -H "X-API-Key: $apikey" \
      			   --header 'Accept: application/json' | python -m json.tool | jq .response[].basename | tr -d \" )
    
       folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
@@ -236,7 +236,7 @@ then
    
       folder_storage_number=$(dialog --clear --nocancel --menu "Pick the FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
    
-      folder_id=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/id/desc/1 -H "X-API-Key: $apikey" \
+      folder_id=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1 -H "X-API-Key: $apikey" \
    				   --header 'Accept: application/json' | python -m json.tool | jq .response[$(($folder_storage_number - 1))].id )
 
       curl -s -X DELETE https://cloud.cfdfeaservice.it/api/v2/storage/delete/$folder_id  -H 'accept: application/json' -H "X-API-Key: $apikey"
