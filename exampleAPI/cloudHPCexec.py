@@ -145,16 +145,12 @@ if ( apikey.get() != "" ):
        headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json',  'Content-Type' : 'application/json',  }
        simulation_exec = requests.post( 'https://cloud.cfdfeaservice.it/api/v2/simulation/add', headers=headers, json=data )
 
-       print( "Esecution ID: " + str( simulation_exec.json(['response'] ) )
+       print( "Esecution ID: " + str( simulation_exec.json()['response'] ) )
 
-       #if os.path.exists( os.path.join( os.path.join( path, os.pardir ) , "simulation.zip" ) ):
-       #   print( "Rimozione file ZIP" )
-       #   os.remove( os.path.join( path, os.pardir, "simulation.zip" ) )
-
-       tk.Toplevel().destroy
-
-   ButtonOK = ttk.Button(root, text='Launch', command=lambda: select( apikey.get().rstrip("\n") , DOTENV_FILE , cpu_dropdown.get(), ram_dropdown.get(), scripts_dropdown.get(), folderPath.get() ) ).place( x=window_width-160, y=window_height-30 )
-   ButtonCancel = ttk.Button(root, text='Cancel', command=root.destroy).place( x=window_width-80, y=window_height-30 )
+       root.destroy()
+ 
+   ButtonOK = ttk.Button(root, text='Launch', command=lambda:select( apikey.get().rstrip("\n") , DOTENV_FILE , cpu_dropdown.get(), ram_dropdown.get(), scripts_dropdown.get(), folderPath.get() ) ).place( x=window_width-160, y=window_height-30 )
+   ButtonCancel = ttk.Button( root, text='Cancel', command=root.destroy ).place( x=window_width-80, y=window_height-30 )
 
 else:
    def saveapikey(APIKEY):
@@ -168,3 +164,6 @@ else:
 
 # keep the window displaying
 root.mainloop()
+   
+if os.path.exists( os.path.join( os.path.join( folderPath.get(), os.pardir ) , "simulation.zip" ) ):
+   os.remove( os.path.join( folderPath.get(), os.pardir, "simulation.zip" ) )
