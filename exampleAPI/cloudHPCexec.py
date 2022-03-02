@@ -17,7 +17,7 @@ except FileExistsError:
     pass
 
 DOTENV_FILE = os.path.join( str( Path.home() ) , '.cfscloudhpc', 'apikey' )
-touch.touch( DOTENV_FILE )
+file = open( DOTENV_FILE,'a+')
 
 # window definition
 root = tk.Tk()
@@ -164,6 +164,6 @@ else:
 
 # keep the window displaying
 root.mainloop()
-   
-if os.path.exists( os.path.join( os.path.join( folderPath.get(), os.pardir ) , "simulation.zip" ) ):
+
+if 'folderPath' in locals():
    os.remove( os.path.join( folderPath.get(), os.pardir, "simulation.zip" ) )
