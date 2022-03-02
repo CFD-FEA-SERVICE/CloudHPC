@@ -35,7 +35,7 @@ then
 
       #setting autocomplete
       sudo sh -c "echo '#/usr/bin/env bash'                                                               > /etc/bash_completion.d/cloudHPCexec"
-      sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -batchREG -delete -deleteSIM -ssh -vnc -scp -wait\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+      sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -batchREG -delete -deleteSIM -ssh -vnc -scp -wait -soft -hard\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
 
       echo "#####################################################################"
       echo "cloudHPCexec updated and installed successfully - Available for usage"
