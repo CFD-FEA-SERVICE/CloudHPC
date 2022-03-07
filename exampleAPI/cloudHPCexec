@@ -506,10 +506,9 @@ else
    #FOLDER LIST EXTRACTION FROM CLOUD [MESH PART] ################################
    if [ "$option" = "-mesh" ]
    then
-      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/storage/0/list \
-                              -H "api-key: $apikey" \
-     			   --header 'Accept: application/json' | python -m json.tool | jq .[].basename| tr -d \" )
-
+      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1 -H "X-API-Key: $apikey" \
+     			   --header 'Accept: application/json' | python -m json.tool | jq .response[].basename | tr -d \" )
+   
       folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
   
       folder_options=()
