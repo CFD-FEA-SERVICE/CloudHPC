@@ -8,7 +8,7 @@ from pathlib import Path
 import os, json
 
 # dependencies installation
-os.system("pip install touch requests")
+#os.system("pip install touch requests")
 import touch, requests, shutil
 
 try:
