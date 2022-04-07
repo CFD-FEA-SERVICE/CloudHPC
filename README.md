@@ -11,19 +11,9 @@ The whole content of this under the [GPLv3 license](https://github.com/CFD-FEA-S
 OS: Ubuntu 16.04/18.04/20.04 LTS - CENTOS 6.10/7/8
 
 ## cloudHPCexec
-This is a script which allows you to execute simulation directly from your Linux Terminal. To install it just follow the procedure here written:
+This is a script which allows you to execute simulation directly from your Linux Terminal. cloudHPCexec is a script which allows you to execute simulation directly from your Linux Terminal. To install it just download the package made available for your operative system and follow the procedure reported in the release.
 
-```bash
-wget https://raw.githubusercontent.com/CFD-FEA-SERVICE/CloudHPC/master/exampleAPI/cloudHPCexec
-chmod ugo+x cloudHPCexec
-sudo rm /usr/local/bin/cloudHPCexec
-sudo mv cloudHPCexec /usr/local/bin
-
-sudo sh -c "echo '#/usr/bin/env bash'                                                         > /etc/bash_completion.d/cloudHPCexec"
-sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
-```
-
-In order to get a help on using it:
+To get help once the package has been installed:
 
 ```bash
 cloudHPCexec -help
