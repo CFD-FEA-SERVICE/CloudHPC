@@ -301,9 +301,9 @@ then
 
    if [ "$option" = "-hard" ]
    then
-      curl -s -X PUT https://cloud.cfdfeaservice.it/api/v1/simulation/$simu_id/stop -H "api-key: $apikey" -H 'Accept: application/json' -d '{ "data": { "signal": "SIGINT" } }'
+      curl -s -X PUT https://cloud.cfdfeaservice.it/api/v2/simulation/stop/$simu_id -H "X-API-key: $apikey" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{ "signal": "SIGINT" }'
    else
-      curl -s -X PUT https://cloud.cfdfeaservice.it/api/v1/simulation/$simu_id/stop -H "api-key: $apikey" -H 'Accept: application/json' -d '{ "data": { "signal": "SIGTSTP" } }'
+      curl -s -X PUT https://cloud.cfdfeaservice.it/api/v2/simulation/stop/$simu_id -H "X-API-key: $apikey" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{ "signal": "SIGTSTP" }'
    fi
 
    exit
