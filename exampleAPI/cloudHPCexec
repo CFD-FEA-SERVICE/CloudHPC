@@ -328,7 +328,7 @@ then
 
    echo "connecting to simulation: $simu_id"
 
-   ip_address=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short/$simu_id -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -r .ip_address )
+   ip_address=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id -H "X-API-key: $apikey" -H 'Accept: application/json'   | python -m json.tool | jq -r .response.ip_address )
 
    #Removing IP_ADDRESS: it may be already present in previous connection
    ssh-keygen -f "$HOME/.ssh/known_hosts" -R $ip_address
@@ -357,8 +357,9 @@ then
 
    echo "Downloading from: $simu_id"
 
-   ip_address=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short/$simu_id -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -r .ip_address )
-   folder=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/short/$simu_id -H "api-key: $apikey" -H 'Accept: application/json' | python -m json.tool | jq -r .folder )
+   ip_address=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id -H "X-API-key: $apikey" -H 'Accept: application/json'   | python -m json.tool | jq -r .response.ip_address )
+
+   folder=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id -H "X-API-key: $apikey" -H 'Accept: application/json'   | python -m json.tool | jq -r .response.folder )
 
    #Removing IP_ADDRESS: it may be already present in previous connection
    ssh-keygen -f "$HOME/.ssh/known_hosts" -R $ip_address
@@ -408,8 +409,8 @@ then
    do
       sleep 60
 
-      status=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/$ID -H "api-key: $apikey" -H 'Accept: application/json' |  \
-				    python -m json.tool | jq .status)
+      status=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$ID -H "X-API-key: $apikey" \
+	         -H 'Accept: application/json' | python -m json.tool | jq .response.status)
 
       if [ ! "$status" = "30" -a ! "$status" = "40" -a ! "$status" = "20" ]
       then
@@ -447,9 +448,9 @@ then
 else
 
    # CPU selection
-   cpu_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/cpu \
-                 -H "api-key: $apikey" \
-                --header 'Accept: application/json' | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
+   cpu_options=$(curl -s -X 'GET' 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-cpu' -H 'accept: application/json'  \
+	         -H "X-API-key: $apikey" | python -m json.tool | jq .response | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g'    \
+		  | sed 's/\]/ /g' )
 
    cpu_options=($(echo $cpu_options | tr " " "\n"))
 
@@ -466,9 +467,9 @@ else
    cpu=${cpu_options[$(($cpu - 1))]}
 
    # RAM selection
-   ram_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/ram \
-               -H "api-key: $apikey" \
-              --header 'Accept: application/json' | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
+   ram_options=$(curl -s -X 'GET' 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-ram' -H 'accept: application/json'  \
+	         -H "X-API-key: $apikey" | python -m json.tool | jq .response | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g'    \
+		  | sed 's/\]/ /g' )
 
    ram_options=($(echo $ram_options | tr " " "\n"))
 
@@ -485,9 +486,9 @@ else
    ram=${ram_options[$(($ram - 1))]}
 
    # Script selection
-   script_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v1/simulation/scripts \
-                            -H "api-key: $apikey" \
-   		   --header 'Accept: application/json' | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
+   script_options=$(curl -s -X 'GET' 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-scripts' -H 'accept: application/json'  \
+	         -H "X-API-key: $apikey" | python -m json.tool | jq .response | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g'           \
+		  | sed 's/\]/ /g' )
 
    script_options=($(echo $script_options | tr " " "\n"))
 
@@ -542,20 +543,15 @@ rm log.tmp
 
 JSON_STRING=$( jq -n \
                   --arg dirname       "$folder_storage" \
-                  --arg basename      "$FOLDER.tar.gz" \
+                  --arg filename      "$FOLDER.tar.gz" \
                   --arg contentType   "application/octet-stream" \
-                  '{data: {dirname: $dirname, basename: $basename, contentType: $contentType}}' )
+                  '{ dirname: $dirname, filename: $filename, contentType: $contentType }' )
 
-UPLOAD_URL=$( curl -s -X POST \
-  https://cloud.cfdfeaservice.it/api/v1/storage/upload/url \
-  -H "api-key: $apikey" \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json' \
-  -d "$JSON_STRING" | jq .url | tr -d \")
+UPLOAD_URL=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v2/storage/upload-url                  \
+              -H "X-API-key: $apikey" -H 'Content-Type: application/json' -H 'Accept: application/json' \
+              -d "$JSON_STRING" | jq .response.url | tr -d \")
 
-curl -s -X PUT \
-  -H 'Content-Type: application/octet-stream' \
-  -T $FOLDER.tar.gz $UPLOAD_URL
+curl -s -X PUT -H 'Content-Type: application/octet-stream' -T $FOLDER.tar.gz $UPLOAD_URL
 
 rm $FOLDER.tar.gz
 
@@ -569,13 +565,9 @@ JSON_STRING=$( jq -n \
                   --arg folder "$folder_storage" \
                   --arg nopre  "$regular" \
                   --arg mesh   "$mesh_storage" \
-                  '{data: {cpu: $cpu, ram: $ram, folder: $folder, script: $script, nopre: $nopre, mesh: $mesh}}' )
+                  '{ cpu: $cpu, ram: $ram, folder: $folder, script: $script, nopre: $nopre, mesh: $mesh }' )
 
-ID=$(curl -s -X POST \
-  https://cloud.cfdfeaservice.it/api/v1/simulation \
-  -H "api-key: $apikey" \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json' \
-  -d "$JSON_STRING" )
+ID=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v2/simulation/add -H "X-API-key: $apikey" \
+      -H 'Content-Type: application/json' -H 'Accept: application/json' -d "$JSON_STRING" | jq .response )
 
 echo "Simulation launched with ID = $ID"
