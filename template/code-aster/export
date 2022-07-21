@@ -12,10 +12,11 @@ P studyid current-code-aster
 P time_limit 45000.0
 P tpsjob 76
 P version stable
+A args --max_base 10000000
 A memjeveux 2503.0
 A tpmax 4500.0
 A args -max_base 250000
-F comm fem.comm D  1
+F comm input.comm D  1
 F libr mesh.med D  2
 F libr results.rmed R  3
 F mess message.dat R  6
