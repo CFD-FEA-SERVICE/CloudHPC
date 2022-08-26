@@ -1,0 +1,6 @@
+#Setting domain decomposition in AFFE_MODELE
+# this option takes also the number of subdomain which is going to be used to set the number of MPI process
+model = AFFE_MODELE(  ..., DISTRIBUTION=_F(METHODE='SOUS_DOMAINE', NB_SOUS_DOMAINE=4,), ... )
+
+#Setting MPI solver in STAT_NON_LINE
+stat1 = STAT_NON_LINE( ..., SOLVEUR=_F( METHODE='MULT_FRONT' ), ... )
