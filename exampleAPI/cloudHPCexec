@@ -534,13 +534,15 @@ else
 
    read -e -p "Insert folder name [to use in cloud HPC]: " folder_storage
 
+   echo "Equivalent BATCH command: cloudHPCexec -batch $cpu $ram $script $folder_storage $mesh_storage"
 fi
 
 #LOADING CURRENT FOLDER AS TAR FILE ###########################################
-echo "Loading Current folder: $FOLDER / destination: $folder_storage"
+echo "Compressing current folder $FOLDER ..."
 tar -I pigz -cf $FOLDER.tar.gz * > log.tmp 2>&1
 rm log.tmp
 
+echo "Uploading compressed file to cloud storage folder named $folder_storage ..."
 JSON_STRING=$( jq -n \
                   --arg dirname       "$folder_storage" \
                   --arg filename      "$FOLDER.tar.gz" \
@@ -556,7 +558,7 @@ curl -s -X PUT -H 'Content-Type: application/octet-stream' -T $FOLDER.tar.gz $UP
 rm $FOLDER.tar.gz
 
 #EXECUTE ANALYSIS #############################################################
-echo "Executing $script on $cpu vCPU with $ram RAM"
+echo "Executing $script on $cpu vCPU with $ram RAM ..."
 
 JSON_STRING=$( jq -n \
                   --arg cpu    "$cpu" \
