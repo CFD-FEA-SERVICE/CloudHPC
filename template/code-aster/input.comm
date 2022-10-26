@@ -3,4 +3,4 @@
 model = AFFE_MODELE(  ..., DISTRIBUTION=_F(METHODE='SOUS_DOMAINE', NB_SOUS_DOMAINE=4,), ... )
 
 #Setting MPI solver in STAT_NON_LINE
-stat1 = STAT_NON_LINE( ..., SOLVEUR=_F( METHODE='MULT_FRONT' ), ... )
+stat1 = STAT_NON_LINE( ..., SOLVEUR=_F( METHODE='MUMPS' ), ... )
