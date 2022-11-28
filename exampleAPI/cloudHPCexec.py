@@ -18,6 +18,7 @@ except FileExistsError:
 
 DOTENV_FILE = os.path.join( str( Path.home() ) , '.cfscloudhpc', 'apikey' )
 file = open( DOTENV_FILE,'a+')
+file.close()
 
 # window definition
 root = tk.Tk()
@@ -67,7 +68,13 @@ if ( apikey.get() != "" ):
    cpu_response = requests.get( 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-cpu', headers=headers)
 
    cpu_dropdown = tk.StringVar()
-   cpu_dropdown.set( cpu_response.json()['response'][0] )
+
+   #If APIKEY is incorrect we detect it here and remove the APIKEY file
+   try:
+      cpu_dropdown.set( cpu_response.json()['response'][0] )
+   except:
+      env_file.close()
+      os.remove( DOTENV_FILE )
 
    ttk.Label(root, text="vCPU:").grid( row=4, column=0 )
    cpumenu = tk.OptionMenu( root, cpu_dropdown, *cpu_response.json()['response'] )
