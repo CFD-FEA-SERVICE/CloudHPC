@@ -176,8 +176,9 @@ then
       #PART 2  > selections of all files inside folder ending with "TAR.GZ"
       folder_id=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1 -H "X-API-Key: $apikey" \
    				   --header 'Accept: application/json' | python -m json.tool | jq .response[$(($folder_storage_number - 1))].id )
-  
-      file_names=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/parent_id/$folder_id/1 -H "X-API-key: $apikey" \
+ 
+      #file list ordered by size so results are in the first page 
+      file_names=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/size/desc/parent_id/$folder_id/1 -H "X-API-key: $apikey" \
    				   --header 'Accept: application/json' | python -m json.tool | jq '.response[] | .name' | grep 'tar.gz\|rmed'  | sed 's/"//g' )
    
       file_names=($(echo $file_names | tr " " "\n"))
