@@ -149,6 +149,8 @@ else
    read -e -p "Insert APIKEY: " apikey
    mkdir -p $HOME/.cfscloudhpc
    echo "$apikey" > $HOME/.cfscloudhpc/apikey
+   echo "New APIKEY saved. Re-execute cloudHPCexec to run analysis using this new APIKEY."
+   exit
 fi
 
 #DOWNLOAD RESULTS #############################################################
