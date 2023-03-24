@@ -1,0 +1,7 @@
+Package: cloudHPCexec
+Version: 1.0
+Architecture: all
+Maintainer: CFD FEA SERVICE SRL <info@cfdfeaservice.it>
+Installed-Size: 1
+Homepage: https://cloudhpc.cloud
+Description: terminal management for the cloudhpc
