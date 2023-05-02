@@ -546,13 +546,13 @@ fi
 
 #LOADING CURRENT FOLDER AS TAR FILE ###########################################
 echo "Compressing current folder $FOLDER ..."
-tar -I pigz -cf $FOLDER.tar.gz * > log.tmp 2>&1
+tar -I pigz -cf upload.tar.gz * > log.tmp 2>&1
 rm log.tmp
 
 echo "Uploading compressed file to cloud storage folder named $folder_storage ..."
 JSON_STRING=$( jq -n \
                   --arg dirname       "$folder_storage" \
-                  --arg filename      "$FOLDER.tar.gz" \
+                  --arg filename      "upload.tar.gz" \
                   --arg contentType   "application/octet-stream" \
                   '{ dirname: $dirname, filename: $filename, contentType: $contentType }' )
 
@@ -560,9 +560,9 @@ UPLOAD_URL=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v2/storage/uplo
               -H "X-API-key: $apikey" -H 'Content-Type: application/json' -H 'Accept: application/json' \
               -d "$JSON_STRING" | jq .response.url | tr -d \")
 
-curl -s -X PUT -H 'Content-Type: application/octet-stream' -T $FOLDER.tar.gz $UPLOAD_URL
+curl -s -X PUT -H 'Content-Type: application/octet-stream' -T upload.tar.gz $UPLOAD_URL
 
-rm $FOLDER.tar.gz
+rm upload.tar.gz
 
 #EXECUTE ANALYSIS #############################################################
 echo "Executing $script on $cpu vCPU with $ram RAM ..."
