@@ -560,7 +560,7 @@ UPLOAD_URL=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v2/storage/uplo
               -H "X-API-key: $apikey" -H 'Content-Type: application/json' -H 'Accept: application/json' \
               -d "$JSON_STRING" | jq .response.url | tr -d \")
 
-curl -s -X PUT -H 'Content-Type: application/octet-stream' -T upload.tar.gz $UPLOAD_URL
+curl -s --ipv4 -X PUT -H 'Content-Type: application/octet-stream' -T upload.tar.gz $UPLOAD_URL
 
 rm upload.tar.gz
 
