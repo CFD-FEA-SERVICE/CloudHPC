@@ -576,7 +576,16 @@ JSON_STRING=$( jq -n \
                   --arg mesh   "$mesh_storage" \
                   '{ cpu: $cpu, ram: $ram, folder: $folder, script: $script, nopre: $nopre, mesh: $mesh }' )
 
-ID=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v2/simulation/add -H "X-API-key: $apikey" \
-      -H 'Content-Type: application/json' -H 'Accept: application/json' -d "$JSON_STRING" | jq .response )
+OUTPUT=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v2/simulation/add -H "X-API-key: $apikey" \
+          -H 'Content-Type: application/json' -H 'Accept: application/json' -d "$JSON_STRING" )
 
-echo "Simulation launched with ID = $ID"
+
+ID=$( echo $OUTPUT | jq .response )
+ERROR=$( echo $OUTPUT | jq .errors )
+
+if [ "$ID" = "null" ]
+then
+   echo "Simulation launch failed with error $ERROR"
+else
+   echo "Simulation launched with ID = $ID"
+fi
