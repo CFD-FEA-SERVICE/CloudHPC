@@ -35,7 +35,7 @@ then
 
       #setting autocomplete
       sudo sh -c "echo '#/usr/bin/env bash'                                                               > /etc/bash_completion.d/cloudHPCexec"
-      sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -batchREG -delete -deleteSIM -ssh -vnc -scp -wait -soft -hard\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+      sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -batchREG -delete -deleteSIM -ssh -vnc -scp -wait -transfer -soft -hard\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
 
       echo "#####################################################################"
       echo "cloudHPCexec updated and installed successfully - Available for usage"
@@ -90,6 +90,7 @@ then
    echo "-delete [path]        Delete a file/folder from the storage"
    echo "                          Add path to delete specific file/folder"
    echo "-deleteSIM ID         Delete folders used by a specific simulation ID"
+   echo "-transfer FILE        Upload a file on your computer and create a sharing link with transfer.sh"
    echo ""
    echo "SCRIPT MANAGEMENT ########################################################################################"
    echo "-apikey           Reset your APIKEY"
@@ -283,6 +284,25 @@ then
    folder=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id -H "X-API-key: $apikey" -H 'Accept: application/json' | python3 -m json.tool | jq -r .response.folder )
 
    cloudHPCexec -delete $folder
+
+   exit
+fi
+
+#DELETE folder of a specific simulation #######################################
+if [ "$option" = "-transfer" ]
+then
+   if [ $# -eq 1 ]
+   then
+      echo "Set the file on your local PC that you want to transfer using https://transfer.sh"
+      echo "A sharing link is generated with a 14 days validity"
+      exit
+   fi
+
+   file_name=$2
+
+   echo "Transferring $file_name using https://transfer.sh ..."
+
+   curl -w '\n' --progress-bar --upload-file "$file_name" "https://transfer.sh/$file_name" | tee /dev/null;
 
    exit
 fi
@@ -589,3 +609,4 @@ then
 else
    echo "Simulation launched with ID = $ID"
 fi
+
