@@ -584,6 +584,8 @@ curl -s --ipv4 -X PUT -H 'Content-Type: application/octet-stream' -T upload.tar.
 
 rm upload.tar.gz
 
+curl -s -X DELETE https://cloud.cfdfeaservice.it/api/v2/user/delete-cache -H 'accept: application/json' -H "X-API-Key: $apikey"
+
 #EXECUTE ANALYSIS #############################################################
 echo "Executing $script on $cpu vCPU with $ram RAM ..."
 
