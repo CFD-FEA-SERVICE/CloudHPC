@@ -194,8 +194,8 @@ then
       for file in "${file_names[@]}"
       do : 
          cloudHPCexec -download $file
-         tar -zxf $file
-         rm -rf $file
+         tar -zxf $( basename $file )
+         rm -rf $( basename $file )
       done
    
       exit
