@@ -443,7 +443,7 @@ then
 
       if [ ! "$status" = "30" -a ! "$status" = "40" -a ! "$status" = "20" ]
       then
-         echo "Status != 30 and != 40 detected for $ID"
+         echo "Status != 30 nor != 20 or != 40 detected for $ID"
          break
       fi
    done
