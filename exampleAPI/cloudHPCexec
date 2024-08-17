@@ -416,6 +416,7 @@ then
    fi
 
    echo "connecting to simulation: $simu_id"
+   echo "URL: https://cloud.cfdfeaservice.it/en/simulation/view/$simu_id"
 
    sensible-browser https://cloud.cfdfeaservice.it/en/simulation/view/$simu_id &
 
