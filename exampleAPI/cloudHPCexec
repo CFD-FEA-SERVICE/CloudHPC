@@ -416,7 +416,10 @@ then
    fi
 
    echo "connecting to simulation: $simu_id"
-   echo "URL: https://cloud.cfdfeaservice.it/en/simulation/view/$simu_id"
+      
+   URLVNC=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id  -H "X-API-key: $apikey" -H 'Accept: application/json' | python3 -m json.tool | jq -c '.response.vnc_url' )
+
+   echo "URL: $URLVNC"
 
    sensible-browser https://cloud.cfdfeaservice.it/en/simulation/view/$simu_id &
 
