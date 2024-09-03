@@ -31,7 +31,8 @@ then
    then
       chmod ugo+x cloudHPCexec
       sudo rm /usr/local/bin/cloudHPCexec
-      sudo mv cloudHPCexec /usr/local/bin
+      sudo rm /usr/bin/cloudHPCexec
+      sudo mv cloudHPCexec /usr/bin
 
       #setting autocomplete
       sudo sh -c "echo '#/usr/bin/env bash'                                                               > /etc/bash_completion.d/cloudHPCexec"
