@@ -67,6 +67,10 @@ if ( apikey.get() != "" ):
    headers = { "X-API-key" : apikey.get().rstrip("\n"), "accept" : "application/json", }
    cpu_response = requests.get( 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-cpu', headers=headers)
 
+   if 'errors' in cpu_response.json():
+      print( "ERROR: " + cpu_response.json()['errors'][0] )
+      exit()
+
    cpu_dropdown = tk.StringVar()
 
    #If APIKEY is incorrect we detect it here and remove the APIKEY file
@@ -85,6 +89,10 @@ if ( apikey.get() != "" ):
    headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json', }
    ram_response = requests.get( 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-ram', headers=headers)
 
+   if 'errors' in ram_response.json():
+      print( "ERROR: " + ram_response.json()['errors'][0] )
+      exit()
+
    ram_dropdown = tk.StringVar()
    ram_dropdown.set( ram_response.json()['response'][0] )
 
@@ -96,6 +104,10 @@ if ( apikey.get() != "" ):
    #SCRIPT DROP DOWN
    headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json', }
    scripts_response = requests.get( 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-scripts', headers=headers)
+
+   if 'errors' in scripts_response.json():
+      print( "ERROR: " + scripts_response.json()['errors'][0] )
+      exit()
 
    scripts_dropdown = tk.StringVar()
    scripts_dropdown.set( scripts_response.json()['response'][0] )
@@ -140,6 +152,10 @@ if ( apikey.get() != "" ):
        headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json',  'Content-Type' : 'application/json',  }
        url_upload_response = requests.post( 'https://cloud.cfdfeaservice.it/api/v2/storage/upload-url', headers=headers, json=data )
 
+       if 'errors' in url_upload_response.json():
+          print( "ERROR: " + url_upload_response.json()['errors'][0] )
+          return
+
        files = {'file': open( os.path.join( os.path.join( path, os.pardir ) , "simulation.zip" ) ,'rb')}
        headers = { 'content-type' : 'application/gzip',  }
        upload_file = requests.put( url_upload_response.json()['response']['url'], files=files, headers=headers )
@@ -149,8 +165,13 @@ if ( apikey.get() != "" ):
                 "folder": os.path.basename( path ),
                 "script": script,
               }
+
        headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json',  'Content-Type' : 'application/json',  }
        simulation_exec = requests.post( 'https://cloud.cfdfeaservice.it/api/v2/simulation/add', headers=headers, json=data )
+
+       if 'errors' in simulation_exec.json():
+          print( "ERROR: " + simulation_exec.json()['errors'][0] )
+          return
 
        print( "Esecution ID: " + str( simulation_exec.json()['response'] ) )
 
