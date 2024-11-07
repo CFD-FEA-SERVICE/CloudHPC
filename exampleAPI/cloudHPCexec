@@ -12,6 +12,20 @@
 #TODO default OpenFOAM CFD  -> sceglie la macchina e PRE
 #TODO default Snappy   MESH -> sceglie la macchina e PRE
 
+#API FUNCTION VERIFICATION ####################################################
+APIcloudHPC () {
+   apikey=$(head -n 1 $HOME/.cfscloudhpc/apikey)
+
+   APIcloudHPC_reply=$( curl -s -X $1 $2 -H "X-API-Key: $apikey" --header 'Accept: application/json' -H 'Content-Type:application/json' -d "$3")
+
+   if echo $APIcloudHPC_reply | jq -e '.errors' > /dev/null
+   then
+      echo "API call error @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+      echo $APIcloudHPC_reply | jq -r .errors[0]
+      exit
+   fi
+}
+
 #OPTIONS and INSTRUCTIONS #####################################################
 option=""
 if [ ! $# -eq 0 ]
@@ -150,7 +164,7 @@ fi
 #GETTING/STORING APIKEY #######################################################
 if [ -f $HOME/.cfscloudhpc/apikey ]
 then
-   apikey=$(head -n 1 $HOME/.cfscloudhpc/apikey)
+   apikey=$(head -n 1 $HOME/.cfscloudhpc/apikey) #TODO da cancellare
 else
    read -e -p "Insert APIKEY: " apikey
    mkdir -p $HOME/.cfscloudhpc
@@ -165,8 +179,8 @@ then
    if [ $# -eq 1 ]
    then
       #PART 1 -> selection of folder to download TAR.GZ files from
-      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1 -H "X-API-Key: $apikey" \
-     			   --header 'Accept: application/json' | python3 -m json.tool | jq .response[].basename | tr -d \" )
+      APIcloudHPC 'GET' 'https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1' 
+      folder_storage_options=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq .response[].basename | tr -d \" )
    
       folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
    
@@ -182,19 +196,21 @@ then
       folder_storage_number=$(dialog --clear --nocancel --menu "Pick the FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
    
       #PART 2  > selections of all files inside folder ending with "TAR.GZ"
-      folder_id=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1 -H "X-API-Key: $apikey" \
-   				   --header 'Accept: application/json' | python3 -m json.tool | jq .response[$(($folder_storage_number - 1))].id )
+      APIcloudHPC 'GET' 'https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1' 
+      folder_id=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq .response[$(($folder_storage_number - 1))].id )
  
       #file list ordered by size so results are in the first page 
-      file_names=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/size/desc/parent_id/$folder_id/1 -H "X-API-key: $apikey" \
-   				   --header 'Accept: application/json' | python3 -m json.tool | jq '.response[] | .name' | grep 'tar.gz\|rmed|frd' | grep -v 'CloudHPC-massive-files.tar.gz' | sed 's/"//g' )
+      APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/storage/index/size/desc/parent_id/$folder_id/1" 
+      file_names=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq '.response[] | .name' | grep 'tar.gz\|rmed|frd' | grep -v 'CloudHPC-massive-files.tar.gz' | sed 's/"//g' )
    
       file_names=($(echo $file_names | tr " " "\n"))
+
+      clear
 
       #PART 3 > downloading selected files
       for file in "${file_names[@]}"
       do : 
-         cloudHPCexec -download $file
+         ${BASH_SOURCE[0]} -download $file
          tar -zxf $( basename $file )
          rm -rf $( basename $file )
       done
@@ -209,12 +225,13 @@ then
 
       JSON_STRING=$( jq -n --arg path   "$filepath" '{path: $path}' )
 
-      file_id=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v2/storage/view-by-path -H "X-API-key: $apikey" -H 'Accept: application/json' -H  'Content-Type: application/json' -d "$JSON_STRING" | \
-                 python3 -m json.tool | jq .response.id )
+      APIcloudHPC 'POST' 'https://cloud.cfdfeaservice.it/api/v2/storage/view-by-path' "$JSON_STRING"
+      file_id=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq .response.id )
 
       while [ -z "$url" ]
       do
-         url=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/view-url/$file_id -H "X-API-key: $apikey" -H 'Content-Type: application/json' | python3 -m json.tool | jq -r .response.mediaLink )
+         APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/storage/view-url/$file_id"
+         url=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq -r .response.mediaLink )
 
          sleep 2
       done
@@ -231,8 +248,8 @@ then
    if [ $# -eq 1 ]
    then
       #PART 1 -> selection of folder to delete 
-      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1 -H "X-API-Key: $apikey" \
-     			   --header 'Accept: application/json' | python3 -m json.tool | jq .response[].basename | tr -d \" )
+      APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1"
+      folder_storage_options=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq .response[].basename | tr -d \" )
    
       folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
    
@@ -247,10 +264,12 @@ then
    
       folder_storage_number=$(dialog --clear --nocancel --menu "Pick the FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
    
-      folder_id=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1 -H "X-API-Key: $apikey" \
-   				   --header 'Accept: application/json' | python3 -m json.tool | jq .response[$(($folder_storage_number - 1))].id )
+      APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1"
+      folder_id=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq .response[$(($folder_storage_number - 1))].id )
 
-      curl -s -X DELETE https://cloud.cfdfeaservice.it/api/v2/storage/delete/$folder_id  -H 'accept: application/json' -H "X-API-Key: $apikey"
+      APIcloudHPC 'DELETE' "https://cloud.cfdfeaservice.it/api/v2/storage/delete/$folder_id"
+
+      clear
 
       exit   
 
@@ -262,10 +281,10 @@ then
 
       JSON_STRING=$( jq -n --arg path   "$filepath" '{path: $path}' )
 
-      file_id=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v2/storage/view-by-path -H "X-API-key: $apikey" -H 'Accept: application/json' -H  'Content-Type: application/json' -d "$JSON_STRING" | \
-                 python3 -m json.tool | jq .response.id )
+      APIcloudHPC 'POST' "https://cloud.cfdfeaservice.it/api/v2/storage/view-by-path" "$JSON_STRING"
+      file_id=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq -r .response.id )
 
-      curl -s -X DELETE https://cloud.cfdfeaservice.it/api/v2/storage/delete/$file_id  -H 'accept: application/json' -H "X-API-Key: $apikey"
+      APIcloudHPC 'DELETE' "https://cloud.cfdfeaservice.it/api/v2/storage/delete/$file_id"
 
       exit
    fi
@@ -284,9 +303,10 @@ then
 
    echo "Delete: $simu_id"
 
-   folder=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id -H "X-API-key: $apikey" -H 'Accept: application/json' | python3 -m json.tool | jq -r .response.folder )
+   APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id" 
+   folder=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq -r .response.folder )
 
-   cloudHPCexec -delete $folder
+   ${BASH_SOURCE[0]} -delete $folder
 
    exit
 fi
@@ -315,7 +335,8 @@ if [ "$option" = "-soft" -o "$option" = "-hard" ]
 then
    if [ $# -eq 1 ]
    then
-      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/index-short/edate/asc/1 -H "X-API-key: $apikey" -H 'Accept: application/json' | python3 -m json.tool | jq -c '.response[] | select( .status == 30 )' )
+      APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/simulation/index-short/edate/asc/1" 
+      simulations=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq -c '.response[] | select( .status == 30 )' )
 
       echo "ID    | FOLDER"
       echo "================================="
@@ -331,9 +352,9 @@ then
 
    if [ "$option" = "-hard" ]
    then
-      curl -s -X PUT https://cloud.cfdfeaservice.it/api/v2/simulation/stop/$simu_id -H "X-API-key: $apikey" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{ "signal": "SIGINT" }'
+      APIcloudHPC 'PUT' "https://cloud.cfdfeaservice.it/api/v2/simulation/stop/$simu_id"  '{ "signal": "SIGINT" }'
    else
-      curl -s -X PUT https://cloud.cfdfeaservice.it/api/v2/simulation/stop/$simu_id -H "X-API-key: $apikey" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{ "signal": "SIGTSTP" }'
+      APIcloudHPC 'PUT' "https://cloud.cfdfeaservice.it/api/v2/simulation/stop/$simu_id"  '{ "signal": "SIGSTP" }'
    fi
 
    exit
@@ -344,7 +365,8 @@ if [ "$option" = "-ssh" ]
 then
    if [ $# -eq 1 ]
    then
-      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/index-short/edate/asc/1 -H "X-API-key: $apikey" -H 'Accept: application/json' | python3 -m json.tool | jq -c '.response[] | select( .status == 30 )' )
+      APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/simulation/index-short/edate/asc/1" 
+      simulations=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq -c '.response[] | select( .status == 30 )' )
 
       echo "ID    | FOLDER"
       echo "================================="
@@ -358,7 +380,8 @@ then
 
    echo "connecting to simulation: $simu_id"
 
-   ip_address=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id -H "X-API-key: $apikey" -H 'Accept: application/json'   | python3 -m json.tool | jq -r .response.ip_address )
+   APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id" 
+   ip_address=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq -r .response.ip_address )
 
    #Removing IP_ADDRESS: it may be already present in previous connection
    ssh-keygen -f "$HOME/.ssh/known_hosts" -R $ip_address
@@ -373,7 +396,8 @@ if [ "$option" = "-scp" ]
 then
    if [ $# -eq 1 ]
    then
-      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/index-short/edate/asc/1 -H "X-API-key: $apikey" -H 'Accept: application/json' | python3 -m json.tool | jq -c '.response[] | select( .status == 30 )' )
+      APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/simulation/index-short/edate/asc/1" 
+      simulations=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq -c '.response[] | select( .status == 30 )' )
 
       echo "ID    | FOLDER"
       echo "================================="
@@ -387,9 +411,9 @@ then
 
    echo "Downloading from: $simu_id"
 
-   ip_address=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id -H "X-API-key: $apikey" -H 'Accept: application/json'   | python3 -m json.tool | jq -r .response.ip_address )
-
-   folder=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id -H "X-API-key: $apikey" -H 'Accept: application/json'   | python3 -m json.tool | jq -r .response.folder )
+   APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id" 
+   ip_address=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq -r .response.ip_address )
+   folder=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq -r .response.folder )
 
    #Removing IP_ADDRESS: it may be already present in previous connection
    ssh-keygen -f "$HOME/.ssh/known_hosts" -R $ip_address
@@ -404,7 +428,8 @@ if [ "$option" = "-vnc" ]
 then
    if [ $# -eq 1 ]
    then
-      simulations=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/index-short/edate/asc/1 -H "X-API-key: $apikey" -H 'Accept: application/json' | python3 -m json.tool | jq -c '.response[] | select( .status == 30 )' )
+      APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/simulation/index-short/edate/asc/1" 
+      simulations=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq -c '.response[] | select( .status == 30 )' )
 
       echo "ID    | FOLDER"
       echo "================================="
@@ -418,7 +443,8 @@ then
 
    echo "connecting to simulation: $simu_id"
       
-   URLVNC=$( curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id  -H "X-API-key: $apikey" -H 'Accept: application/json' | python3 -m json.tool | jq -c '.response.vnc_url' )
+   APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$simu_id" 
+   URLVNC=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq -c '.response.vnc_url' )
 
    echo "URL: $URLVNC"
 
@@ -443,8 +469,8 @@ then
    do
       sleep 60
 
-      status=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$ID -H "X-API-key: $apikey" \
-	         -H 'Accept: application/json' | python3 -m json.tool | jq .response.status)
+      APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/simulation/view-short/$ID" 
+      status=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq .response.status )
 
       if [ ! "$status" = "30" -a ! "$status" = "40" -a ! "$status" = "20" ]
       then
@@ -482,10 +508,8 @@ then
 else
 
    # CPU selection
-   cpu_options=$(curl -s -X 'GET' 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-cpu' -H 'accept: application/json'  \
-	         -H "X-API-key: $apikey" | python3 -m json.tool | jq .response | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g'    \
-		  | sed 's/\]/ /g' )
-
+   APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/simulation/view-cpu" 
+   cpu_options=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq .response | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
    cpu_options=($(echo $cpu_options | tr " " "\n"))
 
    cpuoptions=()
@@ -501,10 +525,8 @@ else
    cpu=${cpu_options[$(($cpu - 1))]}
 
    # RAM selection
-   ram_options=$(curl -s -X 'GET' 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-ram' -H 'accept: application/json'  \
-	         -H "X-API-key: $apikey" | python3 -m json.tool | jq .response | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g'    \
-		  | sed 's/\]/ /g' )
-
+   APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/simulation/view-ram" 
+   ram_options=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq .response | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
    ram_options=($(echo $ram_options | tr " " "\n"))
 
    ramoptions=()
@@ -520,10 +542,8 @@ else
    ram=${ram_options[$(($ram - 1))]}
 
    # Script selection
-   script_options=$(curl -s -X 'GET' 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-scripts' -H 'accept: application/json'  \
-	         -H "X-API-key: $apikey" | python3 -m json.tool | jq .response | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g'           \
-		  | sed 's/\]/ /g' )
-
+   APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/simulation/view-scripts" 
+   script_options=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq .response | tr -d \" | sed 's/,/ /g' | sed 's/\[/ /g' | sed 's/\]/ /g' )
    script_options=($(echo $script_options | tr " " "\n"))
 
    scriptoptions=()
@@ -541,9 +561,8 @@ else
    #FOLDER LIST EXTRACTION FROM CLOUD [MESH PART] ################################
    if [ "$option" = "-mesh" ]
    then
-      folder_storage_options=$(curl -s -X GET https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1 -H "X-API-Key: $apikey" \
-     			   --header 'Accept: application/json' | python3 -m json.tool | jq .response[].basename | tr -d \" )
-   
+      APIcloudHPC 'GET' "https://cloud.cfdfeaservice.it/api/v2/storage/index/name/asc/1" 
+      folder_storage_options=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq .response[].basename | tr -d \" )
       folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
   
       folder_options=()
@@ -583,15 +602,14 @@ JSON_STRING=$( jq -n \
                   --arg contentType   "application/octet-stream" \
                   '{ dirname: $dirname, filename: $filename, contentType: $contentType }' )
 
-UPLOAD_URL=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v2/storage/upload-url                  \
-              -H "X-API-key: $apikey" -H 'Content-Type: application/json' -H 'Accept: application/json' \
-              -d "$JSON_STRING" | jq .response.url | tr -d \")
+APIcloudHPC 'POST' "https://cloud.cfdfeaservice.it/api/v2/storage/upload-url" "$JSON_STRING"
+UPLOAD_URL=$( echo $APIcloudHPC_reply | jq -r .response.url )
 
 curl -s --ipv4 -X PUT -H 'Content-Type: application/octet-stream' -T upload.tar.gz $UPLOAD_URL
 
 rm upload.tar.gz
 
-curl -s -X DELETE https://cloud.cfdfeaservice.it/api/v2/user/delete-cache -H 'accept: application/json' -H "X-API-Key: $apikey" > /dev/null
+APIcloudHPC 'DELETE' "https://cloud.cfdfeaservice.it/api/v2/user/delete-cache"
 
 #EXECUTE ANALYSIS #############################################################
 echo "Executing $script on $cpu vCPU with $ram RAM ..."
@@ -605,17 +623,7 @@ JSON_STRING=$( jq -n \
                   --arg mesh   "$mesh_storage" \
                   '{ cpu: $cpu, ram: $ram, folder: $folder, script: $script, nopre: $nopre, mesh: $mesh }' )
 
-OUTPUT=$( curl -s -X POST https://cloud.cfdfeaservice.it/api/v2/simulation/add -H "X-API-key: $apikey" \
-          -H 'Content-Type: application/json' -H 'Accept: application/json' -d "$JSON_STRING" )
+APIcloudHPC 'POST' "https://cloud.cfdfeaservice.it/api/v2/simulation/add" "$JSON_STRING"
 
-
-ID=$( echo $OUTPUT | jq .response )
-ERROR=$( echo $OUTPUT | jq .errors )
-
-if [ "$ID" = "null" ]
-then
-   echo "Simulation launch failed with error $ERROR"
-else
-   echo "Simulation launched with ID = $ID"
-fi
-
+ID=$( echo $APIcloudHPC_reply | jq .response )
+echo "Simulation launched with ID = $ID"
