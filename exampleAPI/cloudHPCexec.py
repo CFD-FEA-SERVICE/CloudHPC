@@ -160,6 +160,10 @@ if ( apikey.get() != "" ):
        headers = { 'content-type' : 'application/gzip',  }
        upload_file = requests.put( url_upload_response.json()['response']['url'], files=files, headers=headers )
 
+       #cache delete
+       headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json',  'Content-Type' : 'application/json',  }
+       requests.delete( 'https://cloud.cfdfeaservice.it/api/v2/user/delete-cache', headers=headers )
+
        data = { "cpu": int( cpu),
                 "ram": ram,
                 "folder": os.path.basename( path ),
