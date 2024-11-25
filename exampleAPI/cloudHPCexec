@@ -354,7 +354,7 @@ then
    then
       APIcloudHPC 'PUT' "https://cloud.cfdfeaservice.it/api/v2/simulation/stop/$simu_id"  '{ "signal": "SIGINT" }'
    else
-      APIcloudHPC 'PUT' "https://cloud.cfdfeaservice.it/api/v2/simulation/stop/$simu_id"  '{ "signal": "SIGSTP" }'
+      APIcloudHPC 'PUT' "https://cloud.cfdfeaservice.it/api/v2/simulation/stop/$simu_id"  '{ "signal": "SIGTSTP" }'
    fi
 
    exit
