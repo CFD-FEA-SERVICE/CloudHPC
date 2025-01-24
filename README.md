@@ -20,7 +20,7 @@ cloudHPCexec -help
 ```
 
 ## Installation
-It is possible to replicate the system managed by CFD FEA SERVICE Cloud HPC directly on your own computer. To do that you can use the [installation script](https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/install) which guides you on installing most of the software available on the platform.
+It is possible to replicate the system managed by CFD FEA SERVICE Cloud HPC directly on your own computer. To do that you can use check the latest [release](https://github.com/CFD-FEA-SERVICE/CloudHPC/releases) which guides you on installing most of the software available on the platform.
 
 ### Execution scripts
 CFD FEA SERVICE provides the opensource version of the scripts made available on the cluster which allows you to use some of the software. These scripts are present in the [script](https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/scripts) folder of this repository. Make sure you complete the "installation" point in order to take advantage of these scripts.
