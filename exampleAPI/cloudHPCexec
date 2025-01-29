@@ -585,7 +585,9 @@ else
    #SELECT CASE FOLDER ###########################################################
    clear
 
-   read -e -p "Insert folder name [to use in cloud HPC]: " folder_storage
+   current_folder=$( basename $( pwd ))
+   read -e -p "Insert folder name or ENTER to confirm current folder name [$current_folder]: " folder_storage
+   folder_storage=${folder_storage:-$current_folder}
 
    echo "Equivalent BATCH command: cloudHPCexec -batch $cpu $ram $script $folder_storage $mesh_storage"
 fi
