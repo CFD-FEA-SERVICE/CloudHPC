@@ -281,6 +281,8 @@ then
 
       JSON_STRING=$( jq -n --arg path   "$filepath" '{path: $path}' )
 
+      APIcloudHPC 'DELETE' "https://cloud.cfdfeaservice.it/api/v2/user/delete-cache"
+
       APIcloudHPC 'POST' "https://cloud.cfdfeaservice.it/api/v2/storage/view-by-path" "$JSON_STRING"
       file_id=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq -r .response.id )
 
