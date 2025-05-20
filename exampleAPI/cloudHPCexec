@@ -587,7 +587,7 @@ else
    #SELECT CASE FOLDER ###########################################################
    clear
 
-   current_folder=$( basename $( pwd ))
+   current_folder=$( basename "$( pwd )" )
    read -e -p "Insert folder name or ENTER to confirm current folder name [$current_folder]: " folder_storage
    folder_storage=${folder_storage:-$current_folder}
 
