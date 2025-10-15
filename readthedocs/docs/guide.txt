@@ -1,0 +1,1686 @@
+The API is a methodology which allow to controll all the cloudHPC functionalities by web calls. This methodology is highly useful in case of integration of third part software with our functionalities.
+
+Before entering the details of each API, keep in mind that every use is assigned a unique _{api_key}_ which is required by any API call to work properly. Api_key is available in the user account page as described in the following image:
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/APIKEY.jpg">
+</p>
+
+The cloud HPC system also provide a _lincense file_ - a JSON with username and apikey - which can be used to avoid mistakes by the user when copying and pasting its apikey.
+
+## Simulation status codes
+---
+The API calls we are going to mention later refer to some coding. The most important of which is the STATUS of every simulation. The following table gives an explanation of the codes used.
+
+| CODE | NAME | Description |
+|------|------|-------------|
+|10    | COMPLETED | analysis terminated correctly |
+|60    | ERROR     | analysis terminated with errors |
+|20    | PENDING   | analysis submitted and waiting for the system to start it |
+|30    | RUNNING   | analysis in progress |
+|50    | STOPPED   | analysis terminated because of a “STOP” signal |
+|40    | STOPPING  | analysis terminating due to a “STOP” signal |
+
+# API V1 INTRODUCTION
+
+Current API version is “1”. This number has to be replaced to every call in the API that follows. As example the following API:
+
+```bash
+ curl -X GET https://cloud.cfdfeaservice.it/api/v{version}/simulation \
+  -H 'api-key: {api_key}' \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json'
+```
+
+becomes:
+
+```bash
+  curl -X GET https://cloud.cfdfeaservice.it/api/v1/simulation \
+  -H 'api-key: {api_key}' \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json'
+```
+
+Furthermore, every API requires an _{api_key}_ that has to be provided by the user. Api_key is available in the user account page as described in the following image:
+
+![](images/APIKEY.jpg)
+
+The cloud HPC system also provide a lincense file - a JSON with username and apikey - which can be used to avoid mistakes by the user when copying and pasting its apikey.
+
+Every API has the possibility to pass the API_KEY both via the URL address or via the HEADER of a CURL call as follows:
+
+|Mode | API call|
+| ------------- | ------------- |
+|URL|curl -X GET --header 'Accept: application/json' 'https://cloud.cfdfeaservice.it/api/v{version}/simulation?api_key={api_key}|
+|Header|curl -X GET https://cloud.cfdfeaservice.it/api/v{version}/simulation -H 'Accept: application/json' -H ‘api-key: {api_key}’|
+
+In general it is recommendable to pass the API_KEY via the file HEADER. Please take this into consideration when using the API. Beside this guide, more details can be found at the [following link](https://cloud.cfdfeaservice.it/api/v1/explorer).
+
+
+## SIMULATION LIST
+---
+Using this API call you can get a full list of all simulations launched by the user. 
+
+```bash
+  curl -X GET https://cloud.cfdfeaservice.it/api/v{version}/simulation \
+  -H 'api-key: {api_key}' \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json'
+```
+
+The data returned in JSON format are here described:
+
+| JSON fields| JSON value | Description |
+|------------|------------|-------------|
+|  "id"| 1| | 
+|  "mdate"| "2019-04-12 20:05:08"| |
+|  "user_id"| 1| |
+|  "bucket"| "bucket_name"| |
+|  "cpu"| 1  | N. of cores used |
+|  "ram"| "standard"  | RAM used |
+|  "nopre"| 0| |
+|  "folder"| "FOLDER_NAME" | FOLDER in the bucket |
+|  "mesh"| null| |
+|  "script"| "codeAster-13.4" | Software used |
+|  "clean"| 0| |
+|  "idate"| "2019-04-12 20:05:08" | Start date |
+|  "edate"| "2019-04-12 20:05:15" | End date |
+|  "status"| 60 | STATUS [See legend below] |
+|  "pid"| 25979| |
+|  "tid"| null| |
+|  "output"| "", | LOG |
+|  "images"| [] |Images [i.e. residuals, cpu, …] |
+
+### SIMULATION STATUS
+---
+| CODE | NAME | Description |
+|------|------|-------------|
+|10    | COMPLETED | analysis terminated correctly |
+|60    | ERROR     | analysis terminated with errors |
+|20    | PENDING   | analysis submitted and waiting for the system to start it |
+|30    | RUNNING   | analysis in progress |
+|50    | STOPPED   | analysis terminated because of a “STOP” signal |
+|40    | STOPPING  | analysis terminating due to a “STOP” signal |
+
+### DATA OF A SINGLE SIMULATION
+---
+It is obviously possible to get info about one single simulation using the ID of the simulation. Obviously return data are similar to the ones defined above.
+
+```bash
+  curl -X GET 'https://cloud.cfdfeaservice.it/api/v{version}/simulation/{id} \
+-H 'api-key: {api_key}' \
+-H 'Accept: application/json' 
+```
+
+The data returned follows what expressed previously.
+
+## POST NEW SIMULATION
+---
+In order to launch a simulation you can do as follows:
+
+```bash
+  curl -X POST https://cloud.cfdfeaservice.it/api/v{version}/simulation \
+  -H 'api-key: {api_key}' \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -d '{
+        "data": { 
+                "cpu": "{cpu}",
+                "ram": "{ram}",
+                "folder": "{folder}",
+                "script": "{script}"
+        } 
+}'
+```
+
+The response body of every call of this API is the ID of the simulation launched.
+
+### Arguments vCPU, RAM, SCRIPTs
+---
+In order to retrieve the values of vCPU/RAM/SCRIPTs available to execute a simulation, it is possible to use the following API:
+
+```bash
+  curl -X GET https://cloud.cfdfeaservice.it/api/v{version}/simulation/cpu \
+                         -H "api-key: {api_key}" \
+                   --header 'Accept: application/json'
+
+  curl -X GET https://cloud.cfdfeaservice.it/api/v{version}/simulation/ram \
+                         -H "api-key: {api_key}" \
+                   --header 'Accept: application/json'
+
+  curl -X GET https://cloud.cfdfeaservice.it/api/v{version}/simulation/scripts \
+                         -H "api-key: {api_key}" \
+                   --header 'Accept: application/json'
+```
+
+The latest argument is the FOLDER where we want to execute the simulation. This argument can be obtained from the [NAVIGATION IN THE STORAGE](https://cfdfeaservice.it/wiki/cloud-hpc/#!API-v1.md#NAVIGATION), once we have uploaded at least one folder.
+
+### REG and SPOT instances
+---
+For the users which have enabled the REG/SPOT selection it is possible to determin which instance type they are using by adding the appropriate property _**nopre**_ in the "data" section of the json input.
+
+The possible selections are:
+
+* _"nopre": 0_ -> uses SPOT instance type
+* _"nopre": 1_ -> uses REGULAR instance type
+
+In order to execute a simulation on SPOT instance just type the following command:
+
+```bash
+  curl -X POST https://cloud.cfdfeaservice.it/api/v{version}/simulation \
+  -H 'api-key: {api_key}' \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -d '{
+        "data": { 
+                "cpu": "{cpu}",
+                "ram": "{ram}",
+                "folder": "{folder}",
+                "script": "{script}",
+                "nopre": 0
+        } 
+}'
+```
+
+## RUNTIME CONTROL
+---
+At any time it is possible to execute some runtime commands which gives control of the process. The runtime options are:
+
+* HARD STOP: kills the simulation without saving anyting on the storage. In order to call it:
+
+```bash
+  curl -X PUT https://cloud.cfdfeaservice.it/api/v{version}/simulation/{id}/stop \
+  -H 'Accept: application/json' \
+  -H 'api-key: {api_key}' \
+  -d '{
+        "data": {
+                "signal": "SIGINT"
+        }
+}'
+```
+
+* SOFT STOP: stops simulation at current iteration and save results. In order to call it:
+
+```bash
+curl -X PUT https://cloud.cfdfeaservice.it/api/v{version}/simulation/{id}/stop \
+  -H 'Accept: application/json' \
+  -H 'api-key: {api_key}' \
+  -d '{
+        "data": {
+                "signal": "SIGTSTP"
+        }
+}'
+```
+
+Note that SOFT STOP can take several minutes before everything is completed as it involves, among other tasks, stopping the executable, saving the current iterations and uploading everything into the storage.
+
+* SYNC: saves current results on the storage and proceeds the simulation. In order to call it:
+
+```bash
+curl -X PUT https://cloud.cfdfeaservice.it/api/v{version}/simulation/{id}/sync \
+  -H 'Accept: application/json' \
+  -H 'api-key: {api_key}' \
+  -d '{ 
+        "data": { 
+                "signal": "SIGQUIT" 
+        } 
+}'
+```
+
+## UPLOAD OF FILE
+---
+In order to upload and download any file from the cloud storage the process consists of two phases: the first one is a request of a URL where we can upload/download a file, while the second phase regards the process of download/uploading the file itself. In order to make an URL request to upload the file:
+
+```bash
+curl -X POST https://cloud.cfdfeaservice.it/api/v{version}/storage/upload/url \
+  -H 'api-key: {api_key}' \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -d '{
+        "data": {
+                "dirname": "{dirname}",
+                "basename": "{filename}",
+                "contentType": "application/octet-stream"
+        }
+}'
+```
+
+In the call dirname is the directory where we want to store the file, while basename represents the file name once uploaded on the server. The reply of the previous API is an URL we have to use in the following call in order to upload the file:
+
+```bash
+curl -X PUT -H 'Content-Type: application/octet-stream' \
+  -T {path_to_filename} {upload_url}
+```
+
+### DIRECT UPLOAD OF SINGLE FILE
+---
+In case we have to upload a single file, it is possible to speed up the process using the following single call:
+
+```bash
+curl -X POST https://cloud.cfdfeaservice.it/api/v{version}/storage \
+  -H "api-key: {api_key}" \
+  -H 'Content-Type: multipart/form-data' \
+  -H 'Accept: application/json' \
+  -F dirname={dirname} \
+  -F basename=@{path_to_filename}
+```
+
+This function replies with a JSON file which summarizes the information of the file which has just been uploaded.
+
+**N.B.: this upload works only for file of size lower than 2 Mb**
+
+
+## NAVIGATION
+---
+In order to navigate through the storage you need to use the following method:
+
+```bash
+curl -X GET https://cloud.cfdfeaservice.it/api/v{version}/storage/{id}/list \
+-H 'api-key:{api_key}' \
+--header 'Accept: application/json' 
+```
+
+_{id}_ is the id of each single directory and its subfolders. If _{id}_ = 0 you will be returned the content of the root folder. Alternatively, it is possible to interrogate a single file/folder using its own name and location as follows.
+
+```bash
+curl -X POST https://cloud.cfdfeaservice.it/api/v{version}/storage/view \
+-H 'api-key: {api_key}' \
+-H 'Content-Type: application/json' \
+-H 'Accept: application/json' \
+-d '{ "data": { "path": "{path}" } }'
+```
+
+Using this last method, it is possible to use the folder name, exactly as returned by the [simulation info](https://cfdfeaservice.it/wiki/cloud-hpc/#!API-v1.md#SIMULATION_LIST) API call to get idea of the files contained in the case folder.
+
+## ALL FILES AND FOLDERS INFO
+---
+In order to retrieve the info of ALL the files available in the storage, it’s possible to use the following command:
+
+```bash
+curl -X GET https://cloud.cfdfeaservice.it/api/v{version}/storage \
+-H 'api-key:{api_key}' \
+--header 'Accept: application/json'
+```
+
+The resulting JSON file might be big, so use it carefully!
+
+## SINGLE FILE INFO
+---
+It is also possible to get all the information of a single file with the following:
+
+```bash
+curl -X GET https://cloud.cfdfeaservice.it/api/v{version}/storage/{id} \
+-H 'api-key:{api_key}' \
+--header 'Accept: application/json' 
+```
+
+where, as before, _{id}_ is the file ID.
+
+## DOWNLOAD
+---
+Exactly like uploading files, in order to download one file we have to make a double call: the first one gives a URL from which we can download the file. In order to identify the file we want to download, we can use the ID of the file:
+
+```bash
+curl -X GET https://cloud.cfdfeaservice.it/api/v{version}/storage/{id}/download/url \
+  -H 'api-key: {api_key}' \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json'
+```
+
+This call returns an URL we can use to download the file with the following:
+
+```bash
+curl -X GET {download_url} -L -o {path_to_filename}
+```
+
+### DIRECT DOWNLOAD OF FILE
+---
+In order to speed up the process, it’s also possible to download file using a unique API call - a method which is basically the sum of the two mentioned earlier, as follows:
+
+```bash
+curl -X GET https://cloud.cfdfeaservice.it/api/v{version}/storage/{id}/download/file \
+  -H 'api-key: {api_key}' \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json'
+```
+
+Once again, _{id}_ is the ID of the file.
+
+## DELETE FILE OR FOLDER
+---
+To delete a single file [or folder] present in the storage we have to retrieve its ID using the abovementioned functionalities and then use the following API:
+
+```bash
+curl -X DELETE https://cloud.cfdfeaservice.it/api/v{version}/storage/{id} \
+  -H 'api-key: {api_key}' \
+  -H 'Accept: application/json'
+```
+
+Obviously we have to detect the file [or folder] _{id}_ using the storage navigation methods.
+# API V2 INTRODUCTION
+
+Full documentation for API v2 can be found in the API SWAGGER documentation directly in the [cloudHPC](https://cloud.cfdfeaservice.it/en/catuser/view-api) if your user has been anabled to use it.
+
+Note: if you want to get access to the API service, contact our support team via chat or send us an email.
+
+## APIKEY AND API v2
+---
+You APIKEY can be found under the [profile page](APIKEY.md). APIKEY has to be passed to EVERY api call as a header argument. The correct way to do that is:
+
+    -H 'X-API-key: $apikey'
+
+So, an example call becomes:
+
+    curl -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-cpu -H 'accept: application/json' -H 'X-API-key: $apikey'
+
+## USING THE SWAGGER
+---
+It is possible to test the use of each API directly on the Swagger. To do so you need to click on the "Try it out" button to enter the test mode of the API as shown on the following image:
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/APISwagger-1.jpg">
+</p>
+
+After that, some of the API might require you to enter a json file (for example the ADD a new simulation one). In such a case it is possible to edit this json using the assigned editor as in the following image.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/APISwagger-2.jpg">
+</p>
+
+Once you are happy with the settings, you can test the API clicking on "EXECUTE". Under the "Response" section you can see the response code and body of the API call you have just made.
+
+## SUGGESTED WORKFLOWS
+---
+Here below the sequence of API call recommended for specific operations. The intention of these is just helping the developpers into their integration with our cloudHPC and do not required to be executed specifically. The list of the following API doesn't contain most of the arguments which are required by each API to work properly, for this refer to the complete [API SWAGGER documentation](https://cloud.cfdfeaservice.it/en/catuser/view-api).
+
+### UPLOAD A FILE
+---
+The upload mechanism is a two step execution. The first step consist of an API call which returns the UPLOAD_URL where we are going to upload the file:
+
+    POST /storage/upload-url Get upload URL
+
+The second step is the actual upload of a FILE. This can be made via a PUT with the following settings:
+
+    curl -X PUT -H 'Content-Type: application/octet-stream' -T FILE_NAME UPLOAD_URL
+
+If the file is uploaded in this way, it is recommendable to delete the cache before proceeding with further steps to inform the system that the file upload has been completed.
+
+    DELETE /user/delete-cache Delete the cache
+
+### POST A NEW SIMULATION
+---
+The main purpose of the cloudHPC is obviously starting new simulations. To do that you can use the following API:
+
+    POST /simulation/add  -> Add one
+
+To controll the simulation it is possible to send a STOP signal. This signal can be of two types: 
+* 	{ "signal": "SIGINT" }	 for hard stop
+* 	{ "signal": "SIGTSTP" }	for soft stop
+
+Once the signal has been generated it has to be passed to the simulation using the following API call:
+
+    PUT /simulation/stop/{id} -> Stop one by id
+
+### DOWNLOAD RESULTS
+---
+Downloading the FILES from the storage is made via a single API call:
+
+    GET /storage/download/{id} -> Download one by id
+
+This API requires you to enter the id of the file you need to download. To retrieve it you can search the storage by using the file name and path with the following API call:
+
+    POST /storage/view-by-path -> Get one
+
+The download API returns an URL where the file can be saved, this can be used with a simple wget to actually download the file:
+
+    wget DOWNLOAD_URL
+# APIKEY
+
+One of the main feature of cloudHPC is its integrability with third part software. This is made possible thanks to your own APIKEY, an unique identifier which allows you to interact with the cloudHPC environment using API calls.
+
+Every account is assigned a specific APIKEY once it is generated. Using this APIKEY with third part software is mandatory in order to correctly link your account to the software you are using.
+
+Note: The use of the API might not be available if you are under the FREE plan (i.e. using the initial 300 vCPU Hours).
+
+## Retrieving your APIKEY
+---
+Your APIKEY is reported into your profile page. To access it just click on "profile" under the "account" menu as in the following image:
+
+<p align="center">
+   <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/ProfilePage.jpg">
+</p>
+
+Once you enter your account details, your APIKEY is the string you find inside the appropriate box.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/Apikey.jpg">
+</p>
+
+Note: store your APIKEY safely and, in case of doubt, get in contact with us at info@cfdfeaservice.it . Sharing your APIKEY with unknown people means giving full access to your account to these people and, consequently, sharing with them your simulations, results and allowing them to use your own account.
+# Account
+
+A new cloudHPC account can be generated using the account [request form](https://cloudhpc.cloud/form-request/). The account is not generated authomatically to any registering users, but there is a manual procedure to verify the info collected during the account generation. Our support can generally decide either for a direct account activation or to proceed with a request of clarification to the user who is willing to generate a new account. The approval process generally takes few minutes, but our support department is operative only during office hour based on Rome Time Zone (CET/CEST) and, as a consequence, during off office hours or during bank holidays the account approval process can be longer than expected.
+
+Once your account is activated, the system sends an email like the following one. The emails provide the credentials to access the platform.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/AccountActivationEmail.png">
+</p>
+
+## Account safety
+---
+
+Every account has two level of security. The above credentials are in fact not sufficient to access your account as you will be asked of a further proof of identification. This security levels guarantee a complete control over access to your cloudHPC account.
+The first safety level is based on a password provided by the system once the account is generated. It is possible to modify it, but any password must follow precise rules:
+
+Note: _Minimum 7 characters lowercase (a-z), uppercase (A-Z), numbers (0-9) and special (.*#@!…). Spaces are not allowed._
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/LoginUsernamePassword.png">
+</p>
+
+### Base safety level [OTP - One Time Password]
+---
+
+The base safety level requires an OTP - one time password - to be entered after the credentials provided by the registration confirmation email. After you loging with your credentials (username and password) a secondary password is required.
+
+<p align="center">
+   <img width="200" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/TemporaryPassword.png">
+</p>
+
+This code is a temporary password generated by the system and sent to your registered email address. You can retrieve this code by checking your email and entering it on the OTP window displayed above. In case you do not receive this email, double check the spam folder or in case get in touch with our support team.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/OTP-emailPassword.png">
+</p>
+
+In case you want to setup or modify the registered email address you can open your profile page and update the details you have in this page.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/SetupAccountEmail.png">
+</p>
+
+Note: In case you share the account with two or more people, it is recommendable to generate a group email address such as _cloudhpc@companyname.com_ where the system sends the notifications and the OTP code to be used by all the users.
+
+The OTP is not required everytime you login into the cloudHPC, but the frequency depends on several paramenters such as:
+
+* time based - upon specific frequency, your account requires you to enter a new OTP
+* device based - if you are connecting to your account using a new device then a new OTP is required
+* IP based - if you are connecting to your account through a new IP address then a new OTP is required
+
+### Advanced safety level [TFA - Two Factors Authentication]
+---
+
+The most advanced safety level consists of a TFA - Two Factors Authentication. This possibility is optional on every account and requires the use of an authentication app such as:
+
+* [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&pcampaignid=web_share)
+
+* [Microsoft Authenticator](https://play.google.com/store/apps/details?id=com.azure.authenticator&pcampaignid=web_share)
+
+You can enable this option under the **Security** option of your account. A new QRCode appears to scan.
+
+<p align="center">
+   <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/AbilitaTFA.png">
+</p>
+
+Use the your authenticator app to scan the QRCode and then enter the code it appears on the app to confirm the connection.
+
+<p align="center">
+   <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/AppGoogleAuthenticator.png">
+</p>
+
+Every time you login to the cloudHPC you'll also be required to enter the TFA code generated using the app.
+
+Note: this methodology is safer than the OTP code and it restrict the possibility to share the account among two or more users.
+
+## Password reset
+---
+
+In case you lose your password, it is possible to ask for a password reset. On the [login page](https://cloud.cfdfeaservice.it) click on the password reset button and enter the **email address** registered for your account.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/PasswordReset.png">
+</p>
+
+The system will send you an email with a one time link where you can enter a new password. To access your account go back to the login page and enter the new credentials: username and the just generated password.
+
+<p align="center">
+   <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/PasswordResetProcedure.png">
+</p>
+
+
+## Billing info
+---
+
+To discover more about the billing info and configuration check the [dedicated section](billing.md)
+# Billing Information
+
+To set your billing information, you can access your "_Account_" and enter your profile page on the [cloudHPC platform](https://cloud.cfdfeaservice.it).
+
+<p align="center">
+   <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/Account.png">
+</p>
+
+The billing information requested is as follows:
+
+| Field                    | Description                                                                 |
+|--------------------------|-----------------------------------------------------------------------------|
+| _First Name and Last Name_ | First name and last name of the billing account owner. |
+| _Company Name_           | Name of the company to display on invoices.                                  |
+| _Address Line 1/2_       | Address (street/road and number).                                           |
+| _Postal Code_            | Postal or ZIP code.                                                          |
+| _City_                   | City.                                                                        |
+| _Province or Region_     | Province, state, or region.                                                  |
+| _Country_                | Country (select from available options).                                     |
+| _VAT_                    | Value Added Tax or equivalent identification number for the company/freelancer. |
+| _Fiscal Code or NIN_     | Italian fiscal code if available.                                           |
+| _SDI or PEC_             | Italian SDI or PEC if available.                                             |
+| _Email_                  | Email address where invoices are sent once they are generated.              |
+
+## Payment Methods
+---
+At the bottom of the billing information, you can enter the "Payment Methods" section to add your preferred payment methods. Currently, the system accepts the following:
+
+- Credit/Debit cards
+- SEPA Direct Debit (available for EU clients only)
+
+Note: Once your account is activated, it is mandatory to have at least one payment method available at all times. If you wish to modify your payment method, add a new one first and then remove the old one.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/PaymentMethod.png">
+</p>
+
+## Pricing
+---
+The cloudHPC pricing is intended to be as simple as possible for users. The basic unit of pricing is the vCPU Hour, representing one vCPU used for one hour. The base cost of a vCPU Hour is listed on the dedicated page of [our portal](https://cloudhpc.cloud/#pricing). There are no additional costs beyond this; if you do not execute any analyses in a specific month, you will not incur any charges.
+
+The system operates on a post-paid basis: you can run your analyses throughout the month, and at the end of the month, you will receive an email summarizing the total vCPU Hours used. The transaction is then processed within 3 to 7 days using the selected [payment method](billing.md#Payment Methods).
+
+Note: Each time you execute a new simulation, the hourly cost is provided to you via a notification at the bottom of the page. This represents the hourly cost based on the settings you have selected in terms of vCPU and RAM.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/HourlyCost.png">
+</p>
+
+## Monitor Monthly Usage
+---
+The DASHBOARD menu allows you to monitor your completed monthly vCPU hour usage. The hours of simulations consumed are collected for different types of RAM used, multiplied by the number of vCPUs used. Data is collected on a monthly and yearly basis. This table also reports the cloudHPC cost for each month; for past months, this cost is the final balance, while for the current month, it is an estimation. After the invoice has been generated, you can download the invoice file using the _Download_ button.
+
+<p align="center">
+   <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_21_DASHBORAD.png">
+</p>
+
+Each month contains only the vCPU hours used within that specific month. Therefore, if one of your simulations runs across two different months, the total cost is split between the two months.
+
+## Email Notification of Consumption
+---
+CloudHPC sends automatic consumption notifications whenever an assigned threshold (or its multiple) is reached. The default threshold for all accounts is €250, leading to notifications at €250, €500, €750, etc.
+
+<p align="center">
+   <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/NotificationConsumption.jpg">
+</p>
+
+It's important to keep in mind that these notifications provide only a quick calculation and may underestimate (or overestimate) the actual consumption of your account. They do not account for, for example, the progressive discount applied by default at the end of each month.
+
+## Report of Performed Simulations
+---
+From your simulations page, you can download a complete report of the performed analyses in CSV file format. The report contains all the fields available on the simulation page, such as _Folder_, _vCPU/Hrs_, and _Cost_. Excel can open this file extension, allowing for post-treatment of the available information.
+
+<p align="center">
+   <a href="https://www.youtube.com/watch?v=Xiapfw2D_J4&t=18s"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
+</p>
+
+## Find errors and understand them
+---
+
+When running analysis on the cloudHPC it may happen that your simulation finishes ( STATUS = COMPLETED ) even if it actually ended with an error. This situation depends on the way you configured your analysis to run on the system and it generally depends on the input file of the analysis and also on the choice in terms of vCPU and RAM. The easiest way to detect the error is reading the 'Output' section of your simulation page as highlighted by the following image.
+
+<p align="center">
+   <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/ErrorOutput.png">
+</p>
+
+Here below you can find a list of the most common errors with the easiest possible solutions you can apply to them.
+
+## Low RAM available
+---
+A common problem is related to the sizing of the computational power and memory assigned to your simulation. It is important to monitor the vCPU and RAM in the first hours of simulation. This error is generally communicated with the following message in your output:
+
+	@@@ RAM used > 80.0%: increase vCPU or use highmem instance
+ 
+If the RAM increases all of a sudden, the above message may not appear and you could have a message like the following:
+
+	===================================================================================
+	=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+	=   RANK 0 PID XXXX RUNNING AT hpc-serverXXXXX
+	=   KILLED BY SIGNAL: 9 (Killed)
+	===================================================================================
+
+In both cases, the solution is to increase either the number of vCPU or the RAM allocation by selecting 'standard' or 'highmem'.
+
+### Hard disk use
+---
+
+Every simulation runs on a dedicated virtual machine. These are provided a fixed size hard disk whose ["size spans"](simulation.md#Instance_hard_disk) from 100Gb to 2000Gb. It may happen that your simulation produces a huge amount of data and those hard disk sizes are not sufficient to store all your information. In this case the system provides you the following warning message in the output window:
+
+	@@@ HARD DISK used > 80.0%: SOFT STOP your analysis to prevent data loss - System automatically stops analysis at 90.0% hard disk use
+
+This message is just a warning. In case your data size increases even more the system provides you this new warning
+
+	@@@ HARD DISK used > 90.0% - @@@ AUTOMATIC SOFT STOP procedure
+
+This time, right after the warning the system starts a soft ["stop procedure"](simulation.md#Soft_and_Hard_stop).
+
+## Incorrect compressed file
+---
+If the input file was compressed or uploaded incorrectly, the following error will appear in the outputs of the simulation.
+
+	@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@@@ Not found folder _name_ inside of compressed file _FOLDER_
+	@@@ Make sure the compressed file name match exactly the      
+	@@@ folder contained inside of it                             
+	@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+To upload correctly a compressed file, two are the things you should pay attention to:
+
+* Compress the file correctly
+
+* Upload the file correctly
+
+These two steps are described in detail in paragraph [“Upload of a compressed file”](storage.md#Upload_of_a_locally_compressed_folder). The main concept is that in the web-app the file should appear to be in a folder in the STORAGE list when uncompressed. Hence, if the file is collected in local in a folder that is then compressed, when it is uploaded in the web-app, it should not be inserted in a second folder, achievable by leaving the Dirname box empty. If the files are compressed by themself, hence when they are extracted, they will not be in a folder, then it is important to upload the compressed file in the storage creating a folder directly in the web-app. This is possible simply by adding the folder name in the Dirname box.
+
+## Incorrect file or folder name
+---
+
+There are situations where your input filename or foldername is not recognized and consequently the cloudHPC can't handle it. These situation are highlighted by the following message in the output:
+
+	@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@@@ FOLDER _Folder-Name_ not detected
+	@@@ - make sure you correctly defined the FOLDER in STORAGE
+	@@@ - characters like , ( ) MUST NOT be present in FOLDER name
+	@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+To fix this error you have few alternatives:
+
+* Make sure your input file is among the oneis accepted by the application. When this occurs, the system reports also the following message: _Folder-Name_ not recognized as an available compressed format
+
+
+* The file or folder name contains invalid characters. Generally the cloudHPC system does not allow your input file name to have special characters such as the followings: , ( ) ' $ ~ " # . If any of these characters is present, rename your input file and remove these special characters.
+
+## FDS incorrect settings
+---
+
+Every FDS analysis assumes as an input one single .fds file. The following error is reported when the system could not detect the .fds file and, consequently, the analysis cannot start.
+
+	@@@ ERROR: No FDS file detected
+
+Usually this depends on incorrect file upload, such as other file formats or modified file extension. Make sure you upload the correct .fds file and execute the simulation one more time.
+
+### Scalability issue with MPI\_PROCESS
+---
+
+When running a multi-core analysis using FDS there might be two type of issues that prevent your analysis to run properly. The first issue regards the MPI\_PROCESS parameter to be assigned to every mesh: this parameter must be assigned in **ASCENDING ORDER** only. In case the followign error is reported, it is necessary to edit the input FDS file and reorder the &MESH elements so the ASCENDING ORDER is guaranteed.
+
+	@@@ ERROR: MPI_MPI_PROCESS incorrect
+	@@@        MPI_MPI_PROCESS parameter must be in ASCENDING ORDER
+	@@@        Reorder &MESH in FDS file if simulation fails
+
+In case your input FDS file requires a specific number of CORES, either because you have entered a certain number of &MESH lines or because you used a specific MPI\_PROCESS for all the meshes, make sure that vCPU matches this number. In case this is not verified, the following error reminds you to do so with the two possible solutions: increase the number of vCPU assigned to your simulation or modify the MPI_PROCESS to lower the number of required vCPU
+
+	@@@ ERROR: low vCPU selected
+	@@@        Number of MESHES higher than available CORES. CORES available: XX
+	@@@        -> increase the number of vCPU
+	@@@        -> use the MPI_PROCESS parameter to assign 2 or more meshes to one single CORE
+
+### Warning messages by FDS
+---
+In case of incorrect setup of your FDS analysis, in particular when some objects or devices do not fall withing any mesh, you receive a warning message from FDS. Since these warning messages can be numerous, the system trims them once they reach a specific number and provides you the following error message:
+
+	@@@ ERROR: no other WARNING messages showed
+	@@@        check logs for more details
+
+### Pyrosim input file
+---
+The cloudHPC platform can handle FDS simulation. If you upload for example a .psm file - generated by the UI Pyrosim - the system is not able to execute your analysis and report the following error:
+
+	@@@ ERROR: _filename_.psm is a pyrosim file. Please upload a .fds one instead
+
+To execute FDS analysis remember of exporting the .fds from any user interface you are using.
+
+### High number of threads
+---
+The following warning represents an issue with the scalability of your FDS analysis:
+
+	@@@ WARNING: high number of threads used
+	             The number of vCPU selected and the settings in your .fds file
+	             lead to a high number of threads. This generally is not recommendable
+	             Split your mesh in order to achieve a better scalability
+
+The configuration of vCPU, considering the restriction in your input .fds file where the number of meshes is defined, forced the system to select a high number of threads for the current analysis. Even if your simulation is running, it may not use the hardware resources allocated at their best. It is recommended to read the ["scalability paragraph"](scalability.md#FDS_scalability).
+
+### High number of Pressure ZONES
+---
+A pressure zone is a part of your fluid domain which is disconnected from the rest of your domain through an obstacle OBST or any other solid material. Recent versions of FDS authomatically detect pressure zones and solve them as a separate domain of your simulation. This feature may result in a generation of a very high number of Pressure Zones, in particular in cases where the geometry is extrimely refined compared to the local cells dimensions. In such a case the following working is reported by the cloudHPC output.
+
+	@@@ WARNING: high number of Pressure Zones found - risk of poor scalability
+
+Generally, your simulation can perform correctly even if experience showed that scalability may suffer: you may notice your simulation will not execute as fast as it could. It is recommendable to reduce the number of pressure zones in these cases by using two FDS commands specified under the &MISC namelist:
+
+* MINIMUM\_ZONE\_VOLUME=1.0 . This command allows you to define a threshold volume value. Pressure zones with a volume lower than the threshold value are then converted into OBST or equivalent solid part
+* NO\_PRESSURE\_ZONES=T . Options to use for debug only, completely delete any pressure zone generated and separated from the main one
+
+### DEVC affecting performances
+---
+It's been noted that the presence of some specific DEVC in your FDS simulation may affect the performance of AMD processors. This issue is still under complete investigation with the FDS/NIST developpers, but it affects at least the following DEVC:
+
+* VISIBILITY
+* RADIATIVE HEAT FLUX
+* GAUGE HEAT FLUX GAS
+
+More DEVC may be affected and a complete list of all affected devices is not yet complete or available. Your simulation will run but it will not be able to use 100% of the computational power you are allocating of the AMD processors. For AMD processor a solution to this problem has not been found yet and the current best alternative would be to use either _hypercore_ or _hypercpu_ instances which are powered by INTEL processors. In any case, you'll receive the following warning message to monitor the situation:
+
+	@@@ WARNING: DEVC for _VARIABLE_ may slow down your simulation.
+	             Make sure you run on a hyper type of instances
+
+
+
+## OpenFOAM incorrect settings
+--- 
+
+### Incorrect dictionary
+---
+
+OpenFOAM requires a specific dictionary to work properly. In particular the minimum configuration requires three folders:
+
+* 0
+* constant
+* system
+
+When executing any openFoam related solver, the cloudHPC checks for the existance of the system/controlDict file and, when missing, the following error is reported.
+
+	@@@ ERROR: Cannot find system/controlDict
+	@@@        check your openFoam dictionary
+	@@@        Current folder content:
+
+Often this issue is related to uploading correctly the dictionary which requires uploading a [folder](storage.md#Upload_of_a_folder).
+
+### Multi-core analysis
+---
+
+OpenFOAM is configured to run in multi-cores mode on the cloudHPC. For this reason, when attempting to execute any openfoam solver and also the mesh generation with snappy, it is required the user to select nProc to be higher than 1. This means that vCPU must be equals to 2 in case we are using highcore machines or vCPU = 4 in case we use highcpu, standard or highmem configuration.
+
+The error message we are to receive depends on whether the openfoam solver is causing the issue:
+
+	@@@ ERROR: openFoam script runs with nProc > 1
+	@@@        select a higher number of vCPU
+
+of if the snappyHexMesh generation is causing it:
+
+	@@@ ERROR: snappy script runs with nProc > 1
+	@@@        select a higher number of vCPU
+
+### SnappyHexMesh general errory
+---
+
+It may happen that snappy is not able to generate a mesh. The reasons for this can be quite different: insufficient RAM, geometrical issues with input STL files, etc. Once the snappyHexMesh solver runs if the solver did not finish properly the following error message is reported:
+
+	@@@ ERROR: snappyHexMesh failure
+	@@@        check log.snappyHexMesh
+
+### General problem with OpenFOAM solver
+---
+
+When executing any simulation with any openfoam solver, the first control regards the presence of the _polyMesh_ folder in the dictionary uploaded. If this folder is not present the simulation is going to report the following error.
+
+	@@@ ERROR: polyMesh folder not found
+	@@@        Your simulation may fail
+
+
+### decomposeParDict
+---
+In order to run your OpenFOAM analysis, if you use our default solvers, it is recommended to use a correct settings of _decomposeParDict_. By default in fact the solver assumes:
+
+* decomposition method: scotch
+* numberOfSubdomains: automatically adjusted according to vCPU selected
+
+If you use an incorrect settings, the simulation will return an error message through the output as follows:
+
+	   @@@ ERROR: incorrect decomposeParDict file
+	   @@@        suggested method is scotch"
+	   @@@        current cores set in decomposeParDict:
+	   numberOfSubdomains 10
+	   @@@        make sure vCPUS matches this
+
+
+The OpenFOAM analysis might start anyway with the only difference that _numberOfSubdomains_ is not adjusted by the system and is up to the user using all the vCPU and cores allocated in the instance for your simulation.
+
+In case you need help, it is possible to refer to our [template](https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/OpenFOAM/system/decomposeParDict) and replace your current decomposeParDict with one that match the requests.
+
+### controlDict
+---
+In order to correctly set-up your controlDict file, it is mandatory to remember:
+
+* use '_application_' dictionary to specify the solver to use
+* use '_functions_' in order to extract your monitoring parameters. Everything defined here which is returned during the executing in the postProcessing folder is converted into a graph by the solver at runtime.
+
+It is recommandable to refer to this [template](https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/OpenFOAM/system/controlDict) to guide yourself into set-up this file.
+
+The cloudHPC executable requires that the parameter '_startFrom_' is set to begin from the latest available time step. In case your settings are differently, automatically the system modifies it so that it matches this and the following warning is then reported:
+
+	@@@ WARNING -> suggested to use startFrom latestTime in system/controlDict
+
+## Code Aster settings
+---
+Runnin Code_Aster on the cloudHPC requires the user to upload at least three files:
+
+* .export . It's the file that specifies which input file are going to be executed, where your mesh is located and which output have to be produced
+* .comm . It's your real simulation. It consist of basically a python script where a sequence of Code_Aster functions generates the FEM analysis and the results 
+* .med or .unv . It's your mesh. This can be in MED file format or UNV file format.
+
+We made available [this template](https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/code-aster) where you can actually see example of the above three files.
+
+### export file missing
+---
+The three files mentioned before (.export, .comm and .med/.unv) are mandatory to execute any analysis. In the file .export is missing the system reports you the following error.
+
+	@@@ ERROR: no export file detected
+# Welcome to the CloudHPC User Guide!
+
+<p align="center">
+   <img width="600" src="https://cloudhpc.cloud/wp-content/uploads/2023/03/CloudHPC-logo.png">
+</p>
+
+
+CFD FEA SERVICE offers the use of a CloudHPC service to run Your scripts for CFD, FEM and other simulations. The scripts accepted are: codeAster, code Saturne, FDS, OpenFoam, paraview and snappyHexMesh. The innovative CloudHPC system (High Performance Computing) allows you to rent the computational capacity made available, in order to run heavy and long engineering analyses. This method permits you to run your simulations in Cloud, thus directly on the [web-app](https://cloud.cfdfeaservice.it/), avoiding the use of your own local computer for this process. The results would be generated in the Web-app and easily downloaded.
+
+The offered service is restricted to only run the simulations, in order to:
+
+* take advantage of the large computational capabilities offered to your disposition; 
+* avoid using your own servers or computers; 
+* saving time for the simulations’ duration given the possibility to monitor properly the advance of the analyses and optimize the use of the computation capacity available.
+
+## Workflow
+---
+The Workflow for the proper use of the CloudHPC system of CFD FEA SERVICE, to run your simulations, is the following:
+
+* **Create File**: First of all, the script[s] file[s] should be developed on your local computer. Before using the cloud HPC, it is necessary to complete the model creation locally. The model script[s], input file[s], should be completed in your software.
+Consider that each script to upload should have a different name. For instance, if you want to modify the script and re-upload it, without losing the results of the previous simulation, then you have to rename the file. Simulations of file with the same name, lead to losing the monitoring and simulation's results of previous analysis. This would not happen only if the script is implemented with the restart string (check Restart paragraph). If so, the simulation would not delete the previous results even if the script has the same name, because the simulation will continue from where it was stopped.
+
+* **Upload File**: The input file should be uploaded in the web-app STORAGE available in your account. The script[s] can be uploaded in different ways as a single file or a compressed one.
+
+* **Execute Analysis**: It is possible to run the analyses in the SIMULATION menu. To execute the analysis, it is necessary to size the computational power and memory. Therefore, assigning the amount of vCPU and RAM to use. These characteristics are chosen depending on the size of your simulations and it is possible to monitor your analysis while running, in order to optimize your choice.
+
+* **Download results**: it is possible to download the results from the STORAGE menu. The results are uploaded by the web-app directly in the folder in which you uploaded the input file.
+
+All these steps are explored in this Guide.
+
+## Case settings
+---
+Every case should have tailored settings in terms of computational capacity. The CluodHPC System offers you machines with:
+
+* vCPU from 1 to 224 [Each virtual CPU (vCPU) is implemented as a single hardware hyper-thread]
+* RAM available of 1.0 GB RAM / 4.0 GB RAM / 8.0 GB RAM for each vCPU or 2.0 GB per each CORE
+* 400 Gb Hard Disk [standard for all simulations with few exceptions]
+* Unlimited Cloud Storage Space, for a maximum of 60 days. After this, the files will be automatically deleted.
+
+Each simulation you execute is performed on a virtual machine generated right for the time the simulation requires it and destroyed at the end of your analysis. The virtual machines allocated can be of two types:
+
+- hyperthreaded [with physical and logical processing units]
+- multicore only [with only physical processing units]
+
+The software you are going to run can benefit of physical only processing units or both physical and logical processing units. The users is strongly recommended to contact either the support team of cloudHPC or the software manufacturer in order to get information about the software features and benefit of the best possible scalability.
+# Monitor
+
+## Simulation time
+---
+cloudHPC provides an estimate - ETA - of the total simulation's duration. This is provided after the simulation has been executed and it is available in your Output as highlited by the image below. The ETA estimate is available only for the following software:
+
+* FDS [all versions]
+
+<p align="center">
+   <img width=650 src="https://cfdfeaservice.it/wiki/cloud-hpc/images/ETA.png">
+</p>
+
+Note: The provided duration should be considered a preliminary estimate and does not constitute a contractual element or a binding quote. Consequently, the final cost will be determined based on the actual consumption measured at the end of the activity.
+
+### Manual estimate
+---
+
+To manually evaluate the simulation’s duration, you can check how many iterations are pursued and in how much time. This estimation can be done after at least 2 hours of simulation.
+You can then evaluate how many seconds of simulation are pursued in real-time. Hence, for instance, how many seconds of simulation are calculated in 2 hours. If you want to pursue a simulation of 600 seconds and you valuate that a simulation time of 120 seconds is calculated in 2 hours analysis. Then you would know that your simulation would take approximately 60 seconds of simulation time each hour. Consequently, it would take 10 hours to complete a simulation time of 600 seconds. 
+
+<p align="center">
+120s : 2h = 60s/h
+
+600s : 6s/h = 10 h
+</p>
+
+## Runtime monitor
+---
+The cloud HPC system, offers you the possibility to monitor your analysis in runtime during the simulation and, at the same time, to check the usage of the hardware resources in terms of vCPU and RAM, during the analysis. In order to access the monitor you need to enter the simulation details by clicking the "View" button of the analysis you want to monitor.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_13_VIEW_SIM.png">
+</p>
+
+Considering the software you are using, it's possible to monitor several results during the simulation:
+
+* **OPENFOAM**: the cloud HPC authomatically generates a chart for each runtime post-processing activated in _controlDict_. It is important that you set it before launching the analysis with the post-processing you want to detect: residuals, max pressure/velocity, temperatures, flow calculations, etc. In order to have a template of the controlDict file you can check [here](https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/OpenFOAM/system/controlDict).
+
+* **FDS**: they system authomatically convertes into chart every CSV file generated by FDS during the runtime. In order to see the results you need to set up &DEV (devices) and properly assign them variables to monitor.
+
+<p align="center">
+   <img width="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_15_data_monitoring.png">
+</p>
+
+## Runtime logs
+---
+Every simulation software produces a log file which is displayed directly at runtime in the proper section of the web app. It is possible for you to check these logs in two ways:
+
+1. Through the **Output** section where you can see a brief summary of the simulation status
+1. In the Logs section where every log file produced is reported and made accessible. The access remains also when the simulation is terminated as a reference 
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/LogFiles.jpg">
+</p>
+
+## Remote desktop
+---
+For enabled accounts, it is possible to access the virtal machine where the simulation is actually performed via remote desktop. This feature is available under the "view" page of each simulation and gives you access to all hardware resources of the instance where simulation is performed. With that you can:
+
+* monitor your running process
+* check status of the hardware resources
+* run your preferred post-processing software such as ParaView, SALOME or Smokeview
+
+The remote desktop is made available for all simulations where status is RUNNING. To access it just enter the "view" page of the simulation and scroll down at the bottom of the page.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/RemoteDesktop.jpg">
+</p>
+
+<p align="center">
+   <a href="https://www.youtube.com/watch?v=yPJWTfmcsY4"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
+</p>
+
+## Hardware monitor
+---
+Beyond results extracted by the solver, at any time it is possible to monitor the usage of vCPU and RAM are. These graphs are important in order to understand if the computational capacity chosen for your simulation is enough or overestimated.
+
+As a general rule, you can try to always have at least 1000 Mb available in the _Free line_ (red).
+
+<p align="center">
+   <img width="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_16_CPU_good.png">
+   <img width="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_17_RAM_good.png">
+</p>
+
+## SSH Connection
+---
+Advanced users can also connect via SSH to the instances where the simulation is running. This allows you to enter the instance and get full control of the running analysis. You are also given the possibility, for example, to create/edit/cancel files.
+
+Note: CFD FEA SERVICE SRL can't take resposibility for the user actions taken when he enters the instance. In particular if you stop the simulation or delete all the results produced by the simulation, it's impossible to us to retrieve these information.
+
+### Prerequisites
+---
+In order to get SSH access to the running simulations make sure you have correctly saved your public key into your profile such as described in the following image:
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/SSHkey.jpg">
+</p>
+
+In order to retrieve your public key on Linux based systems, you can just run the following command on a terminal:
+
+	cat .ssh/id_rsa.pub
+
+### Connect via SSH
+---
+Once you have saved your public key to access via SSH to a running instance type the following command:
+
+	ssh -X -o "StrictHostKeyChecking no" cloudhpc@SIMULATION_IP_ADDRESS
+
+where SIMULATION\_IP\_ADDRESS is reported in the "view" page of the running analysis. The same result can also be achieved using the script [cloudHPCexec](https://github.com/CFD-FEA-SERVICE/CloudHPC/wiki#for-advanced-users) by typing:
+
+	cloudHPCexec -ssh SIMULATION_ID
+# CLOUD HPC USER GUIDE
+
+[INTRODUCTION](index.md)
+
+[ACCOUNT](account.md)
+
+[STORAGE](storage.md)
+
+[SIMULATIONS](simulation.md)
+
+[MONITOR](monitor.md)
+
+[SCALABILITY](scalability.md)
+
+[BILLING](billing.md)
+	
+[ERRORS](errors.md)
+
+[TUTORIALS](https://www.youtube.com/playlist?list=PLQGw2-08T-MFtKEKscwJyyzJMfLwKA6Cw)
+
+[TOOLS]()
+
+   * [cloudHPC dedicated tools](https://github.com/CFD-FEA-SERVICE/CloudHPC/releases)
+   * [PYROSIM - Execution analysis](https://cloudhpc.cloud/2022/05/07/execute-analysis-using-pyrosim-on-cloudhpc/)
+   * [PYROSIM - Import results](https://cloudhpc.cloud/2023/03/07/import-cloudhpc-fds-results-in-pyrosim/)
+
+[REST API]()
+
+   * [Introduction](API-INTRODUCTION.md)
+   * [APIKEY](APIKEY.md)
+   * [API v2](API-v2.md)
+   * [API v1](API-v1.md)
+   * [Example](https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleAPI)
+# Scalability of Your Simulations
+
+In order to achieve good scalability, it is important for you to know exactly the possibilities made available by the cloudHPC platform. There are, in fact, two different types of parallelizations:
+
+* MPI - Multicore approach
+* Hyper-threading
+
+The differences between these two approaches are discussed in [this post](https://cloudhpc.cloud/2022/03/18/multicore-vs-multithread-a-little-guide/). Depending on the RAM selection for each instance, you are simultaneously selecting which of the two parallelization methods is activated for your simulation. The following table gives you an overview of the possibilities available.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/InstancesParallelization.jpg">
+</p>
+
+It is important to highlight that for _highcpu_, _standard_, and _highmem_ instances, as the machine configuration is exactly the same, the only difference is the RAM which is actually allocated (from 1GB per vCPU to 8GB per vCPU). It is suggested to attempt the execution on _highcpu_ [cheaper configuration] before trying _standard_ or _highmem_ as from the scalability point of view allocating more RAM does not give any speedup in your analysis.
+
+## FDS
+
+FDS has the possibility to use both scalability methods. Good scalability requires the user to properly set up the input .fds file, and in particular, the mesh definitions. The simulation scalability is generally affected by several parameters among which:
+
+1. Mesh size in terms of total number of cells
+1. Cells distribution among the the cores allocated
+1. HRR curve type and location in the fluid domain
+1. Number of pressure zones
+1. Presence of particles
+1. Chemical reaction calculation
+
+The following procedure represents a simple guideline that can help users achieve good scalability. Thanks to the following instructions it is possible to avoid issues for the first two points in the above list which are the ones with a clearer mathematical representation.
+
+Note: the cloudHPC attempts to provide guidelines also for some of the other points in the above list even if there are no precise guidelines to assess them. An example is the [pressure zone warning](errors.md#High_number_of_Pressure_ZONES).
+
+### Choosing the right vCPU for your FDS simulation
+
+* In order to reach good scalability, **you must have** multiple &MESH lines in your FDS file - so in case you have to [split your big meshes](https://cloudhpc.cloud/2022/09/15/split-fds-mesh-using-blenderfds/) into smaller ones.
+
+* Calculate the number of cells for each &MESH line of your FDS input file. E.g., ```&MESH ID='mesh1', IJK=24,38,14, XB=... /``` Number of cells -> 24 * 38 * 14 = 12,768 cells.
+
+* Make sure each &MESH has at least 15,000/20,000 cells. If this condition is not met, use the MPI\_PROCESS to assign two or more meshes to a single core.
+
+* Ensure that all the &MESH have a similar number of cells - cells are equally distributed among all the meshes. If this condition is not met, use the MPI\_PROCESS to improve the load balancing.
+
+* If all the above conditions are satisfied, select vCPU according to the following rules:
+  - vCPU = Number of &MESH * 2 for instances _highcpu_, _standard_, _highmem_ or _hypercpu_.
+  - vCPU = Number of &MESH for instances _highcore_ or _hypercore_.
+
+Note: due to processors infrastructure, the presence of some DEVC in your FDS simulation as for example GAUGE HEAT FLUX GAS, RADIATIVE HEAT FLUX and VISIBILITY may reduce the computational performance on AMD processors. In these cases and if the simulation delivery time is important, we recommend using _hypercore_ or _hypercpu_ instances.
+
+### MPI\_PROCESS Parameter
+
+In case your &MESH are smaller than 15,000/20,000 cells or cells are not equally distributed among meshes in your FDS analysis, you can use the MPI\_PROCESS parameter to fix this situation. This is a parameter each &MESH can be assigned and represents a group number we are assigning the specific mesh [starting from group 0]. An example is reported here:
+
+
+```
+&MESH ID='mesh1', IJK=..., XB=..., MPI_PROCESS=0 /
+&MESH ID='mesh2', IJK=..., XB=..., MPI_PROCESS=1 /
+&MESH ID='mesh3', IJK=..., XB=..., MPI_PROCESS=1 /
+&MESH ID='mesh4', IJK=..., XB=..., MPI_PROCESS=2 /
+&MESH ID='mesh5', IJK=..., XB=..., MPI_PROCESS=3 /
+&MESH ID='mesh6', IJK=..., XB=..., MPI_PROCESS=3 /
+```
+
+Since each group assigned is executed by one single core, it is possible to assign now at least 15,000/20,000 cells to each group and improve the cell distributions among the groups as shown in the following image.
+
+<p align="center">
+   <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/MPIprocessAssign.jpg">
+</p>
+
+Once the groups have been assigned with MPI\_PROCESS, the user can now move forward by following these instructions:
+
+* Order the &MESH so that MPI\_PROCESS are in ascending order.
+
+* Execute a simulation and select vCPU according to the following rules:
+  - vCPU = Two times the MPI\_PROCESS groups number for instances _highcpu_, _standard_, _highmem_ or _hypercpu_.
+  - vCPU = Number of MPI\_PROCESS groups for instances _highcore_ or _hypercore_.
+
+Note: due to processors infrastructure, the presence of some DEVC in your FDS simulation as for example GAUGE HEAT FLUX GAS, RADIATIVE HEAT FLUX and VISIBILITY may reduce the computational performance on AMD processors. In these cases and if the simulation delivery time is important, we recommend using _hypercore_ or _hypercpu_ instances.
+
+### Load Distribution Feedback
+
+The computational load assigned to each process is proportional to the total number of cells every process needs to compute during the calculation. For this reason, at the beginning of your analysis, a process load bar graph is generated to provide you info about load distribution. Each bar represents the cells to be computed by each single process of the analysis. An ideal case requires a similar number of cells among all processes, and if this condition is not satisfied, it is recommended to use the MPI\_PROCESS parameter to redistribute cells.
+
+<p align="center">
+   <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/ProcessorsLoad.png">
+</p>
+
+The above situation represents an ideal case: all processors are assigned a similar number of cells and consequently are expected to have a similar workload to complete. A situation like the one sketched below shows an imbalance in the workload among processors: the processor 0 is assigned almost 200,000 cells while all the other processors are assigned at most 60,000 cells. To improve this situation you can follow instructions [given earlier](scalability.md#FDS_scalability) to redistribute cells among processors.
+
+<p align="center">
+   <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/MeshLoadDistributionToImprove.png">
+</p>
+
+If the above method is not sufficient to distribute cells equally among processors, you can split [bigger meshes](https://cloudhpc.cloud/2022/09/15/split-fds-mesh-using-blenderfds/) and attempt again a distribution.
+
+### FDS Mesh Decomposition
+
+The cloudHPC platform is able to decompose the FDS simulation in some peculiar cases. This lets the user an easier way to achieve good scalability thanks to a mesh division performed by the system. The pre-conditions to meet in order to let the system decompose your mesh are:
+
+* Generate an input FDS file with just one _&MESH_ line.
+* A mesh with at least 40,000 cells.
+* Select vCPU to be 4 or more.
+
+In these situations, the _output_ provides you the following plot when the mesh decomposition occurs:
+
+<p align="center">
+   <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/fdsdecomposition.png">
+</p>
+
+In there you can find the following parameters:
+
+* INPUT MESH: string of the input mesh.
+* REQU. DIVS: required divisions - usually equals to the number of vCPU.
+* Init. IJK: I, J, K set on the input mesh.
+* MESH CELLS: Input mesh total number of cells.
+* Limit. DIV: Max number of divisions allowed to achieve good scalability (15,000 cells per each _&MESH_ line).
+* INPUT XB: Input mesh bounding box.
+* DECOMPOS.: Decomposition performed along the three axes: X, Y, and Z.
+* Final MESH: Number of the decomposed meshes performed. It can be lower than the Limit. DIV value depending on I, J, and K possible divisions.
+
+Once the mesh decomposition is performed, you can check the final results using the [load distribution feedback](scalability.md#Load_Distribution_Feedback).
+
+Note: always perform a check by using smokeview to verify the smoke and temperature diffusion when the decomposition occurs.
+
+### More
+
+* <a href="https://www.youtube.com/watch?v=sMQwgKK_GYM" target="_blank">Cloud HPC - Use the best scalability for your FDS analyses</a>
+* <a href="https://cloudhpc.cloud/2022/01/28/fds-scalability/" target="_blank">How to reach good scalability in FDS</a>
+
+## OpenFOAM
+
+As far as scalability is concerned, OpenFOAM only uses a multi-core approach. This makes the _highcore_ and the _hypercore_ instances the most suitable when running these analyses on cloudHPC. The system automatically adapts your _decomposeParDict_ file to match the required number of vCPU you made available to the analysis. As far as this update works correctly, just follow the [hints](errors.md#decomposeParDict) on the decomposeParDict file.
+
+* <a href="https://cloudhpc.cloud/2025/07/08/pushing-the-boundaries-cloudhpcs-journey-at-the-openfoam-workshop-2025-hpc-challenge-in-vienna/" target="_blank">Pushing the Boundaries: CloudHPC’s Journey at the OpenFOAM Workshop 2025 HPC Challenge in Vienna!</a>
+
+## Code Aster
+
+Code Aster can take advantage of both OpenMPI and OpenMP at the same time. The versions currently compiled under the cloudHPC platform do not always implement both methodologies. You can execute simultaneously OpenMPI/OpenMP on versions marked with the suffix "_mpi" such as:
+
+* 14.6 - Compiled with OpenMPI/OpenMP
+* 15.4 - Compiled with OpenMPI/OpenMP
+* 16.4 - Compiled with OpenMPI/OpenMP
+* 17.0 - Compiled with OpenMPI/OpenMP
+
+When using an OpenMP-only version, the ".comm" file coming from the AsterStudy is usually adequate to use the hardware resources you are selecting. For OpenMPI/OpenMP versions instead you have to adapt the ".comm" file following [our template](https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/code-aster/input.comm).
+
+From your ".export" file, the system detects the "mpi_nbcpu", number of MPI CPUs to use. This number represents the number of MPI cores to apply to your simulations. Any exceeding vCPU then allocated as thread (OpenMP) to your analysis.
+
+* <a href="https://cloudhpc.cloud/2024/10/02/scalability-performance-code_aster-vs-calculix/" target="_blank">Scalability performance code_aster Vs calculiX</a>
+* <a href="https://cloudhpc.cloud/2025/09/15/decoding-performance-a-scalability-showdown-between-calculix-and-code_aster/" target="_blank">Decoding Performance: A Scalability Showdown Between CalculiX and Code_Aster</a>
+
+## CalculiX
+
+CalculiX is a finite element analysis (FEA) program that comes in a few different versions, primarily based on how it's set up to solve complex problems.
+
+* Default Version: The standard version of CalculiX uses a built-in solver library called SPOOLES. This is a good general-purpose option for many simulations.
+
+* Custom Versions: For more demanding calculations, CalculiX can be compiled with different, more advanced solver libraries. These custom versions are easy to spot because their names have a specific ending, or "suffix."
+
+    * PARDISO or PASTIX: These suffixes indicate that the program uses a powerful third-party solver library designed for high-performance computing.
+
+    * MPI: This suffix means the program was compiled with OpenMPI, a library that allows it to run on multiple computers or processors at the same time (also known as parallel processing). This is crucial for solving very large and complex models much faster.
+
+In short, the names of the CalculiX solvers tell you exactly what's inside—whether it's the standard SPOOLES library or a more specialized, high-performance option like PARDISO, PASTIX, or one optimized for parallel computing with MPI.
+
+* <a href="https://cloudhpc.cloud/2024/10/02/scalability-performance-code_aster-vs-calculix/" target="_blank">Scalability performance code_aster Vs calculiX</a>
+* <a href="https://cloudhpc.cloud/2025/09/15/decoding-performance-a-scalability-showdown-between-calculix-and-code_aster/" target="_blank">Decoding Performance: A Scalability Showdown Between CalculiX and Code_Aster</a>
+
+## OpenRADIOSS
+
+* <a href="https://cloudhpc.cloud/2025/05/27/unlocking-extreme-performance-openradioss-scalability-on-cloudhpc-with-amd-epyc-processors/" target="_blank">Unlocking Extreme Performance: OpenRADIOSS Scalability on CloudHPC with AMD EPYC Processors</a>
+# Simulations
+
+Once the input file is uploaded in the STORAGE list, it is possible to start the simulation. The analyses can be initiated in the menu LIST SIMULATIONS.
+
+In the Simulation menu you can:
+
+* execute the analysis
+
+* monitor the analysis
+
+* interrupt the analysis
+
+* restart the analysis
+
+Here are also suggested hints for setting the computational capacity tailored for your simulation and how to estimate the simulation time.
+
+## Execute a simulation
+---
+In order to run the simulation, start by Add one as shown in the following picture.
+
+<p align="center">
+   <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_11_sim.png">
+</p>
+ 
+A new page will appear. This page is divided into two different parts:
+
+* The first part requires you to insert the information about the vCPU, RAM and instance type you want to use
+   - Each virtual CPU (vCPU) is implemented as a single hardware hyper-thread except for the highcore and the hypercore instances where the CPU is implemented as a physical vCORE. Not all the software available can benefit of the hyper-thread architecture.
+
+   - RAM represents the RAM memory allocated and made available for the simulation. The selected RAM is allocated per each vCPU defined before. For _highcore_ and the _hypercore_ selections a _multi-core instance_ without hyper-thread is allocated - usefull to take full advantage for some specific software where hyper-thread is not implemented. For _basegpu_ selection NVIDIA TESTLA T4 GPUs are allocated proportionally to the vCPU selected. A summary of all choices is reported here:
+        * _standard_: this selection allocates a hyper-thread instance with 4GB of RAM for each vCPU selected
+        * _highmem_: this selection allocates a hyper-thread instance with 8GB of RAM for each vCPU selected
+        * _highcpu_: this selection allocates a hyper-thread instance with 1GB of RAM for each vCPU selected
+        * _highcore_: this selection allocates a multi-core only instance with 2GB of RAM for each vCPU (core) selected
+        * _hypercpu_: this selection allocates a hyper-thread instance with 1GB of RAM for each premium vCPU selected
+        * _hypercore_: this selection allocates a multi-core only instance with 2GB of RAM for each premium vCPU (core) selected
+        * _basegpu_: this selection allocates a hyper-thread instance with 8GB of RAM per each vCPU selected and 1 NVIDIA TESLA T4 every 2 vCPU selected
+
+   - REG/SPOT are the two types of machines available to run the analysis. They consist of the same machine types, but while REG are exclusively used for the analysis, SPOT machines can be restarted at any time during the calculation. After the machine reboots, the simulation restart from the last saved restart file. The SPOT machine restart probability is generally affected by:
+
+        1. The number of SPOT simulations launched: about 30% of simulations are affected by at least one restart
+        1. The total time spent with SPOT machines on the platform: usually a restart occurs every 10 or more hours of use of this type of machines
+        1. The solver and the number of vCPU allocated to each SPOT machine can modify the above frequencies and probabilities
+
+The above info are indicative and different users can experience different behaviours.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_12_CPU_RAM_SETTING.png">
+</p>
+
+* The second part requires you to insert the _folder_ where you want to operate and the [software](https://cloudhpc.cloud/#softwareavail) you want to use. In particular you have:
+   - Folder represents a list of folders available in the storage among which you have to pick the one where you want to operate
+   - Mesh is a list of folders available in the storage. It is an optional argument that can help users with specific software as explained below:
+      * _OpenFOAM_: copy of the polyMesh and triSurface folder from the Mesh storage folder into the Folder selected where the solver is going to operate.
+   - Script is a list of available solvers you can run on the Folder you selected
+
+The commands can be classified into two types: the first classification regards the mandatory/non mandatory commands, the second regards the advanced parameters and the basic ones. Some parameters may not appear in your account because they must be enabled by administrator. For these parameters Default values are going to be used authomatically by the cloudHPC platform. You can ask our administrator to enable you the advanced parameters by emailing us at [info@cfdfeaservice.it](mailto:info@cfdfeaservice.it).
+
+| Command | Mandatory | Advanced | Default |
+|---------|:---------:|:--------:|:-------:|
+| vCPU    |     ✅     |          | -       |
+| RAM     |     ✅     |          | -       |
+| REG     |     ❌     |     ✅    | REG     |
+| Folder  |     ✅     |          | -       |
+| Mesh    |     ❌     |     ✅    | -       |
+| Script  |     ✅     |          | -       |
+
+### Instance hard disk
+---
+Every time you execute a simulation, a specific hard disk is allocated to actually compute the simulation. Currently most of the times this hard disk size is 400 GB. There are few exceptions though:
+
+1. 4 vCPU machines (every type of RAM) are provided an hard disk of 200 GB
+1. 1 vCPU and 2 vCPU machines (every type of RAM) are provided an hard disk of 100 GB 
+1. highmem/REG machines with at least 16 vCPU are provided an hard disk of 2000 GB
+
+Keep in mind these limitations when executing simulations on the platform.
+
+### SPOT instance correct setup
+---
+Since SPOT instance my be subjected to restart at any time during the simulation, it's important the user correctly set-up the case in order to avoid losing computing power. Every software requires a peculiar set-up which is demanded to the user.
+If is importanto to keep in mind the restart is just a probability which mostly depends on the following parameters:
+
+1. The number of SPOT simulations launched: about 30% of simulations are affected by at least one restart
+1. The total time spent with SPOT machines on the platform: usually a restart occurs every 10 or more hours of use of this type of machines
+1. The solver and the number of vCPU allocated to each SPOT machine can modify the above frequencies and probabilities
+
+More info on this topic can also be found on this webinar:
+
+<p align="center">
+   <a href="https://www.youtube.com/watch?v=oYfvGqfBqqI"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
+</p>
+
+By default, new account do not have SPOT instances enabled. The reason for this is prevention of misuse of this type of instance. In order to enable SPOT instances on your account fill [this form](https://forms.gle/GGYdZxo5TyGcsvKF7).
+
+#### FDS
+---
+In order to save restart file with a certain frequency, FDS requires the user to set the DT\_RESTART parameter under the DUMP command:
+
+    &DUMP DT_RESTART=300.0/
+
+This tells the solver to save a restart file every 300.0 s of simulated time. If in a SPOT instance a reboot occurs, the system automatically looks for restart file produced by FDS and, if present, restart the simulation from those.
+
+Note: Our team is in contact with the NIST - FDS developer. We strongly recommed to use the most recent installed FDS versions to make sure your simulation won't encounter issues or bugs which may alter or affect the results of your simulations.
+
+The user goal is to set-up a DT_RESTART time which allows saving a restart file every 2 to 5 hours. With this frequency it's unluckily your simulation is going to suffer of any slow down due to the restart file writing and, at the same time, in case of restart the amount of simulated time lost is reduced to a minimum. 
+
+#### OpenFOAM
+---
+When running OpenFOAM simulations the restart options are to be configured in the system/controDict file. In particular the following options allow the user to get full control:
+
+    startFrom		latestTime;	//in case of restart, restart from last saved time step
+    writeControl 	timeStep;	//control timing of writing results
+    writeInterval	100;		//writing results frequency
+    purgeWrite		5;		//keeps only the 5 most recent results and cancels older
+
+When using SPOT instances, the user has to impose startFrom latestTime, so that in case of instance reboot, the simulation restarts from the last saved time step. Then it's possible to set the frequency of the saved results by setting the writeInterval option.
+
+#### Other software and custom-script
+---
+Other software and custom-script are not tested to work properly with SPOT instances and a reboot of your simulation means losing all computed time up to that moment. For this reason, SPOT instances are not made available to all users by default.
+
+## Execute a custom-script
+---
+Among other software, it is also possible to execute a custom script in _bash_ or _python_. In order to do you can use the _custom-script_ command available in the dropdown script selection as in the following image:
+
+<p align="center">
+   <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/CustomScript.png">
+</p>
+
+This script will authomatically execute any bash script (.sh) or python script (.py) file present in the folder. So you just have to upload the script you want to execute together with the other files required by your study inside a specific folder in your storage.
+
+In order to know more about this feature, please contact our support service via chat.
+
+## Execute a static instance
+---
+Beyond simple script, it is possible to execute _static instances_. These instances are different compared to others because they do not execute any particular software, but they are simply hardware resources made available to the user via remote-desktop or SSH connection.
+
+These particular instances are designed to help the user in two different phases:
+
+1. Debugging the set-up of a case before launching the solver. 
+1. Run specific UI installed on cloudHPC via the [remote desktop](https://cfdfeaservice.it/wiki/cloud-hpc/#!monitor.md#Remote_desktop)
+1. Post-Processing the results once the simulation has been completed.
+
+It's important to mention that these instances are static, so no particular script is executed on that.
+
+Note: It's a user duty controlling and stopping them when his activities are completed.
+
+These instances can in fact be stopped using the usual SOFT/HARD stop functionalities. The execution of a static instance works exactly like any other software. You just have to pick any of the scripts with the "-static" suffix in the list.
+
+<p align="center">
+   <img width="500" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/StaticInstance.png">
+</p>
+
+### Specific UI installed
+---
+
+In order to access one of the software with UI (User Interface) installed on cloudHPC via remote desktop you can follow the tutorial in the following video where a general methodology is highlighted.
+
+<p align="center">
+   <a href="https://youtu.be/Jk8YpJRFOkQ"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
+</p>
+
+The following table instead shows you the most common UI available on the platform and the static instance you have to run in order to access them. For some of the UI the table reports the terminal command to be executed to actually access the UI.
+
+<p align="center">
+   <img width="500" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/SoftwareStatic.png">
+</p>
+
+### More info and details
+---
+
+To get more info and details it's possible to see the following youtube video about the official release of the remote desktop where a static instance use has been described.
+
+<p align="center">
+   <a href="https://www.youtube.com/watch?v=uNq3D9jShEk"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
+</p>
+
+In order to know more about this feature, please contact our support service via chat.
+
+## Soft and Hard stop
+---
+The simulation can be stopped in the SIMULATION list as shown below.
+
+<p align="center">
+   <img width="500" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_18_stop_sim.png">
+</p>
+ 
+There are two ways to stop the simulation:
+
+### Soft Stop
+---
+The soft stop can interrupt the simulation and save the results obtained until that moment. This is suggested when you don’t want to continue the simulation forward because you reached already the needed results or if you want to stop your simulation with the idea of continuing it later.
+
+### Hard Stop
+---
+The hard stop kills your simulation without saving any results.
+
+<p align="center">
+   <img width="500" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_19STOP.png">
+</p>
+
+Note: after a hard stop, the system deletes the results computed by your simulation without any possibility of restoring them.
+
+## Restart
+---
+In general to restart a simulation once this has been terminated or stopped with a Soft stop, you just have to enter your 'Simulations' page of the cloudHPC portal and add a new simulation where _vCPU_, _RAM_, _folder_ and _script_ **exactly match those** of the analysis you want to restart. There are some specific differences depending on the software you are currently using for which the following extra hints are to keep into consideration.
+
+### Fire Dynamic Simulator
+---
+For FDS simulations it is possible to restart the simulation automatically if your T\_END parameter has not been reached yet - in case, just [edit the .fds file](https://cfdfeaservice.it/wiki/cloud-hpc/#!storage.md#Edit_an_existing_file) and increase this parameter. The platform detects the presence of a _.restart_ file produced by a precursor simulation and, in case, restarts the simulation. It's important to monitor the frequency FDS saves restart files using the appropriate parameter in your .fds file:
+
+    &DUMP DT_RESTART=300.0 /
+
+### OpenFOAM
+---
+The file to modify and substitute is the file _controlDict_ located in the _system_ Folder. This is the one collecting the information for restart. Modify this dictionary so that matches the following parameters:
+
+    startTime      latestTime;
+    endTime        XXX;
+
+where endTime must be greater that the time the simulation is restarting from. This string means that the simulation would restart from the results in the last time folder saved. Note that, if you leave this option as a default in your controlDict file, it allows you to start from 0 or restart from the latest time depending just on the time steps saved for openFoam.
+
+### Code ASTER
+---
+The script to modify in local and substitute in the web-app's STORAGE folder is the file .comm. To restart the file you need to add the string:
+
+    POURSUITE()
+
+You can find a detailed procedure in this [blog post](https://cloudhpc.cloud/2022/09/14/resume-your-code_aster-analysis/)
+# Storage
+
+The STORAGE is a cloud deposit for your input files and results. Hence, they will be available in the web-app for you to download and modify. Once the input file[s] to run is completed in local, it should be uploaded in the Web-App through your own CFD FEA SERVICE account. 
+
+In the STORAGE list you can:
+
+* Upload a file
+
+* Modify a file
+
+* Duplicate a folder
+
+* Download a file and simulation results
+
+* Delete a file
+
+Note: the STORAGE is not intended for long term archiving. Files are deleted after 60 days automatically by the system **with NO possibility of restoring them**.
+
+## Upload of a file
+---
+You can upload a single file on the STORAGE of the platform by entering the "STORAGE" page and then clicking on "Add".
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_01_input.png">
+</p>
+
+In the new page you have three different options to select:
+
+* **Dirname drop-down menu**: this menu allows to select the folder where you want to save your file. The root element "/" represents the base element of the storage from which you can find all the nested directories.
+* **Dirname text box**: this menu allows to create a new folder where the file is going to be uploaded. You just have to enter the folder name keeping in mind the folder location is specified in the _Dirname drop-down menu_. Special characters such as *, ?, $, etc. are not accepted in folder names.
+* **File box**: the are where you can drag-and-drop your files or, alternatively, click on "Add more" to add more files.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_02_upload.png">
+</p>
+
+After setting all the parameters of this page, you can press "Save" at the bottom to actually upload the file and save it on your own storage.
+
+## Upload of a folder
+---
+Currently the platform does not allow to upload a whole folder, in particular when subfolders are present. To actually achieve this we recommend to use compressed files in one of the many formats accepted: _rar_, _zip_, _tar.gz_, _7z_, _xy_. More file format are implemented and in case you can make a request to the support to add a specific one.
+
+Compressed files, regardless of their format, need to be compliant with one of the two methodologies accepted, which differs on the definition of case folder directory. Make sure you follow one of the two methods.
+
+### Upload of a locally compressed folder
+---
+* Create in your computer a **folder** in which all the input files and folders are collected.
+
+* Compress the **folder** in one of the accepted file formats. As a result, when you open your compressed folder there should be another folder in which are collected the input files.
+
+* Make sure your **file name exactly match the folder name contained** inside of the file followed by the file extension.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_03_COMPRESSED.png">
+</p>
+ 
+* Upload the compressed folder. In this case, it is necessary to upload the compressed file without inserting it in a folder in the Web-app. This is possible if you upload the file without inserting a string in the Dirname text box.
+
+<p align="center">
+   <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_04_UPLOADCOMPRESSED.png">
+</p>
+ 
+When the simulation is started, the file will be extracted, and the web-app automatically creates a folder for the results in the STORAGE. The following video shows you the main possibilities to upload a whole folder on the storage using a compressed file.
+
+<p align="center">
+   <a href="https://youtu.be/ud31zQlQCF4"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
+</p>
+
+### Upload compressed files inside a folder created in the web-app
+---
+* Compress in your local computer all files/folders you want to upload.
+
+* Make sure that once you open the compressed file you **directly access the input file/folders** without their root folder.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_05compressd2.png">
+</p>
+ 
+* Upload the compressed file in the STORAGE list, **inserting it in a folder** directly created in the web-app by entering the folder name on the Dropdown text box.
+
+<p align="center">
+   <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_06_UPLOAD_compressed_2.png">
+</p>
+
+### Correct storage with compressed files
+---
+If the compressed files are uploaded correctly for method 1 and 2, the uploaded files should appear in your STORAGE list as shown below.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_07compressd2e1.png">
+</p>
+
+## Edit an existing file
+---
+It is possible to edit a file which is already present in the storage. To do so just go to the file directory and click on the "Edit" icon as in the following image:
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/EditFile1.jpg">
+</p>
+
+Once the file opens you can edit:
+
+1. Dirname to modify its location
+1. Name to modify the filename
+1. Content to modify the file content [available only for certain file formats only]
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/EditFile2.jpg">
+</p>
+
+Click "Save" to save the updates.
+
+## Duplicate a folder
+---
+
+In case a copy of an existing case has to run with modified settings, it is possible to duplicate a folder in your storage using the _Copy_ functionality. This generates a new folder with the pedix _\_copy_ as highlighted by the following image.
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/duplicate.png">
+</p>
+
+
+## Download results
+---
+The CloudHPC makes the results of your simulations available through the STORAGE. Inside of it, you can find the folder chosen when running a simulation and, inside of this folder, the results of the analysis. Results are created and uploaded in the STORAGE folder on these conditions:
+
+1. At the end of every simulation RUN (regardless of the final simulation status)
+1. Every 10 hours of simulation RUN
+1. When user clicks the "SYNC" button as showed in the following image.
+
+<p align="center">
+   <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/SYNC.png">
+</p>
+
+By pressing SYNC on the simulation LOG you can find a specific log line saying partial result is being generated and uploaded onto the storage.
+
+<p align="center">
+   <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_08_carico_2.png">
+</p>
+ 
+In order to download the results, you should open the folder in the storage and download the single results’ file, which is the following for each software:
+
+* FDS.tar.gz
+
+* OPENFOAM-solution.tar.gz
+* OPENFOAM-constant.tar.gz
+* OPENFOAM-system.tar.gz
+
+* SATURNE-solution.tar.gz
+
+* CODE-ASTER.tar.gz
+
+* CALCULIX.tar.gz
+
+* OPENRADIOSS.tar.gz
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_09_dwonload_results.png">
+</p>
+
+### Handle tar.gz files on Windows
+---
+tar.gz files are compressed archive. This file format is being used because of its high capability of reducing the size of the files to download. There are specific software you can install on Windows to unpack the content of these files. Some of them are:
+
+* [7zip](https://www.7-zip.org/download.html)
+* [WinRar](https://www.win-rar.com/download.html?&L=11)
+* [WinZip](https://www.winzip.com/it/download/winzip/)
+
+Please make sure your computer has at least one archive manager installed before moving further. Once you finish download tar.gz file from the storage, to uncompress it just right click on the file and go to the archive manager (like 7zip in the example below) and select "Extract here" in the sub-window it appears. 
+
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/7zip-file-uncompress.jpg">
+</p>
+
+Some archive managers, such as 7zip among the ones suggested, after needs a double extraction: the first extraction is able to unpack the .gz file format and generates a .tar file, while the second extraction unpacks the .tar file.
+
+## Delete old files
+---
+Note: the files in the STORAGE list would be automatically deleted by the system within 60 days from creation. This process is needed in order to clear the space used and make it again available. The whole application, consequently, is not intended for remote storage of data. For this, it is recommended to download your files and results when the simulation is completed.
+
+At any time the user can delete old simulations files or folders by using the queuing system. To do that, first select the files and folders to delete, then apply the 'DELETE' action and finally submit the job.
+
+![](images/FIG_10_delete_storage.png)
+
+Note: once the deletion process has been submitted, it takes few seconds to actually delete the files. Just wait for it to finish before submitting new DELETE.
+# Tools for Windows and Linux
+
+CFD FEA SERVICE srl provides a number of tools to make it easier the interaction with the cloudHPC platform to the users. These tools often requires the use of the [APIKEY](APIKEY.md) which is available in your profile page.
+You can have a look at the tools available, download and install them at [this link](https://github.com/CFD-FEA-SERVICE/CloudHPC/releases).
+
+## cloudHPCexec
+---
+This tool allows you to execute your simulations directly from your terminal or using a python executable. It is available in two separate versions:
+
+* Linux DEBIAN package. DEB package installable on DEBIAN/UBUNTU linux versions, provides your terminal with the _cloudHPCexec_ command. This command allows you to manage your analysis on the cloudHPC platform without using the website. The operations you can do involves executing the analysis, downloading the results, SSH connection to running analysis, stopping your analysis and much more.
+
+* Windows executable. WIN executable to launch your simulations directly from your desktop without opening the web site. An example on how setting up the executable and launch a new analysis is available in [this post](https://cloudhpc.cloud/2022/12/30/execute-codeaster-windows/).
+
+### DEBIAN/UBUNTU package
+---
+1. Installation
+
+Download the cloudHPCexec.Ubuntu.deb package from [this page](https://github.com/CFD-FEA-SERVICE/CloudHPC/releases).
+Run on a terminal the command:
+
+    cd <path-to-folder-with-downloaded-deb-package>
+    dpkg -i cloudHPCexec.Ubuntu.deb
+
+<p align="center">
+   <a href="https://www.youtube.com/watch?v=pcALSbaXIvw"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
+</p>
+
+## cloudHPCstorage
+---
+This tool allows you to mount the cloudHPC storage on your local PC, like any other hard drive or USB drive. In this way you can upload new analysis or download results by using the copy and paste or drag and drop features. This tool is just available for Windows and requires you to get a configuration file from our support by [sending them an email](mailto:info@cloudhpc.cloud).
