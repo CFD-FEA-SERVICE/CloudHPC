@@ -1,0 +1,58 @@
+site_name: cloudHPC online help
+site_url: https://docs.cloudhpc.cloud
+nav:
+  # CLOUD HPC USER GUIDE
+  - INTRODUCTION: index.md
+  - ACCOUNT: account.md
+  - STORAGE: storage.md
+  - SIMULATIONS: simulation.md
+  - MONITOR: monitor.md
+  - SCALABILITY: scalability.md
+  - BILLING: billing.md
+  - ERRORS: errors.md
+  - TUTORIALS: https://www.youtube.com/playlist?list=PLQGw2-08T-MFtKEKscwJyyzJMfLwKA6Cw
+  - TOOLS:
+    - cloudHPC dedicated tools: https://github.com/CFD-FEA-SERVICE/CloudHPC/releases
+    - PYROSIM - Execution analysis: https://cloudhpc.cloud/2022/05/07/execute-analysis-using-pyrosim-on-cloudhpc/
+    - PYROSIM - Import results: https://cloudhpc.cloud/2023/03/07/import-cloudhpc-fds-results-in-pyrosim/
+  - REST API:
+    - Introduction: API-INTRODUCTION.md
+    - APIKEY: APIKEY.md
+    - API v2: API-v2.md
+    - API v1: API-v1.md
+    - Example: https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleAPI
+markdown_extensions:
+  - toc:
+      permalink: "#"
+      baselevel: 1
+      toc_depth: 2
+      separator: "_"
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+theme:
+  name: readthedocs
+  icon:
+    admonition:
+      note: octicons/tag-16
+      abstract: octicons/checklist-16
+      info: octicons/info-16
+      tip: octicons/squirrel-16
+      success: octicons/check-16
+      question: octicons/question-16
+      warning: octicons/alert-16
+      failure: octicons/x-circle-16
+      danger: octicons/zap-16
+      bug: octicons/bug-16
+      example: octicons/beaker-16
+      quote: octicons/quote-16
+  features:
+     - navigation.expand
+not_in_nav: |
+  /navigation.md
+  /tools.md
