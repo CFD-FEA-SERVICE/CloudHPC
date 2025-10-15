@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://docs.cloudhpc.cloud/simulation/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>SIMULATIONS - cloudHPC online help</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "SIMULATIONS";
+        var mkdocs_page_input_path = "simulation.md";
+        var mkdocs_page_url = "/simulation/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> cloudHPC online help
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">INTRODUCTION</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../account/">ACCOUNT</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../storage/">STORAGE</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">SIMULATIONS</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#execute_a_simulation">Execute a simulation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#execute_a_custom-script">Execute a custom-script</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#execute_a_static_instance">Execute a static instance</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#soft_and_hard_stop">Soft and Hard stop</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#restart">Restart</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../monitor/">MONITOR</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../scalability/">SCALABILITY</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../billing/">BILLING</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../errors/">ERRORS</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="" href="https://www.youtube.com/playlist?list=PLQGw2-08T-MFtKEKscwJyyzJMfLwKA6Cw">TUTORIALS</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">TOOLS</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="https://github.com/CFD-FEA-SERVICE/CloudHPC/releases">cloudHPC dedicated tools</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://cloudhpc.cloud/2022/05/07/execute-analysis-using-pyrosim-on-cloudhpc/">PYROSIM - Execution analysis</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://cloudhpc.cloud/2023/03/07/import-cloudhpc-fds-results-in-pyrosim/">PYROSIM - Import results</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">REST API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-INTRODUCTION/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../APIKEY/">APIKEY</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-v2/">API v2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-v1/">API v1</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleAPI">Example</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">cloudHPC online help</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">SIMULATIONS</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="simulations">Simulations<a class="headerlink" href="#simulations" title="Permanent link">#</a></h1>
+<p>Once the input file is uploaded in the STORAGE list, it is possible to start the simulation. The analyses can be initiated in the menu LIST SIMULATIONS.</p>
+<p>In the Simulation menu you can:</p>
+<ul>
+<li>
+<p>execute the analysis</p>
+</li>
+<li>
+<p>monitor the analysis</p>
+</li>
+<li>
+<p>interrupt the analysis</p>
+</li>
+<li>
+<p>restart the analysis</p>
+</li>
+</ul>
+<p>Here are also suggested hints for setting the computational capacity tailored for your simulation and how to estimate the simulation time.</p>
+<h2 id="execute_a_simulation">Execute a simulation<a class="headerlink" href="#execute_a_simulation" title="Permanent link">#</a></h2>
+<p>In order to run the simulation, start by Add one as shown in the following picture.</p>
+<p align="center">
+   <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_11_sim.png">
+</p>
+
+<p>A new page will appear. This page is divided into two different parts:</p>
+<ul>
+<li>
+<p>The first part requires you to insert the information about the vCPU, RAM and instance type you want to use</p>
+<ul>
+<li>
+<p>Each virtual CPU (vCPU) is implemented as a single hardware hyper-thread except for the highcore and the hypercore instances where the CPU is implemented as a physical vCORE. Not all the software available can benefit of the hyper-thread architecture.</p>
+</li>
+<li>
+<p>RAM represents the RAM memory allocated and made available for the simulation. The selected RAM is allocated per each vCPU defined before. For <em>highcore</em> and the <em>hypercore</em> selections a <em>multi-core instance</em> without hyper-thread is allocated - usefull to take full advantage for some specific software where hyper-thread is not implemented. For <em>basegpu</em> selection NVIDIA TESTLA T4 GPUs are allocated proportionally to the vCPU selected. A summary of all choices is reported here:</p>
+<ul>
+<li><em>standard</em>: this selection allocates a hyper-thread instance with 4GB of RAM for each vCPU selected</li>
+<li><em>highmem</em>: this selection allocates a hyper-thread instance with 8GB of RAM for each vCPU selected</li>
+<li><em>highcpu</em>: this selection allocates a hyper-thread instance with 1GB of RAM for each vCPU selected</li>
+<li><em>highcore</em>: this selection allocates a multi-core only instance with 2GB of RAM for each vCPU (core) selected</li>
+<li><em>hypercpu</em>: this selection allocates a hyper-thread instance with 1GB of RAM for each premium vCPU selected</li>
+<li><em>hypercore</em>: this selection allocates a multi-core only instance with 2GB of RAM for each premium vCPU (core) selected</li>
+<li><em>basegpu</em>: this selection allocates a hyper-thread instance with 8GB of RAM per each vCPU selected and 1 NVIDIA TESLA T4 every 2 vCPU selected</li>
+</ul>
+</li>
+<li>
+<p>REG/SPOT are the two types of machines available to run the analysis. They consist of the same machine types, but while REG are exclusively used for the analysis, SPOT machines can be restarted at any time during the calculation. After the machine reboots, the simulation restart from the last saved restart file. The SPOT machine restart probability is generally affected by:</p>
+<ol>
+<li>The number of SPOT simulations launched: about 30% of simulations are affected by at least one restart</li>
+<li>The total time spent with SPOT machines on the platform: usually a restart occurs every 10 or more hours of use of this type of machines</li>
+<li>The solver and the number of vCPU allocated to each SPOT machine can modify the above frequencies and probabilities</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<p>The above info are indicative and different users can experience different behaviours.</p>
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_12_CPU_RAM_SETTING.png">
+</p>
+
+<ul>
+<li>The second part requires you to insert the <em>folder</em> where you want to operate and the <a href="https://cloudhpc.cloud/#softwareavail">software</a> you want to use. In particular you have:<ul>
+<li>Folder represents a list of folders available in the storage among which you have to pick the one where you want to operate</li>
+<li>Mesh is a list of folders available in the storage. It is an optional argument that can help users with specific software as explained below:<ul>
+<li><em>OpenFOAM</em>: copy of the polyMesh and triSurface folder from the Mesh storage folder into the Folder selected where the solver is going to operate.</li>
+</ul>
+</li>
+<li>Script is a list of available solvers you can run on the Folder you selected</li>
+</ul>
+</li>
+</ul>
+<p>The commands can be classified into two types: the first classification regards the mandatory/non mandatory commands, the second regards the advanced parameters and the basic ones. Some parameters may not appear in your account because they must be enabled by administrator. For these parameters Default values are going to be used authomatically by the cloudHPC platform. You can ask our administrator to enable you the advanced parameters by emailing us at <a href="mailto:info@cfdfeaservice.it">info@cfdfeaservice.it</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th style="text-align: center;">Mandatory</th>
+<th style="text-align: center;">Advanced</th>
+<th style="text-align: center;">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vCPU</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">-</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">-</td>
+</tr>
+<tr>
+<td>REG</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">REG</td>
+</tr>
+<tr>
+<td>Folder</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">-</td>
+</tr>
+<tr>
+<td>Mesh</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">-</td>
+</tr>
+<tr>
+<td>Script</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="instance_hard_disk">Instance hard disk<a class="headerlink" href="#instance_hard_disk" title="Permanent link">#</a></h3>
+<p>Every time you execute a simulation, a specific hard disk is allocated to actually compute the simulation. Currently most of the times this hard disk size is 400 GB. There are few exceptions though:</p>
+<ol>
+<li>4 vCPU machines (every type of RAM) are provided an hard disk of 200 GB</li>
+<li>1 vCPU and 2 vCPU machines (every type of RAM) are provided an hard disk of 100 GB </li>
+<li>highmem/REG machines with at least 16 vCPU are provided an hard disk of 2000 GB</li>
+</ol>
+<p>Keep in mind these limitations when executing simulations on the platform.</p>
+<h3 id="spot_instance_correct_setup">SPOT instance correct setup<a class="headerlink" href="#spot_instance_correct_setup" title="Permanent link">#</a></h3>
+<p>Since SPOT instance my be subjected to restart at any time during the simulation, it's important the user correctly set-up the case in order to avoid losing computing power. Every software requires a peculiar set-up which is demanded to the user.
+If is importanto to keep in mind the restart is just a probability which mostly depends on the following parameters:</p>
+<ol>
+<li>The number of SPOT simulations launched: about 30% of simulations are affected by at least one restart</li>
+<li>The total time spent with SPOT machines on the platform: usually a restart occurs every 10 or more hours of use of this type of machines</li>
+<li>The solver and the number of vCPU allocated to each SPOT machine can modify the above frequencies and probabilities</li>
+</ol>
+<p>More info on this topic can also be found on this webinar:</p>
+<p align="center">
+   <a href="https://www.youtube.com/watch?v=oYfvGqfBqqI"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
+</p>
+
+<p>By default, new account do not have SPOT instances enabled. The reason for this is prevention of misuse of this type of instance. In order to enable SPOT instances on your account fill <a href="https://forms.gle/GGYdZxo5TyGcsvKF7">this form</a>.</p>
+<h4 id="fds">FDS<a class="headerlink" href="#fds" title="Permanent link">#</a></h4>
+<p>In order to save restart file with a certain frequency, FDS requires the user to set the DT_RESTART parameter under the DUMP command:</p>
+<pre><code>&amp;DUMP DT_RESTART=300.0/
+</code></pre>
+<p>This tells the solver to save a restart file every 300.0 s of simulated time. If in a SPOT instance a reboot occurs, the system automatically looks for restart file produced by FDS and, if present, restart the simulation from those.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Our team is in contact with the NIST - FDS developer. We strongly recommed to use the most recent installed FDS versions to make sure your simulation won't encounter issues or bugs which may alter or affect the results of your simulations.</p>
+</div>
+<p>The user goal is to set-up a DT_RESTART time which allows saving a restart file every 2 to 5 hours. With this frequency it's unluckily your simulation is going to suffer of any slow down due to the restart file writing and, at the same time, in case of restart the amount of simulated time lost is reduced to a minimum. </p>
+<h4 id="openfoam">OpenFOAM<a class="headerlink" href="#openfoam" title="Permanent link">#</a></h4>
+<p>When running OpenFOAM simulations the restart options are to be configured in the system/controDict file. In particular the following options allow the user to get full control:</p>
+<pre><code>startFrom       latestTime; //in case of restart, restart from last saved time step
+writeControl    timeStep;   //control timing of writing results
+writeInterval   100;        //writing results frequency
+purgeWrite      5;      //keeps only the 5 most recent results and cancels older
+</code></pre>
+<p>When using SPOT instances, the user has to impose startFrom latestTime, so that in case of instance reboot, the simulation restarts from the last saved time step. Then it's possible to set the frequency of the saved results by setting the writeInterval option.</p>
+<h4 id="other_software_and_custom-script">Other software and custom-script<a class="headerlink" href="#other_software_and_custom-script" title="Permanent link">#</a></h4>
+<p>Other software and custom-script are not tested to work properly with SPOT instances and a reboot of your simulation means losing all computed time up to that moment. For this reason, SPOT instances are not made available to all users by default.</p>
+<h2 id="execute_a_custom-script">Execute a custom-script<a class="headerlink" href="#execute_a_custom-script" title="Permanent link">#</a></h2>
+<p>Among other software, it is also possible to execute a custom script in <em>bash</em> or <em>python</em>. In order to do you can use the <em>custom-script</em> command available in the dropdown script selection as in the following image:</p>
+<p align="center">
+   <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/CustomScript.png">
+</p>
+
+<p>This script will authomatically execute any bash script (.sh) or python script (.py) file present in the folder. So you just have to upload the script you want to execute together with the other files required by your study inside a specific folder in your storage.</p>
+<p>In order to know more about this feature, please contact our support service via chat.</p>
+<h2 id="execute_a_static_instance">Execute a static instance<a class="headerlink" href="#execute_a_static_instance" title="Permanent link">#</a></h2>
+<p>Beyond simple script, it is possible to execute <em>static instances</em>. These instances are different compared to others because they do not execute any particular software, but they are simply hardware resources made available to the user via remote-desktop or SSH connection.</p>
+<p>These particular instances are designed to help the user in two different phases:</p>
+<ol>
+<li>Debugging the set-up of a case before launching the solver. </li>
+<li>Run specific UI installed on cloudHPC via the <a href="https://cfdfeaservice.it/wiki/cloud-hpc/#!monitor.md#Remote_desktop">remote desktop</a></li>
+<li>Post-Processing the results once the simulation has been completed.</li>
+</ol>
+<p>It's important to mention that these instances are static, so no particular script is executed on that.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It's a user duty controlling and stopping them when his activities are completed.</p>
+</div>
+<p>These instances can in fact be stopped using the usual SOFT/HARD stop functionalities. The execution of a static instance works exactly like any other software. You just have to pick any of the scripts with the "-static" suffix in the list.</p>
+<p align="center">
+   <img width="500" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/StaticInstance.png">
+</p>
+
+<h3 id="specific_ui_installed">Specific UI installed<a class="headerlink" href="#specific_ui_installed" title="Permanent link">#</a></h3>
+<p>In order to access one of the software with UI (User Interface) installed on cloudHPC via remote desktop you can follow the tutorial in the following video where a general methodology is highlighted.</p>
+<p align="center">
+   <a href="https://youtu.be/Jk8YpJRFOkQ"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
+</p>
+
+<p>The following table instead shows you the most common UI available on the platform and the static instance you have to run in order to access them. For some of the UI the table reports the terminal command to be executed to actually access the UI.</p>
+<table>
+<thead>
+<tr>
+<th>SOFTWARE</th>
+<th style="text-align: left;">STATIC INSTANCE</th>
+<th style="text-align: left;">HOW TO START</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cfMesh+</td>
+<td style="text-align: left;">cfMesh+-GUI-static</td>
+<td style="text-align: left;">🖥️ desktop icon</td>
+</tr>
+<tr>
+<td>ParaView</td>
+<td style="text-align: left;">any static</td>
+<td style="text-align: left;">🖥️ desktop icon</td>
+</tr>
+<tr>
+<td>ElmerFEM v9</td>
+<td style="text-align: left;">ubuntu-2004-static</td>
+<td style="text-align: left;">🖥️ desktop icon</td>
+</tr>
+<tr>
+<td>SALOME 9.8.0</td>
+<td style="text-align: left;">ubuntu-2004-static</td>
+<td style="text-align: left;">🖥️ desktop icon</td>
+</tr>
+<tr>
+<td>SALOME MECA 2022</td>
+<td style="text-align: left;">ubuntu-2004-static</td>
+<td style="text-align: left;">🖥️ desktop icon</td>
+</tr>
+<tr>
+<td>GMSH 4.11.1</td>
+<td style="text-align: left;">ubuntu-2004-static</td>
+<td style="text-align: left;">🖥️ desktop icon</td>
+</tr>
+<tr>
+<td>HELYX-OS v2.4.0</td>
+<td style="text-align: left;">ubuntu-2004-static</td>
+<td style="text-align: left;">📟 terminal: <code>/opt/Engys/HELYX-OS/v2.4.0/HELYX-OS.sh</code></td>
+</tr>
+<tr>
+<td>SU2 8.2.0</td>
+<td style="text-align: left;">ubuntu-2404-static</td>
+<td style="text-align: left;">🖥️ desktop icon</td>
+</tr>
+<tr>
+<td>baramFlow v25</td>
+<td style="text-align: left;">ubuntu-2404-static</td>
+<td style="text-align: left;">🖥️ desktop icon</td>
+</tr>
+<tr>
+<td>baramMesh v25</td>
+<td style="text-align: left;">ubuntu-2404-static</td>
+<td style="text-align: left;">🖥️ desktop icon</td>
+</tr>
+<tr>
+<td>FDS SMV</td>
+<td style="text-align: left;">ubuntu-2404-static</td>
+<td style="text-align: left;">📟 terminal: <code>/opt/FDS/{VERSION}/smvbin/smokeview</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="more_info_and_details">More info and details<a class="headerlink" href="#more_info_and_details" title="Permanent link">#</a></h3>
+<p>To get more info and details it's possible to see the following youtube video about the official release of the remote desktop where a static instance use has been described.</p>
+<p align="center">
+   <a href="https://www.youtube.com/watch?v=uNq3D9jShEk"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
+</p>
+
+<p>In order to know more about this feature, please contact our support service via chat.</p>
+<h2 id="soft_and_hard_stop">Soft and Hard stop<a class="headerlink" href="#soft_and_hard_stop" title="Permanent link">#</a></h2>
+<p>The simulation can be stopped in the SIMULATION list as shown below.</p>
+<p align="center">
+   <img width="500" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_18_stop_sim.png">
+</p>
+
+<p>There are two ways to stop the simulation:</p>
+<h3 id="soft_stop">Soft Stop<a class="headerlink" href="#soft_stop" title="Permanent link">#</a></h3>
+<p>The soft stop can interrupt the simulation and save the results obtained until that moment. This is suggested when you don’t want to continue the simulation forward because you reached already the needed results or if you want to stop your simulation with the idea of continuing it later.</p>
+<h3 id="hard_stop">Hard Stop<a class="headerlink" href="#hard_stop" title="Permanent link">#</a></h3>
+<p>The hard stop kills your simulation without saving any results.</p>
+<p align="center">
+   <img width="500" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_19STOP.png">
+</p>
+
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>After a hard stop, the system deletes the results computed by your simulation without any possibility of restoring them.</p>
+</div>
+<h2 id="restart">Restart<a class="headerlink" href="#restart" title="Permanent link">#</a></h2>
+<p>In general to restart a simulation once this has been terminated or stopped with a Soft stop, you just have to enter your 'Simulations' page of the cloudHPC portal and add a new simulation where <em>vCPU</em>, <em>RAM</em>, <em>folder</em> and <em>script</em> <strong>exactly match those</strong> of the analysis you want to restart. There are some specific differences depending on the software you are currently using for which the following extra hints are to keep into consideration.</p>
+<h3 id="fire_dynamic_simulator">Fire Dynamic Simulator<a class="headerlink" href="#fire_dynamic_simulator" title="Permanent link">#</a></h3>
+<p>For FDS simulations it is possible to restart the simulation automatically if your T_END parameter has not been reached yet - in case, just <a href="https://cfdfeaservice.it/wiki/cloud-hpc/#!storage.md#Edit_an_existing_file">edit the .fds file</a> and increase this parameter. The platform detects the presence of a <em>.restart</em> file produced by a precursor simulation and, in case, restarts the simulation. It's important to monitor the frequency FDS saves restart files using the appropriate parameter in your <code>.fds</code> file:</p>
+<pre><code>&amp;DUMP DT_RESTART=300.0 /
+</code></pre>
+<h3 id="openfoam_1">OpenFOAM<a class="headerlink" href="#openfoam_1" title="Permanent link">#</a></h3>
+<p>The file to modify and substitute is the file <em>controlDict</em> located in the <em>system</em> Folder. This is the one collecting the information for restart. Modify this dictionary so that matches the following parameters:</p>
+<pre><code>startTime      latestTime;
+endTime        XXX;
+</code></pre>
+<p>where endTime must be greater that the time the simulation is restarting from. This string means that the simulation would restart from the results in the last time folder saved. Note that, if you leave this option as a default in your controlDict file, it allows you to start from 0 or restart from the latest time depending just on the time steps saved for openFoam.</p>
+<h3 id="code_aster">Code ASTER<a class="headerlink" href="#code_aster" title="Permanent link">#</a></h3>
+<p>The script to modify in local and substitute in the web-app's STORAGE folder is the file .comm. To restart the file you need to add the string:</p>
+<pre><code>POURSUITE()
+</code></pre>
+<p>You can find a detailed procedure in this <a href="https://cloudhpc.cloud/2022/09/14/resume-your-code_aster-analysis/">blog post</a></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../storage/" class="btn btn-neutral float-left" title="STORAGE"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../monitor/" class="btn btn-neutral float-right" title="MONITOR">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../storage/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../monitor/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

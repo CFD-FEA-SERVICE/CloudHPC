@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://docs.cloudhpc.cloud/scalability/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>SCALABILITY - cloudHPC online help</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "SCALABILITY";
+        var mkdocs_page_input_path = "scalability.md";
+        var mkdocs_page_url = "/scalability/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> cloudHPC online help
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">INTRODUCTION</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../account/">ACCOUNT</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../storage/">STORAGE</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../simulation/">SIMULATIONS</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../monitor/">MONITOR</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">SCALABILITY</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#fds">FDS</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#openfoam">OpenFOAM</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#code_aster">Code Aster</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#calculix">CalculiX</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#openradioss">OpenRADIOSS</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../billing/">BILLING</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../errors/">ERRORS</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="" href="https://www.youtube.com/playlist?list=PLQGw2-08T-MFtKEKscwJyyzJMfLwKA6Cw">TUTORIALS</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">TOOLS</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="https://github.com/CFD-FEA-SERVICE/CloudHPC/releases">cloudHPC dedicated tools</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://cloudhpc.cloud/2022/05/07/execute-analysis-using-pyrosim-on-cloudhpc/">PYROSIM - Execution analysis</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://cloudhpc.cloud/2023/03/07/import-cloudhpc-fds-results-in-pyrosim/">PYROSIM - Import results</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">REST API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-INTRODUCTION/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../APIKEY/">APIKEY</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-v2/">API v2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-v1/">API v1</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleAPI">Example</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">cloudHPC online help</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">SCALABILITY</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="scalability_of_your_simulations">Scalability of Your Simulations<a class="headerlink" href="#scalability_of_your_simulations" title="Permanent link">#</a></h1>
+<p>In order to achieve good scalability, it is important for you to know exactly the possibilities made available by the cloudHPC platform. There are, in fact, two different types of parallelizations:</p>
+<ul>
+<li>MPI - Multicore approach</li>
+<li>Hyper-threading</li>
+</ul>
+<p>The differences between these two approaches are discussed in <a href="https://cloudhpc.cloud/2022/03/18/multicore-vs-multithread-a-little-guide/">this post</a>. Depending on the RAM selection for each instance, you are simultaneously selecting which of the two parallelization methods is activated for your simulation. The following table gives you an overview of the possibilities available.</p>
+<table>
+<thead>
+<tr>
+<th>RAM</th>
+<th style="text-align: center;">MULTICORE</th>
+<th style="text-align: center;">HYPERTHREAD</th>
+<th style="text-align: center;">GPU</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>highcpu</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td>standard</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td>highmem</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td>highcore</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td>hypercpu</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td>hypercore</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td>basegpu</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+</tr>
+</tbody>
+</table>
+<p>It is important to highlight that for <em>highcpu</em>, <em>standard</em>, and <em>highmem</em> instances, as the machine configuration is exactly the same, the only difference is the RAM which is actually allocated (from 1GB per vCPU to 8GB per vCPU). It is suggested to attempt the execution on <em>highcpu</em> [cheaper configuration] before trying <em>standard</em> or <em>highmem</em> as from the scalability point of view allocating more RAM does not give any speedup in your analysis.</p>
+<h2 id="fds">FDS<a class="headerlink" href="#fds" title="Permanent link">#</a></h2>
+<p>FDS has the possibility to use both scalability methods. Good scalability requires the user to properly set up the input <code>.fds</code> file, and in particular, the mesh definitions. The simulation scalability is generally affected by several parameters among which:</p>
+<ol>
+<li>Mesh size in terms of total number of cells</li>
+<li>Cells distribution among the the cores allocated</li>
+<li>HRR curve type and location in the fluid domain</li>
+<li>Number of pressure zones</li>
+<li>Presence of particles</li>
+<li>Chemical reaction calculation</li>
+</ol>
+<p>The following procedure represents a simple guideline that can help users achieve good scalability. Thanks to the following instructions it is possible to avoid issues for the first two points in the above list which are the ones with a clearer mathematical representation.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The cloudHPC attempts to provide guidelines also for some of the other points in the above list even if there are no precise guidelines to assess them. An example is the <a href="../errors/#high_number_of_pressure_zones">pressure zone warning</a>.</p>
+</div>
+<h3 id="choosing_the_right_vcpu_for_your_fds_simulation">Choosing the right vCPU for your FDS simulation<a class="headerlink" href="#choosing_the_right_vcpu_for_your_fds_simulation" title="Permanent link">#</a></h3>
+<ul>
+<li>
+<p>In order to reach good scalability, <strong>you must have</strong> multiple &amp;MESH lines in your FDS file - so in case you have to <a href="https://cloudhpc.cloud/2022/09/15/split-fds-mesh-using-blenderfds/">split your big meshes</a> into smaller ones.</p>
+</li>
+<li>
+<p>Calculate the number of cells for each &amp;MESH line of your FDS input file. E.g., <code>&amp;MESH ID='mesh1', IJK=24,38,14, XB=... /</code> Number of cells -&gt; 24 * 38 * 14 = 12,768 cells.</p>
+</li>
+<li>
+<p>Make sure each &amp;MESH has at least 15,000/20,000 cells. If this condition is not met, use the MPI_PROCESS to assign two or more meshes to a single core.</p>
+</li>
+<li>
+<p>Ensure that all the &amp;MESH have a similar number of cells - cells are equally distributed among all the meshes. If this condition is not met, use the MPI_PROCESS to improve the load balancing.</p>
+</li>
+<li>
+<p>If all the above conditions are satisfied, select vCPU according to the following rules:</p>
+</li>
+<li>vCPU = Number of &amp;MESH * 2 for instances <em>highcpu</em>, <em>standard</em>, <em>highmem</em> or <em>hypercpu</em>.</li>
+<li>vCPU = Number of &amp;MESH for instances <em>highcore</em> or <em>hypercore</em>.</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Due to processors infrastructure, the presence of some DEVC in your FDS simulation as for example GAUGE HEAT FLUX GAS, RADIATIVE HEAT FLUX and VISIBILITY may reduce the computational performance on AMD processors. In these cases and if the simulation delivery time is important, we recommend using <em>hypercore</em> or <em>hypercpu</em> instances.</p>
+</div>
+<h3 id="mpi_process_parameter">MPI_PROCESS Parameter<a class="headerlink" href="#mpi_process_parameter" title="Permanent link">#</a></h3>
+<p>In case your &amp;MESH are smaller than 15,000/20,000 cells or cells are not equally distributed among meshes in your FDS analysis, you can use the MPI_PROCESS parameter to fix this situation. This is a parameter each &amp;MESH can be assigned and represents a group number we are assigning the specific mesh [starting from group 0]. An example is reported here:</p>
+<div class="highlight"><pre><span></span><code>&amp;MESH ID=&#39;mesh1&#39;, IJK=..., XB=..., MPI_PROCESS=0 /
+&amp;MESH ID=&#39;mesh2&#39;, IJK=..., XB=..., MPI_PROCESS=1 /
+&amp;MESH ID=&#39;mesh3&#39;, IJK=..., XB=..., MPI_PROCESS=1 /
+&amp;MESH ID=&#39;mesh4&#39;, IJK=..., XB=..., MPI_PROCESS=2 /
+&amp;MESH ID=&#39;mesh5&#39;, IJK=..., XB=..., MPI_PROCESS=3 /
+&amp;MESH ID=&#39;mesh6&#39;, IJK=..., XB=..., MPI_PROCESS=3 /
+</code></pre></div>
+<p>Since each group assigned is executed by one single core, it is possible to assign now at least 15,000/20,000 cells to each group and improve the cell distributions among the groups as shown in the following image.</p>
+<p align="center">
+   <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/MPIprocessAssign.jpg">
+</p>
+
+<p>Once the groups have been assigned with MPI_PROCESS, the user can now move forward by following these instructions:</p>
+<ul>
+<li>
+<p>Order the &amp;MESH so that MPI_PROCESS are in ascending order.</p>
+</li>
+<li>
+<p>Execute a simulation and select vCPU according to the following rules:</p>
+</li>
+<li>vCPU = Two times the MPI_PROCESS groups number for instances <em>highcpu</em>, <em>standard</em>, <em>highmem</em> or <em>hypercpu</em>.</li>
+<li>vCPU = Number of MPI_PROCESS groups for instances <em>highcore</em> or <em>hypercore</em>.</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Due to processors infrastructure, the presence of some DEVC in your FDS simulation as for example GAUGE HEAT FLUX GAS, RADIATIVE HEAT FLUX and VISIBILITY may reduce the computational performance on AMD processors. In these cases and if the simulation delivery time is important, we recommend using <em>hypercore</em> or <em>hypercpu</em> instances.</p>
+</div>
+<h3 id="load_distribution_feedback">Load Distribution Feedback<a class="headerlink" href="#load_distribution_feedback" title="Permanent link">#</a></h3>
+<p>The computational load assigned to each process is proportional to the total number of cells every process needs to compute during the calculation. For this reason, at the beginning of your analysis, a process load bar graph is generated to provide you info about load distribution. Each bar represents the cells to be computed by each single process of the analysis. An ideal case requires a similar number of cells among all processes, and if this condition is not satisfied, it is recommended to use the MPI_PROCESS parameter to redistribute cells.</p>
+<p align="center">
+   <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/ProcessorsLoad.png">
+</p>
+
+<p>The above situation represents an ideal case: all processors are assigned a similar number of cells and consequently are expected to have a similar workload to complete. A situation like the one sketched below shows an imbalance in the workload among processors: the processor 0 is assigned almost 200,000 cells while all the other processors are assigned at most 60,000 cells. To improve this situation you can follow instructions <a href="./#fds">given earlier</a> to redistribute cells among processors.</p>
+<p align="center">
+   <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/MeshLoadDistributionToImprove.png">
+</p>
+
+<p>If the above method is not sufficient to distribute cells equally among processors, you can split <a href="https://cloudhpc.cloud/2022/09/15/split-fds-mesh-using-blenderfds/">bigger meshes</a> and attempt again a distribution.</p>
+<h3 id="fds_mesh_decomposition">FDS Mesh Decomposition<a class="headerlink" href="#fds_mesh_decomposition" title="Permanent link">#</a></h3>
+<p>The cloudHPC platform is able to decompose the FDS simulation in some peculiar cases. This lets the user an easier way to achieve good scalability thanks to a mesh division performed by the system. The pre-conditions to meet in order to let the system decompose your mesh are:</p>
+<ul>
+<li>Generate an input FDS file with just one <em>&amp;MESH</em> line.</li>
+<li>A mesh with at least 40,000 cells.</li>
+<li>Select vCPU to be 4 or more.</li>
+</ul>
+<p>In these situations, the <em>output</em> provides you the following plot when the mesh decomposition occurs:</p>
+<p align="center">
+   <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/fdsdecomposition.png">
+</p>
+
+<p>In there you can find the following parameters:</p>
+<ul>
+<li>INPUT MESH: string of the input mesh.</li>
+<li>REQU. DIVS: required divisions - usually equals to the number of vCPU.</li>
+<li>Init. IJK: I, J, K set on the input mesh.</li>
+<li>MESH CELLS: Input mesh total number of cells.</li>
+<li>Limit. DIV: Max number of divisions allowed to achieve good scalability (15,000 cells per each <em>&amp;MESH</em> line).</li>
+<li>INPUT XB: Input mesh bounding box.</li>
+<li>DECOMPOS.: Decomposition performed along the three axes: X, Y, and Z.</li>
+<li>Final MESH: Number of the decomposed meshes performed. It can be lower than the Limit. DIV value depending on I, J, and K possible divisions.</li>
+</ul>
+<p>Once the mesh decomposition is performed, you can check the final results using the <a href="./#load_distribution_feedback">load distribution feedback</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Always perform a check by using smokeview to verify the smoke and temperature diffusion when the decomposition occurs.</p>
+</div>
+<h3 id="more">More<a class="headerlink" href="#more" title="Permanent link">#</a></h3>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=sMQwgKK_GYM" target="_blank">Cloud HPC - Use the best scalability for your FDS analyses</a></li>
+<li><a href="https://cloudhpc.cloud/2022/01/28/fds-scalability/" target="_blank">How to reach good scalability in FDS</a></li>
+</ul>
+<h2 id="openfoam">OpenFOAM<a class="headerlink" href="#openfoam" title="Permanent link">#</a></h2>
+<p>As far as scalability is concerned, OpenFOAM only uses a multi-core approach. This makes the <em>highcore</em> and the <em>hypercore</em> instances the most suitable when running these analyses on cloudHPC. The system automatically adapts your <em>decomposeParDict</em> file to match the required number of vCPU you made available to the analysis. As far as this update works correctly, just follow the <a href="../errors/#decomposepardict">hints</a> on the decomposeParDict file.
+Some example of decomposeParDict where cloudHPC automatically updates the main variables to match the selected number of cores are provided below.</p>
+<div class="highlight"><pre><span></span><code>method          scotch;
+numberOfSubdomains 112; #Automatic updated by cloudHPC
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>method  hierarchical;
+numberOfSubdomains  8;  #Automatic updated by cloudHPC
+
+coeffs
+{
+    n   (4 2 3);        #Automatic updated by cloudHPC
+}
+
+hierarchicalCoeffs
+{
+    n   (7 4 4);        #Automatic updated by cloudHPC
+    order   xyz;
+}
+</code></pre></div>
+<ul>
+<li><a href="https://cloudhpc.cloud/2025/07/08/pushing-the-boundaries-cloudhpcs-journey-at-the-openfoam-workshop-2025-hpc-challenge-in-vienna/" target="_blank">Pushing the Boundaries: CloudHPC’s Journey at the OpenFOAM Workshop 2025 HPC Challenge in Vienna!</a></li>
+</ul>
+<h2 id="code_aster">Code Aster<a class="headerlink" href="#code_aster" title="Permanent link">#</a></h2>
+<p>Code Aster can take advantage of both OpenMPI and OpenMP at the same time. The versions currently compiled under the cloudHPC platform do not always implement both methodologies. You can execute simultaneously OpenMPI/OpenMP on versions marked with the suffix <em>_mpi</em> such as:</p>
+<ul>
+<li>14.6 - Compiled with OpenMPI/OpenMP</li>
+<li>15.4 - Compiled with OpenMPI/OpenMP</li>
+<li>16.4 - Compiled with OpenMPI/OpenMP</li>
+<li>17.0 - Compiled with OpenMPI/OpenMP</li>
+</ul>
+<p>When using an OpenMP-only version, the <code>.comm</code> file coming from the AsterStudy is usually adequate to use the hardware resources you are selecting. For OpenMPI/OpenMP versions instead you have to adapt the <code>.comm</code> file following <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/code-aster/input.comm">our template</a>.</p>
+<div class="highlight"><pre><span></span><code>mesh = LIRE_MAILLAGE(FORMAT=&#39;MED&#39;, UNITE=2, PARTITIONNEUR=&#39;PTSCOTCH&#39;, ...)
+...
+nCORE = 4 #Assign the number of cores to match mpi_nbcpu
+model = AFFE_MODELE(  ..., DISTRIBUTION=_F(METHODE=&#39;SOUS_DOMAINE&#39;, NB_SOUS_DOMAINE=nCORE,), ... )
+...
+#Possible solvers
+stat  = STAT_NON_LINE( ..., SOLVEUR=_F( METHODE=&#39;MUMPS&#39;, MATR_DISTRIBUEE=&#39;OUI&#39; ), ... )
+stat  = STAT_NON_LINE( ..., SOLVEUR=_F( METHODE=&#39;PETSC&#39;, MATR_DISTRIBUEE=&#39;OUI&#39; ), ... )
+mech  = MECA_STATIQUE( ..., SOLVEUR=_F( METHODE=&#39;PETSC&#39;, MATR_DISTRIBUEE=&#39;OUI&#39; ), ... )
+</code></pre></div>
+<p>From your <code>.export</code> file, the system detects the <code>mpi_nbcpu</code> value and assign as a consequence it to the MPI CPUs to use. Any exceeding vCPU then allocated as thread (OpenMP) to your analysis. An example for the lines of your export file affecting scalability is reported here:</p>
+<div class="highlight"><pre><span></span><code>P mpi_nbcpu 4      #number of MPI cores - USER defined
+P mpi_nbnoeud 1    #number of nodes     - always 1 on cloudHPC
+P ncpus 8          #number of threads   - cloudHPC updated
+</code></pre></div>
+<ul>
+<li><a href="https://cloudhpc.cloud/2024/10/02/scalability-performance-code_aster-vs-calculix/" target="_blank">Scalability performance code_aster Vs calculiX</a></li>
+<li><a href="https://cloudhpc.cloud/2025/09/15/decoding-performance-a-scalability-showdown-between-calculix-and-code_aster/" target="_blank">Decoding Performance: A Scalability Showdown Between CalculiX and Code_Aster</a></li>
+</ul>
+<h2 id="calculix">CalculiX<a class="headerlink" href="#calculix" title="Permanent link">#</a></h2>
+<p>CalculiX is a finite element analysis (FEA) program that comes in a few different versions, primarily based on how it's set up to solve complex problems.</p>
+<ul>
+<li>
+<p>Default Version: The standard version of CalculiX uses a built-in solver library called SPOOLES. This is a good general-purpose option for many simulations.</p>
+</li>
+<li>
+<p>Custom Versions: For more demanding calculations, CalculiX can be compiled with different, more advanced solver libraries. These custom versions are easy to spot because their names have a specific ending, or "suffix."</p>
+<ul>
+<li>
+<p>PARDISO or PASTIX: These suffixes indicate that the program uses a powerful third-party solver library designed for high-performance computing.</p>
+</li>
+<li>
+<p>MPI: This suffix means the program was compiled with OpenMPI, a library that allows it to run on multiple computers or processors at the same time (also known as parallel processing). This is crucial for solving very large and complex models much faster.</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>In short, the names of the CalculiX solvers tell you exactly what's inside—whether it's the standard SPOOLES library or a more specialized, high-performance option like PARDISO, PASTIX, or one optimized for parallel computing with MPI.</p>
+<ul>
+<li><a href="https://cloudhpc.cloud/2024/10/02/scalability-performance-code_aster-vs-calculix/" target="_blank">Scalability performance code_aster Vs calculiX</a></li>
+<li><a href="https://cloudhpc.cloud/2025/09/15/decoding-performance-a-scalability-showdown-between-calculix-and-code_aster/" target="_blank">Decoding Performance: A Scalability Showdown Between CalculiX and Code_Aster</a></li>
+</ul>
+<h2 id="openradioss">OpenRADIOSS<a class="headerlink" href="#openradioss" title="Permanent link">#</a></h2>
+<ul>
+<li><a href="https://cloudhpc.cloud/2025/05/27/unlocking-extreme-performance-openradioss-scalability-on-cloudhpc-with-amd-epyc-processors/" target="_blank">Unlocking Extreme Performance: OpenRADIOSS Scalability on CloudHPC with AMD EPYC Processors</a></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../monitor/" class="btn btn-neutral float-left" title="MONITOR"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../billing/" class="btn btn-neutral float-right" title="BILLING">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../monitor/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../billing/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

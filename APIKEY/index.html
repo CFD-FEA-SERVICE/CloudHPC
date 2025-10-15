@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://docs.cloudhpc.cloud/APIKEY/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>APIKEY - cloudHPC online help</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "APIKEY";
+        var mkdocs_page_input_path = "APIKEY.md";
+        var mkdocs_page_url = "/APIKEY/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> cloudHPC online help
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">INTRODUCTION</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../account/">ACCOUNT</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../storage/">STORAGE</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../simulation/">SIMULATIONS</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../monitor/">MONITOR</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../scalability/">SCALABILITY</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../billing/">BILLING</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../errors/">ERRORS</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="" href="https://www.youtube.com/playlist?list=PLQGw2-08T-MFtKEKscwJyyzJMfLwKA6Cw">TUTORIALS</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">TOOLS</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="https://github.com/CFD-FEA-SERVICE/CloudHPC/releases">cloudHPC dedicated tools</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://cloudhpc.cloud/2022/05/07/execute-analysis-using-pyrosim-on-cloudhpc/">PYROSIM - Execution analysis</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://cloudhpc.cloud/2023/03/07/import-cloudhpc-fds-results-in-pyrosim/">PYROSIM - Import results</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">REST API</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../API-INTRODUCTION/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">APIKEY</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#retrieving_your_apikey">Retrieving your APIKEY</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-v2/">API v2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-v1/">API v1</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleAPI">Example</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">cloudHPC online help</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">REST API</li>
+      <li class="breadcrumb-item active">APIKEY</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="apikey">APIKEY<a class="headerlink" href="#apikey" title="Permanent link">#</a></h1>
+<p>One of the main feature of cloudHPC is its integrability with third part software. This is made possible thanks to your own APIKEY, an unique identifier which allows you to interact with the cloudHPC environment using API calls.</p>
+<p>Every account is assigned a specific APIKEY once it is generated. Using this APIKEY with third part software is mandatory in order to correctly link your account to the software you are using.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The use of the API might not be available if you are under the FREE plan (i.e. using the initial 300 vCPU Hours).</p>
+</div>
+<h2 id="retrieving_your_apikey">Retrieving your APIKEY<a class="headerlink" href="#retrieving_your_apikey" title="Permanent link">#</a></h2>
+<p>Your APIKEY is reported into your profile page. To access it just click on "profile" under the "account" menu as in the following image:</p>
+<p align="center">
+   <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/ProfilePage.jpg">
+</p>
+
+<p>Once you enter your account details, your APIKEY is the string you find inside the appropriate box.</p>
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/Apikey.jpg">
+</p>
+
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>Store your APIKEY safely and, in case of doubt, get in contact with us at info@cfdfeaservice.it . Sharing your APIKEY with unknown people means giving full access to your account to these people and, consequently, sharing with them your simulations, results and allowing them to use your own account.</p>
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../API-INTRODUCTION/" class="btn btn-neutral float-left" title="Introduction"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../API-v2/" class="btn btn-neutral float-right" title="API v2">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../API-INTRODUCTION/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../API-v2/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

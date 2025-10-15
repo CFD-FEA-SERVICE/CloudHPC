@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://docs.cloudhpc.cloud/API-v2/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>API v2 - cloudHPC online help</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "API v2";
+        var mkdocs_page_input_path = "API-v2.md";
+        var mkdocs_page_url = "/API-v2/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> cloudHPC online help
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">INTRODUCTION</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../account/">ACCOUNT</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../storage/">STORAGE</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../simulation/">SIMULATIONS</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../monitor/">MONITOR</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../scalability/">SCALABILITY</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../billing/">BILLING</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../errors/">ERRORS</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="" href="https://www.youtube.com/playlist?list=PLQGw2-08T-MFtKEKscwJyyzJMfLwKA6Cw">TUTORIALS</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">TOOLS</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="https://github.com/CFD-FEA-SERVICE/CloudHPC/releases">cloudHPC dedicated tools</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://cloudhpc.cloud/2022/05/07/execute-analysis-using-pyrosim-on-cloudhpc/">PYROSIM - Execution analysis</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://cloudhpc.cloud/2023/03/07/import-cloudhpc-fds-results-in-pyrosim/">PYROSIM - Import results</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">REST API</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../API-INTRODUCTION/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../APIKEY/">APIKEY</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">API v2</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#apikey_and_api_v2">APIKEY AND API v2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#using_the_swagger">USING THE SWAGGER</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested_workflows">SUGGESTED WORKFLOWS</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-v1/">API v1</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleAPI">Example</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">cloudHPC online help</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">REST API</li>
+      <li class="breadcrumb-item active">API v2</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="api_v2_introduction">API V2 INTRODUCTION<a class="headerlink" href="#api_v2_introduction" title="Permanent link">#</a></h1>
+<p>Full documentation for API v2 can be found in the API SWAGGER documentation directly in the <a href="https://cloud.cfdfeaservice.it/en/catuser/view-api">cloudHPC</a> if your user has been anabled to use it.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you want to get access to the API service, contact our support team via chat or send us an email.</p>
+</div>
+<h2 id="apikey_and_api_v2">APIKEY AND API v2<a class="headerlink" href="#apikey_and_api_v2" title="Permanent link">#</a></h2>
+<p>You APIKEY can be found under the <a href="../APIKEY/">profile page</a>. APIKEY has to be passed to EVERY api call as a header argument. The correct way to do that is:</p>
+<pre><code>-H 'X-API-key: $apikey'
+</code></pre>
+<p>So, an example call becomes:</p>
+<pre><code>curl -X GET https://cloud.cfdfeaservice.it/api/v2/simulation/view-cpu -H 'accept: application/json' -H 'X-API-key: $apikey'
+</code></pre>
+<h2 id="using_the_swagger">USING THE SWAGGER<a class="headerlink" href="#using_the_swagger" title="Permanent link">#</a></h2>
+<p>It is possible to test the use of each API directly on the Swagger. To do so you need to click on the "Try it out" button to enter the test mode of the API as shown on the following image:</p>
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/APISwagger-1.jpg">
+</p>
+
+<p>After that, some of the API might require you to enter a json file (for example the ADD a new simulation one). In such a case it is possible to edit this json using the assigned editor as in the following image.</p>
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/APISwagger-2.jpg">
+</p>
+
+<p>Once you are happy with the settings, you can test the API clicking on "EXECUTE". Under the "Response" section you can see the response code and body of the API call you have just made.</p>
+<h2 id="suggested_workflows">SUGGESTED WORKFLOWS<a class="headerlink" href="#suggested_workflows" title="Permanent link">#</a></h2>
+<p>Here below the sequence of API call recommended for specific operations. The intention of these is just helping the developpers into their integration with our cloudHPC and do not required to be executed specifically. The list of the following API doesn't contain most of the arguments which are required by each API to work properly, for this refer to the complete <a href="https://cloud.cfdfeaservice.it/en/catuser/view-api">API SWAGGER documentation</a>.</p>
+<h3 id="upload_a_file">UPLOAD A FILE<a class="headerlink" href="#upload_a_file" title="Permanent link">#</a></h3>
+<p>The upload mechanism is a two step execution. The first step consist of an API call which returns the UPLOAD_URL where we are going to upload the file:</p>
+<pre><code>POST /storage/upload-url Get upload URL
+</code></pre>
+<p>The second step is the actual upload of a FILE. This can be made via a PUT with the following settings:</p>
+<pre><code>curl -X PUT -H 'Content-Type: application/octet-stream' -T FILE_NAME UPLOAD_URL
+</code></pre>
+<p>If the file is uploaded in this way, it is recommendable to delete the cache before proceeding with further steps to inform the system that the file upload has been completed.</p>
+<pre><code>DELETE /user/delete-cache Delete the cache
+</code></pre>
+<h3 id="post_a_new_simulation">POST A NEW SIMULATION<a class="headerlink" href="#post_a_new_simulation" title="Permanent link">#</a></h3>
+<p>The main purpose of the cloudHPC is obviously starting new simulations. To do that you can use the following API:</p>
+<pre><code>POST /simulation/add  -&gt; Add one
+</code></pre>
+<p>To controll the simulation it is possible to send a STOP signal. This signal can be of two types: 
+*   { "signal": "SIGINT" }   for hard stop
+*   { "signal": "SIGTSTP" } for soft stop</p>
+<p>Once the signal has been generated it has to be passed to the simulation using the following API call:</p>
+<pre><code>PUT /simulation/stop/{id} -&gt; Stop one by id
+</code></pre>
+<h3 id="download_results">DOWNLOAD RESULTS<a class="headerlink" href="#download_results" title="Permanent link">#</a></h3>
+<p>Downloading the FILES from the storage is made via a single API call:</p>
+<pre><code>GET /storage/download/{id} -&gt; Download one by id
+</code></pre>
+<p>This API requires you to enter the id of the file you need to download. To retrieve it you can search the storage by using the file name and path with the following API call:</p>
+<pre><code>POST /storage/view-by-path -&gt; Get one
+</code></pre>
+<p>The download API returns an URL where the file can be saved, this can be used with a simple wget to actually download the file:</p>
+<pre><code>wget DOWNLOAD_URL
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../APIKEY/" class="btn btn-neutral float-left" title="APIKEY"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../API-v1/" class="btn btn-neutral float-right" title="API v1">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../APIKEY/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../API-v1/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

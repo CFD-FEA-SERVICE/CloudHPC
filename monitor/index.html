@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://docs.cloudhpc.cloud/monitor/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>MONITOR - cloudHPC online help</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "MONITOR";
+        var mkdocs_page_input_path = "monitor.md";
+        var mkdocs_page_url = "/monitor/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> cloudHPC online help
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">INTRODUCTION</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../account/">ACCOUNT</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../storage/">STORAGE</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../simulation/">SIMULATIONS</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">MONITOR</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#simulation_time">Simulation time</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#runtime_monitor">Runtime monitor</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#runtime_logs">Runtime logs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#remote_desktop">Remote desktop</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#hardware_monitor">Hardware monitor</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ssh_connection">SSH Connection</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../scalability/">SCALABILITY</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../billing/">BILLING</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../errors/">ERRORS</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="" href="https://www.youtube.com/playlist?list=PLQGw2-08T-MFtKEKscwJyyzJMfLwKA6Cw">TUTORIALS</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">TOOLS</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="https://github.com/CFD-FEA-SERVICE/CloudHPC/releases">cloudHPC dedicated tools</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://cloudhpc.cloud/2022/05/07/execute-analysis-using-pyrosim-on-cloudhpc/">PYROSIM - Execution analysis</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://cloudhpc.cloud/2023/03/07/import-cloudhpc-fds-results-in-pyrosim/">PYROSIM - Import results</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">REST API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-INTRODUCTION/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../APIKEY/">APIKEY</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-v2/">API v2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-v1/">API v1</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleAPI">Example</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">cloudHPC online help</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">MONITOR</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="monitor">Monitor<a class="headerlink" href="#monitor" title="Permanent link">#</a></h1>
+<h2 id="simulation_time">Simulation time<a class="headerlink" href="#simulation_time" title="Permanent link">#</a></h2>
+<p>cloudHPC provides an estimate - ETA - of the total simulation's duration. This is provided after the simulation has been executed and it is available in your Output as highlited by the image below. The ETA estimate is available only for the following software:</p>
+<ul>
+<li>FDS [all versions]</li>
+</ul>
+<p align="center">
+   <img width=650 src="https://cfdfeaservice.it/wiki/cloud-hpc/images/ETA.png">
+</p>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The provided duration should be considered a preliminary estimate and does not constitute a contractual element or a binding quote. Consequently, the final cost will be determined based on the actual consumption measured at the end of the activity.</p>
+</div>
+<h3 id="manual_estimate">Manual estimate<a class="headerlink" href="#manual_estimate" title="Permanent link">#</a></h3>
+<p>To manually evaluate the simulation’s duration, you can check how many iterations are pursued and in how much time. This estimation can be done after at least 2 hours of simulation.
+You can then evaluate how many seconds of simulation are pursued in real-time. Hence, for instance, how many seconds of simulation are calculated in 2 hours. If you want to pursue a simulation of 600 seconds and you valuate that a simulation time of 120 seconds is calculated in 2 hours analysis. Then you would know that your simulation would take approximately 60 seconds of simulation time each hour. Consequently, it would take 10 hours to complete a simulation time of 600 seconds. </p>
+<p align="center">
+120s : 2h = 60s/h
+
+600s : 6s/h = 10 h
+</p>
+
+<h2 id="runtime_monitor">Runtime monitor<a class="headerlink" href="#runtime_monitor" title="Permanent link">#</a></h2>
+<p>The cloud HPC system, offers you the possibility to monitor your analysis in runtime during the simulation and, at the same time, to check the usage of the hardware resources in terms of vCPU and RAM, during the analysis. In order to access the monitor you need to enter the simulation details by clicking the "View" button of the analysis you want to monitor.</p>
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_13_VIEW_SIM.png">
+</p>
+
+<p>Considering the software you are using, it's possible to monitor several results during the simulation:</p>
+<ul>
+<li>
+<p><strong>OPENFOAM</strong>: the cloud HPC authomatically generates a chart for each runtime post-processing activated in <em>controlDict</em>. It is important that you set it before launching the analysis with the post-processing you want to detect: residuals, max pressure/velocity, temperatures, flow calculations, etc. In order to have a template of the controlDict file you can check <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/OpenFOAM/system/controlDict">here</a>.</p>
+</li>
+<li>
+<p><strong>FDS</strong>: they system authomatically convertes into chart every CSV file generated by FDS during the runtime. In order to see the results you need to set up &amp;DEV (devices) and properly assign them variables to monitor.</p>
+</li>
+</ul>
+<p align="center">
+   <img width="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_15_data_monitoring.png">
+</p>
+
+<h2 id="runtime_logs">Runtime logs<a class="headerlink" href="#runtime_logs" title="Permanent link">#</a></h2>
+<p>Every simulation software produces a log file which is displayed directly at runtime in the proper section of the web app. It is possible for you to check these logs in two ways:</p>
+<ol>
+<li>Through the <strong>Output</strong> section where you can see a brief summary of the simulation status</li>
+<li>In the Logs section where every log file produced is reported and made accessible. The access remains also when the simulation is terminated as a reference </li>
+</ol>
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/LogFiles.jpg">
+</p>
+
+<h2 id="remote_desktop">Remote desktop<a class="headerlink" href="#remote_desktop" title="Permanent link">#</a></h2>
+<p>For enabled accounts, it is possible to access the virtal machine where the simulation is actually performed via remote desktop. This feature is available under the "view" page of each simulation and gives you access to all hardware resources of the instance where simulation is performed. With that you can:</p>
+<ul>
+<li>monitor your running process</li>
+<li>check status of the hardware resources</li>
+<li>run your preferred post-processing software such as ParaView, SALOME or Smokeview</li>
+</ul>
+<p>The remote desktop is made available for all simulations where status is RUNNING. To access it just enter the "view" page of the simulation and scroll down at the bottom of the page.</p>
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/RemoteDesktop.jpg">
+</p>
+
+<p align="center">
+   <a href="https://www.youtube.com/watch?v=yPJWTfmcsY4"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
+</p>
+
+<h2 id="hardware_monitor">Hardware monitor<a class="headerlink" href="#hardware_monitor" title="Permanent link">#</a></h2>
+<p>Beyond results extracted by the solver, at any time it is possible to monitor the usage of vCPU and RAM are. These graphs are important in order to understand if the computational capacity chosen for your simulation is enough or overestimated.</p>
+<p>As a general rule, you can try to always have at least 1000 Mb available in the <em>Free line</em> (red).</p>
+<p align="center">
+   <img width="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_16_CPU_good.png">
+   <img width="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_17_RAM_good.png">
+</p>
+
+<h2 id="ssh_connection">SSH Connection<a class="headerlink" href="#ssh_connection" title="Permanent link">#</a></h2>
+<p>Advanced users can also connect via SSH to the instances where the simulation is running. This allows you to enter the instance and get full control of the running analysis. You are also given the possibility, for example, to create/edit/cancel files.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CFD FEA SERVICE SRL can't take resposibility for the user actions taken when he enters the instance. In particular if you stop the simulation or delete all the results produced by the simulation, it's impossible to us to retrieve these information.</p>
+</div>
+<h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h3>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>For security reasons, SSH port 22 is closed to all accounts. In order to open that port for your specific IP address, contact our suppor team.</p>
+</div>
+<p>In order to get SSH access to the running simulations make sure you have correctly saved your public key into your profile such as described in the following image:</p>
+<p align="center">
+   <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/SSHkey.jpg">
+</p>
+
+<p>In order to retrieve your public key on Linux based systems, you can just run the following command on a terminal:</p>
+<pre><code>cat .ssh/id_rsa.pub
+</code></pre>
+<h3 id="connect_via_ssh">Connect via SSH<a class="headerlink" href="#connect_via_ssh" title="Permanent link">#</a></h3>
+<p>Once you have saved your public key to access via SSH to a running instance type the following command:</p>
+<pre><code>ssh -X -o "StrictHostKeyChecking no" cloudhpc@SIMULATION_IP_ADDRESS
+</code></pre>
+<p>where SIMULATION_IP_ADDRESS is reported in the "view" page of the running analysis. The same result can also be achieved using the script <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/wiki#for-advanced-users">cloudHPCexec</a> by typing:</p>
+<pre><code>cloudHPCexec -ssh SIMULATION_ID
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../simulation/" class="btn btn-neutral float-left" title="SIMULATIONS"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../scalability/" class="btn btn-neutral float-right" title="SCALABILITY">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../simulation/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../scalability/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
