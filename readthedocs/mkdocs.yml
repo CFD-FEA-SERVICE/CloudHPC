@@ -1,5 +1,6 @@
 site_name: cloudHPC online help
 site_url: https://docs.cloudhpc.cloud
+copyright: Copyright © 2016 - 2025 CFD FEA SERVICE SRL UNIPERSONALE
 nav:
   # CLOUD HPC USER GUIDE
   - INTRODUCTION: index.md
