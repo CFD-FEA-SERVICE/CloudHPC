@@ -1,10 +1,8 @@
-# Welcome to the CloudHPC User Guide!
-
 <p align="center">
    <img width="600" src="https://cloudhpc.cloud/wp-content/uploads/2023/03/CloudHPC-logo.png">
 </p>
 
-
+# Welcome to the CloudHPC User Guide!
 CFD FEA SERVICE offers the use of a CloudHPC service to run Your scripts for CFD, FEM and other simulations. The scripts accepted are: codeAster, code Saturne, FDS, OpenFoam, paraview and snappyHexMesh. The innovative CloudHPC system (High Performance Computing) allows you to rent the computational capacity made available, in order to run heavy and long engineering analyses. This method permits you to run your simulations in Cloud, thus directly on the [web-app](https://cloud.cfdfeaservice.it/), avoiding the use of your own local computer for this process. The results would be generated in the Web-app and easily downloaded.
 
 The offered service is restricted to only run the simulations, in order to:
