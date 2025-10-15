@@ -99,7 +99,7 @@ If the above method is not sufficient to distribute cells equally among processo
 The cloudHPC platform is able to decompose the FDS simulation in some peculiar cases. This lets the user an easier way to achieve good scalability thanks to a mesh division performed by the system. The pre-conditions to meet in order to let the system decompose your mesh are:
 
 * Generate an input FDS file with just one _&MESH_ line.
-* A mesh with at least 40,000 cells.
+* The mesh must be made of at least 40,000 cells.
 * Select vCPU to be 4 or more.
 
 In these situations, the _output_ provides you the following plot when the mesh decomposition occurs:
