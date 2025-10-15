@@ -29,7 +29,23 @@ The cloud HPC system, offers you the possibility to monitor your analysis in run
    <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_13_VIEW_SIM.png">
 </p>
 
-Considering the software you are using, it's possible to monitor several results during the simulation:
+Once you enter the simulation view page, the cloudHPC provides you with a number of information and controls of the running analysis that are briefly expained by the following paragraphs.
+
+## Simulation output
+The most fundamental communication window is represented by the simulation output. This is a real-time log of any information produced by cloudHPC while your simulation is actually running. In these info you can find:
+
+1. [Errors and warnings](errors.md) produced by the cloudHPC
+1. A basic plot of the runtime log of your executable
+1. Execution information of the cloudHPC at all phases of your analysis
+
+The output is the main window available under the simulation view page as displayed by the following image.
+
+<p align="center">
+   <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/ErrorOutput.png">
+</p>
+
+## Runtime plots
+As your solver runs, cloudHPC tries to plot the most important output into graphs for users to easily read them. Every CSV file generated will be automatically plot into graph. Beyond that, some software have the capability to produce more advanced outputs such as:
 
 * **OPENFOAM**: the cloud HPC authomatically generates a chart for each runtime post-processing activated in _controlDict_. It is important that you set it before launching the analysis with the post-processing you want to detect: residuals, max pressure/velocity, temperatures, flow calculations, etc. In order to have a template of the controlDict file you can check [here](https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/OpenFOAM/system/controlDict).
 
@@ -102,6 +118,6 @@ Once you have saved your public key to access via SSH to a running instance type
 
 	ssh -X -o "StrictHostKeyChecking no" cloudhpc@SIMULATION_IP_ADDRESS
 
-where SIMULATION\_IP\_ADDRESS is reported in the "view" page of the running analysis. The same result can also be achieved using the script [cloudHPCexec](https://github.com/CFD-FEA-SERVICE/CloudHPC/wiki#for-advanced-users) by typing:
+where SIMULATION\_IP\_ADDRESS is reported in the "view" page of the running analysis. The same result can also be achieved using the script [cloudHPCexec](https://github.com/CFD-FEA-SERVICE/CloudHPC/releases) by typing:
 
 	cloudHPCexec -ssh SIMULATION_ID
