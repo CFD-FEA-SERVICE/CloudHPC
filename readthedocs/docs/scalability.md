@@ -206,3 +206,7 @@ In short, the names of the CalculiX solvers tell you exactly what's inside—whe
 
 ## OpenRADIOSS
 * <a href="https://cloudhpc.cloud/2025/05/27/unlocking-extreme-performance-openradioss-scalability-on-cloudhpc-with-amd-epyc-processors/" target="_blank">Unlocking Extreme Performance: OpenRADIOSS Scalability on CloudHPC with AMD EPYC Processors</a>
+
+## SU2
+
+* <a href="https://cloudhpc.cloud/2025/10/01/su2-and-the-challenge-of-scalability-how-cloudhpc-is-speeding-up-cfd-simulations/" target="_blank">SU2 and the Challenge of Scalability: How CloudHPC is Speeding Up CFD Simulations</a>
