@@ -167,7 +167,7 @@ The following table instead shows you the most common UI available on the platfo
 | SU2 8.2.0   | ubuntu-2404-static  | 🖥️ desktop icon         |
 | baramFlow v25 | ubuntu-2404-static  | 🖥️ desktop icon         |
 | baramMesh v25 | ubuntu-2404-static  | 🖥️ desktop icon         |
-| FDS SMV       | ubuntu-2404-static  | 📟 terminal: `/opt/FDS/{VERSION}/smvbin/smokeview`  |
+| FDS SMV       | any static          | 📟 terminal: `/opt/FDS/{VERSION}/smvbin/smokeview`  |
 
 ### More info and details
 To get more info and details it's possible to see the following youtube video about the official release of the remote desktop where a static instance use has been described.
