@@ -51,7 +51,7 @@ then
 
       #setting autocomplete
       sudo sh -c "echo '#/usr/bin/env bash'                                                               > /etc/bash_completion.d/cloudHPCexec"
-      sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -batchREG -delete -deleteSIM -ssh -vnc -scp -wait -transfer -soft -hard\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+      sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -batchREG -batchONL -delete -deleteSIM -ssh -vnc -scp -wait -transfer -soft -hard\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
 
       echo "#####################################################################"
       echo "cloudHPCexec updated and installed successfully - Available for usage"
@@ -91,6 +91,7 @@ then
    echo "                          Expected 4+1 arguments: vCPU, RAM, SCRIPT and FOLDER + MESH [optional]"
    echo "                          Example: cloudHPCexec -batch 1 standard fds6.7.1 FOLDER-NAME [MESH-FOLDER-NAME]"
    echo "-batchREG             Like batch, but execute analysis on REG instances"
+   echo "-batchONL             Like batch, but execute analysis on a pre-uploaded folder in the storage"
    echo "-wait ID              Wait for simulation ID to finish"
    echo "                          ID is returned when simulation is launched"
    echo "-soft [ID]            Soft STOP for simulation ID"
@@ -488,7 +489,7 @@ fi
 #EXECUTION AND API CALL #######################################################
 FOLDER=$(basename $(pwd))
 
-if [ "$option" = "-batch" -o "$option" = "-batchREG" ]
+if [ "$option" = "-batch" -o "$option" = "-batchREG" -o "$option" = "-batchONL" ]
 then
    cpu=$2
    ram=$3
@@ -595,26 +596,29 @@ else
    echo "Equivalent BATCH command: cloudHPCexec -batch $cpu $ram $script $folder_storage $mesh_storage"
 fi
 
-#LOADING CURRENT FOLDER AS TAR FILE ###########################################
-echo "Compressing current folder $FOLDER ..."
-tar -I pigz -cf upload.tar.gz * > log.tmp 2>&1
-rm log.tmp
+if [ ! "$option" = "-batchONL" ]
+then
+   #LOADING CURRENT FOLDER AS TAR FILE ###########################################
+   echo "Compressing current folder $FOLDER ..."
+   tar -I pigz -cf upload.tar.gz * > log.tmp 2>&1
+   rm log.tmp
 
-echo "Uploading compressed file to cloud storage folder named $folder_storage ..."
-JSON_STRING=$( jq -n \
-                  --arg dirname       "$folder_storage" \
-                  --arg filename      "upload.tar.gz" \
-                  --arg contentType   "application/octet-stream" \
-                  '{ dirname: $dirname, filename: $filename, contentType: $contentType }' )
+   echo "Uploading compressed file to cloud storage folder named $folder_storage ..."
+   JSON_STRING=$( jq -n \
+                     --arg dirname       "$folder_storage" \
+                     --arg filename      "upload.tar.gz" \
+                     --arg contentType   "application/octet-stream" \
+                     '{ dirname: $dirname, filename: $filename, contentType: $contentType }' )
 
-APIcloudHPC 'POST' "https://$BASEURL/api/v2/storage/upload-url" "$JSON_STRING"
-UPLOAD_URL=$( echo $APIcloudHPC_reply | jq -r .response.url )
+   APIcloudHPC 'POST' "https://$BASEURL/api/v2/storage/upload-url" "$JSON_STRING"
+   UPLOAD_URL=$( echo $APIcloudHPC_reply | jq -r .response.url )
 
-curl -s --ipv4 -X PUT -H 'Content-Type: application/octet-stream' -T upload.tar.gz $UPLOAD_URL
+   curl -s --ipv4 -X PUT -H 'Content-Type: application/octet-stream' -T upload.tar.gz $UPLOAD_URL
 
-rm upload.tar.gz
+   rm upload.tar.gz
 
-APIcloudHPC 'DELETE' "https://$BASEURL/api/v2/user/delete-cache"
+   APIcloudHPC 'DELETE' "https://$BASEURL/api/v2/user/delete-cache"
+fi
 
 #EXECUTE ANALYSIS #############################################################
 echo "Executing $script on $cpu vCPU with $ram RAM ..."
