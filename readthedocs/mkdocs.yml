@@ -16,6 +16,7 @@ nav:
     - cloudHPC dedicated tools: https://github.com/CFD-FEA-SERVICE/CloudHPC/releases
     - PYROSIM - Execution analysis: https://cloudhpc.cloud/2022/05/07/execute-analysis-using-pyrosim-on-cloudhpc/
     - PYROSIM - Import results: https://cloudhpc.cloud/2023/03/07/import-cloudhpc-fds-results-in-pyrosim/
+    - NAMIRIAL CPI WIN FSE - Import results: https://cloudhpc.cloud/2026/01/12/streamlining-fire-safety-engineering-how-to-import-cloudhpc-results-into-namirial-cpi-win-fse/
   - REST API:
     - Introduction: API-INTRODUCTION.md
     - APIKEY: APIKEY.md
