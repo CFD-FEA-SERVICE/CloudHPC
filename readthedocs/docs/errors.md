@@ -1,4 +1,4 @@
-## Find errors and understand them
+# Detecting execution errors
 
 When running analysis on the cloudHPC it may happen that your simulation finishes ( STATUS = COMPLETED ) even if it actually ended with an error. This situation depends on the way you configured your analysis to run on the system and it generally depends on the input file of the analysis and also on the choice in terms of vCPU and RAM. The easiest way to detect the error is reading the 'Output' section of your simulation page as highlighted by the following image.
 
@@ -15,19 +15,25 @@ A common problem is related to the sizing of the computational power and memory 
     ```
 	@@@ RAM used > 80.0%: increase vCPU or use highmem instance
     ```
- 
-If the RAM increases all of a sudden, the above message may not appear and you could have a message like the following:
 
-!!! danger
-    ```
-	===================================================================================
-	=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
-	=   RANK 0 PID XXXX RUNNING AT hpc-serverXXXXX
-	=   KILLED BY SIGNAL: 9 (Killed)
-	===================================================================================
-    ```
+When the system runs out of RAM, there could be several behaviour depending on the solver running. The most common messages are here reported.
 
-In both cases, the solution is to increase either the number of vCPU or the RAM allocation by selecting 'standard' or 'highmem'.
+```
+@@@ ERROR: SWAP unresolved after 5 attempts => turningoff
+```
+
+```
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 0 PID XXXX RUNNING AT hpc-serverXXXXX
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+```
+
+In any case, the solution is to increase either the number of vCPU or the RAM allocation by selecting 'standard' or 'highmem'.
+
+!!! note
+   RAM issue are more frequent on low number of vCPU and when RAM is configured to 'highcpu' or 'hypercpu'. In particular when vCPU is 1, the little amount of RAM allocated allows just to run simple scripts and generally no software can run under this configuration.
 
 ### Hard disk use
 Every simulation runs on a dedicated virtual machine. These are provided a fixed size hard disk whose ["size spans"](simulation.md#instance_hard_disk) from 100Gb to 2000Gb. It may happen that your simulation produces a huge amount of data and those hard disk sizes are not sufficient to store all your information. In this case the system provides you the following warning message in the output window:
@@ -85,7 +91,7 @@ To fix this error you have few alternatives:
 
 * The file or folder name contains invalid characters. Generally the cloudHPC system does not allow your input file name to have special characters such as the followings: , ( ) ' $ ~ " # . If any of these characters is present, rename your input file and remove these special characters.
 
-## FDS incorrect settings
+# FDS incorrect settings
 Every FDS analysis assumes as an input one single `.fds` file. The following error is reported when the system could not detect the `.fds` file and, consequently, the analysis cannot start.
 
 !!! danger
@@ -95,7 +101,7 @@ Every FDS analysis assumes as an input one single `.fds` file. The following err
 
 Usually this depends on incorrect file upload, such as other file formats or modified file extension. Make sure you upload the correct `.fds` file and execute the simulation one more time.
 
-### Scalability issue with MPI\_PROCESS
+## Scalability issue with MPI\_PROCESS
 When running a multi-core analysis using FDS there might be two type of issues that prevent your analysis to run properly. The first issue regards the MPI\_PROCESS parameter to be assigned to every mesh: this parameter must be assigned in **ASCENDING ORDER** only. In case the followign error is reported, it is necessary to edit the input FDS file and reorder the &MESH elements so the ASCENDING ORDER is guaranteed.
 
 !!! danger
@@ -115,7 +121,7 @@ In case your input FDS file requires a specific number of CORES, either because 
 	@@@        -> use the MPI_PROCESS parameter to assign 2 or more meshes to one single CORE
     ```
 
-### Warning messages by FDS
+## Warning messages by FDS
 In case of incorrect setup of your FDS analysis, in particular when some objects or devices do not fall withing any mesh, you receive a warning message from FDS. Since these warning messages can be numerous, the system trims them once they reach a specific number and provides you the following error message:
 
 !!! danger
@@ -124,7 +130,7 @@ In case of incorrect setup of your FDS analysis, in particular when some objects
 	@@@        check logs for more details
     ```
 
-### Pyrosim input file
+## Pyrosim input file
 The cloudHPC platform can handle FDS simulation. If you upload for example a .psm file - generated by the UI Pyrosim - the system is not able to execute your analysis and report the following error:
 
 !!! danger
@@ -134,7 +140,7 @@ The cloudHPC platform can handle FDS simulation. If you upload for example a .ps
 
 To execute FDS analysis remember of exporting the `.fds` from any user interface you are using.
 
-### High number of threads
+## High number of threads
 The following warning represents an issue with the scalability of your FDS analysis:
 
 !!! warning
@@ -147,7 +153,7 @@ The following warning represents an issue with the scalability of your FDS analy
 
 The configuration of vCPU, considering the restriction in your input `.fds` file where the number of meshes is defined, forced the system to select a high number of threads for the current analysis. Even if your simulation is running, it may not use the hardware resources allocated at their best. It is recommended to read the ["scalability paragraph"](scalability.md#fds).
 
-### High number of Pressure ZONES
+## High number of Pressure ZONES
 A pressure zone is a part of your fluid domain which is disconnected from the rest of your domain through an obstacle OBST or any other solid material. Recent versions of FDS authomatically detect pressure zones and solve them as a separate domain of your simulation. This feature may result in a generation of a very high number of Pressure Zones, in particular in cases where the geometry is extrimely refined compared to the local cells dimensions. In such a case the following working is reported by the cloudHPC output.
 
 !!! warning
@@ -160,7 +166,7 @@ Generally, your simulation can perform correctly even if experience showed that 
 * MINIMUM\_ZONE\_VOLUME=1.0 . This command allows you to define a threshold volume value. Pressure zones with a volume lower than the threshold value are then converted into OBST or equivalent solid part
 * NO\_PRESSURE\_ZONES=T . Options to use for debug only, completely delete any pressure zone generated and separated from the main one
 
-### DEVC affecting performances
+## DEVC affecting performances
 It's been noted that the presence of some specific DEVC in your FDS simulation may affect the performance of AMD processors. This issue is still under complete investigation with the FDS/NIST developpers, but it affects at least the following DEVC:
 
 * VISIBILITY
@@ -175,9 +181,9 @@ More DEVC may be affected and a complete list of all affected devices is not yet
 	             Make sure you run on a hyper type of instances
     ```
 
-## OpenFOAM incorrect settings
+# OpenFOAM incorrect settings
 
-### Incorrect dictionary
+## Incorrect dictionary
 OpenFOAM requires a specific dictionary to work properly. In particular the minimum configuration requires three folders:
 
 * 0
@@ -195,7 +201,7 @@ When executing any openFoam related solver, the cloudHPC checks for the existanc
 
 Often this issue is related to uploading correctly the dictionary which requires uploading a [folder](storage.md#upload_of_a_folder).
 
-### Multi-core analysis
+## Multi-core analysis
 OpenFOAM is configured to run in multi-cores mode on the cloudHPC. For this reason, when attempting to execute any openfoam solver and also the mesh generation with snappy, it is required the user to select nProc to be higher than 1. This means that vCPU must be equals to 2 in case we are using highcore machines or vCPU = 4 in case we use highcpu, standard or highmem configuration.
 
 The error message we are to receive depends on whether the openfoam solver is causing the issue:
@@ -214,7 +220,7 @@ of if the snappyHexMesh generation is causing it:
 	@@@        select a higher number of vCPU
     ```
 
-### SnappyHexMesh general errory
+## SnappyHexMesh general errory
 It may happen that snappy is not able to generate a mesh. The reasons for this can be quite different: insufficient RAM, geometrical issues with input STL files, etc. Once the snappyHexMesh solver runs if the solver did not finish properly the following error message is reported:
 
 !!! danger
@@ -223,7 +229,7 @@ It may happen that snappy is not able to generate a mesh. The reasons for this c
 	@@@        check log.snappyHexMesh
     ```
 
-### General problem with OpenFOAM solver
+## General problem with OpenFOAM solver
 When executing any simulation with any openfoam solver, the first control regards the presence of the _polyMesh_ folder in the dictionary uploaded. If this folder is not present the simulation is going to report the following error.
 
 !!! danger
@@ -233,7 +239,7 @@ When executing any simulation with any openfoam solver, the first control regard
     ```
 
 
-### decomposeParDict
+## decomposeParDict
 In order to run your OpenFOAM analysis, if you use our default solvers, it is recommended to use a correct settings of _decomposeParDict_. By default in fact the solver assumes:
 
 * decomposition method: _scotch_ or _hierarchical_
@@ -256,7 +262,7 @@ The OpenFOAM analysis might start anyway with the only difference that _numberOf
 
 In case you need help, it is possible to refer to our [template](https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/OpenFOAM/system/decomposeParDict) and replace your current decomposeParDict with one that match the requests.
 
-### controlDict
+## controlDict
 In order to correctly set-up your controlDict file, it is mandatory to remember:
 
 * use '_application_' dictionary to specify the solver to use
@@ -272,7 +278,7 @@ The cloudHPC executable requires that the parameter '_startFrom_' is set to begi
 
     ```
 
-## Code Aster settings
+# Code Aster settings
 Runnin Code\_Aster on the cloudHPC requires the user to upload at least three files:
 
 * `.export` . It's the file that specifies which input file are going to be executed, where your mesh is located and which output have to be produced
@@ -281,7 +287,7 @@ Runnin Code\_Aster on the cloudHPC requires the user to upload at least three fi
 
 We made available [this template](https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/code-aster) where you can actually see example of the above three files.
 
-### export file missing
+## export file missing
 The three files mentioned before ( `.export`, `.comm` and `.med`/`.unv`) are mandatory to execute any analysis. In the file `.export` is missing the system reports you the following error.
 
 !!! danger
