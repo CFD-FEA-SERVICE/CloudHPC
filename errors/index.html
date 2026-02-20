@@ -70,12 +70,6 @@
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href="#">ERRORS</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#low_ram_available">Low RAM available</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#incorrect_compressed_file">Incorrect compressed file</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#incorrect_file_or_folder_name">Incorrect file or folder name</a>
-    </li>
     </ul>
                 </li>
               </ul>
@@ -130,14 +124,14 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="detecting_execution_errors">Detecting execution errors<a class="headerlink" href="#detecting_execution_errors" title="Permanent link">#</a></h1>
+                <h2 id="detecting_execution_errors">Detecting execution errors<a class="headerlink" href="#detecting_execution_errors" title="Permanent link">#</a></h2>
 <p>When running analysis on the cloudHPC it may happen that your simulation finishes ( STATUS = COMPLETED ) even if it actually ended with an error. This situation depends on the way you configured your analysis to run on the system and it generally depends on the input file of the analysis and also on the choice in terms of vCPU and RAM. The easiest way to detect the error is reading the 'Output' section of your simulation page as highlighted by the following image.</p>
 <p align="center">
    <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/ErrorOutput.png">
 </p>
 
 <p>Here below you can find a list of the most common errors with the easiest possible solutions you can apply to them.</p>
-<h2 id="low_ram_available">Low RAM available<a class="headerlink" href="#low_ram_available" title="Permanent link">#</a></h2>
+<h3 id="low_ram_available">Low RAM available<a class="headerlink" href="#low_ram_available" title="Permanent link">#</a></h3>
 <p>A common problem is related to the sizing of the computational power and memory assigned to your simulation. It is important to monitor the vCPU and RAM in the first hours of simulation. This error is generally communicated with the following message in your output:</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -172,7 +166,7 @@
 </code></pre></div>
 </div>
 <p>This time, right after the warning the system starts a soft <a href="../simulation/#soft_and_hard_stop">"stop procedure"</a>.</p>
-<h2 id="incorrect_compressed_file">Incorrect compressed file<a class="headerlink" href="#incorrect_compressed_file" title="Permanent link">#</a></h2>
+<h3 id="incorrect_compressed_file">Incorrect compressed file<a class="headerlink" href="#incorrect_compressed_file" title="Permanent link">#</a></h3>
 <p>If the input file was compressed or uploaded incorrectly, the following error will appear in the outputs of the simulation.</p>
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
@@ -193,7 +187,7 @@
 </li>
 </ul>
 <p>These two steps are described in detail in paragraph <a href="../storage/#upload_of_a_locally_compressed_folder">“Upload of a compressed file”</a>. The main concept is that in the web-app the file should appear to be in a folder in the STORAGE list when uncompressed. Hence, if the file is collected in local in a folder that is then compressed, when it is uploaded in the web-app, it should not be inserted in a second folder, achievable by leaving the Dirname box empty. If the files are compressed by themself, hence when they are extracted, they will not be in a folder, then it is important to upload the compressed file in the storage creating a folder directly in the web-app. This is possible simply by adding the folder name in the Dirname box.</p>
-<h2 id="incorrect_file_or_folder_name">Incorrect file or folder name<a class="headerlink" href="#incorrect_file_or_folder_name" title="Permanent link">#</a></h2>
+<h3 id="incorrect_file_or_folder_name">Incorrect file or folder name<a class="headerlink" href="#incorrect_file_or_folder_name" title="Permanent link">#</a></h3>
 <p>There are situations where your input filename or foldername is not recognized and consequently the cloudHPC can't handle it. These situation are highlighted by the following message in the output:</p>
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
@@ -213,7 +207,7 @@
 <p>The file or folder name contains invalid characters. Generally the cloudHPC system does not allow your input file name to have special characters such as the followings: , ( ) ' $ ~ " # . If any of these characters is present, rename your input file and remove these special characters.</p>
 </li>
 </ul>
-<h1 id="fds_incorrect_settings">FDS incorrect settings<a class="headerlink" href="#fds_incorrect_settings" title="Permanent link">#</a></h1>
+<h2 id="fds_incorrect_settings">FDS incorrect settings<a class="headerlink" href="#fds_incorrect_settings" title="Permanent link">#</a></h2>
 <p>Every FDS analysis assumes as an input one single <code>.fds</code> file. The following error is reported when the system could not detect the <code>.fds</code> file and, consequently, the analysis cannot start.</p>
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
@@ -221,7 +215,7 @@
 </code></pre></div>
 </div>
 <p>Usually this depends on incorrect file upload, such as other file formats or modified file extension. Make sure you upload the correct <code>.fds</code> file and execute the simulation one more time.</p>
-<h2 id="scalability_issue_with_mpi_process">Scalability issue with MPI_PROCESS<a class="headerlink" href="#scalability_issue_with_mpi_process" title="Permanent link">#</a></h2>
+<h3 id="scalability_issue_with_mpi_process">Scalability issue with MPI_PROCESS<a class="headerlink" href="#scalability_issue_with_mpi_process" title="Permanent link">#</a></h3>
 <p>When running a multi-core analysis using FDS there might be two type of issues that prevent your analysis to run properly. The first issue regards the MPI_PROCESS parameter to be assigned to every mesh: this parameter must be assigned in <strong>ASCENDING ORDER</strong> only. In case the followign error is reported, it is necessary to edit the input FDS file and reorder the &amp;MESH elements so the ASCENDING ORDER is guaranteed.</p>
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
@@ -239,7 +233,7 @@
 @@@        -&gt; use the MPI_PROCESS parameter to assign 2 or more meshes to one single CORE
 </code></pre></div>
 </div>
-<h2 id="warning_messages_by_fds">Warning messages by FDS<a class="headerlink" href="#warning_messages_by_fds" title="Permanent link">#</a></h2>
+<h3 id="warning_messages_by_fds">Warning messages by FDS<a class="headerlink" href="#warning_messages_by_fds" title="Permanent link">#</a></h3>
 <p>In case of incorrect setup of your FDS analysis, in particular when some objects or devices do not fall withing any mesh, you receive a warning message from FDS. Since these warning messages can be numerous, the system trims them once they reach a specific number and provides you the following error message:</p>
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
@@ -247,7 +241,7 @@
 @@@        check logs for more details
 </code></pre></div>
 </div>
-<h2 id="pyrosim_input_file">Pyrosim input file<a class="headerlink" href="#pyrosim_input_file" title="Permanent link">#</a></h2>
+<h3 id="pyrosim_input_file">Pyrosim input file<a class="headerlink" href="#pyrosim_input_file" title="Permanent link">#</a></h3>
 <p>The cloudHPC platform can handle FDS simulation. If you upload for example a .psm file - generated by the UI Pyrosim - the system is not able to execute your analysis and report the following error:</p>
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
@@ -255,7 +249,7 @@
 </code></pre></div>
 </div>
 <p>To execute FDS analysis remember of exporting the <code>.fds</code> from any user interface you are using.</p>
-<h2 id="high_number_of_threads">High number of threads<a class="headerlink" href="#high_number_of_threads" title="Permanent link">#</a></h2>
+<h3 id="high_number_of_threads">High number of threads<a class="headerlink" href="#high_number_of_threads" title="Permanent link">#</a></h3>
 <p>The following warning represents an issue with the scalability of your FDS analysis:</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -266,7 +260,7 @@
 </code></pre></div>
 </div>
 <p>The configuration of vCPU, considering the restriction in your input <code>.fds</code> file where the number of meshes is defined, forced the system to select a high number of threads for the current analysis. Even if your simulation is running, it may not use the hardware resources allocated at their best. It is recommended to read the <a href="../scalability/#fds">"scalability paragraph"</a>.</p>
-<h2 id="high_number_of_pressure_zones">High number of Pressure ZONES<a class="headerlink" href="#high_number_of_pressure_zones" title="Permanent link">#</a></h2>
+<h3 id="high_number_of_pressure_zones">High number of Pressure ZONES<a class="headerlink" href="#high_number_of_pressure_zones" title="Permanent link">#</a></h3>
 <p>A pressure zone is a part of your fluid domain which is disconnected from the rest of your domain through an obstacle OBST or any other solid material. Recent versions of FDS authomatically detect pressure zones and solve them as a separate domain of your simulation. This feature may result in a generation of a very high number of Pressure Zones, in particular in cases where the geometry is extrimely refined compared to the local cells dimensions. In such a case the following working is reported by the cloudHPC output.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -278,7 +272,7 @@
 <li>MINIMUM_ZONE_VOLUME=1.0 . This command allows you to define a threshold volume value. Pressure zones with a volume lower than the threshold value are then converted into OBST or equivalent solid part</li>
 <li>NO_PRESSURE_ZONES=T . Options to use for debug only, completely delete any pressure zone generated and separated from the main one</li>
 </ul>
-<h2 id="devc_affecting_performances">DEVC affecting performances<a class="headerlink" href="#devc_affecting_performances" title="Permanent link">#</a></h2>
+<h3 id="devc_affecting_performances">DEVC affecting performances<a class="headerlink" href="#devc_affecting_performances" title="Permanent link">#</a></h3>
 <p>It's been noted that the presence of some specific DEVC in your FDS simulation may affect the performance of AMD processors. This issue is still under complete investigation with the FDS/NIST developpers, but it affects at least the following DEVC:</p>
 <ul>
 <li>VISIBILITY</li>
@@ -292,8 +286,8 @@
              Make sure you run on a hyper type of instances
 </code></pre></div>
 </div>
-<h1 id="openfoam_incorrect_settings">OpenFOAM incorrect settings<a class="headerlink" href="#openfoam_incorrect_settings" title="Permanent link">#</a></h1>
-<h2 id="incorrect_dictionary">Incorrect dictionary<a class="headerlink" href="#incorrect_dictionary" title="Permanent link">#</a></h2>
+<h2 id="openfoam_incorrect_settings">OpenFOAM incorrect settings<a class="headerlink" href="#openfoam_incorrect_settings" title="Permanent link">#</a></h2>
+<h3 id="incorrect_dictionary">Incorrect dictionary<a class="headerlink" href="#incorrect_dictionary" title="Permanent link">#</a></h3>
 <p>OpenFOAM requires a specific dictionary to work properly. In particular the minimum configuration requires three folders:</p>
 <ul>
 <li>0</li>
@@ -309,7 +303,7 @@
 </code></pre></div>
 </div>
 <p>Often this issue is related to uploading correctly the dictionary which requires uploading a <a href="../storage/#upload_of_a_folder">folder</a>.</p>
-<h2 id="multi-core_analysis">Multi-core analysis<a class="headerlink" href="#multi-core_analysis" title="Permanent link">#</a></h2>
+<h3 id="multi-core_analysis">Multi-core analysis<a class="headerlink" href="#multi-core_analysis" title="Permanent link">#</a></h3>
 <p>OpenFOAM is configured to run in multi-cores mode on the cloudHPC. For this reason, when attempting to execute any openfoam solver and also the mesh generation with snappy, it is required the user to select nProc to be higher than 1. This means that vCPU must be equals to 2 in case we are using highcore machines or vCPU = 4 in case we use highcpu, standard or highmem configuration.</p>
 <p>The error message we are to receive depends on whether the openfoam solver is causing the issue:</p>
 <div class="admonition danger">
@@ -325,7 +319,7 @@
 @@@        select a higher number of vCPU
 </code></pre></div>
 </div>
-<h2 id="snappyhexmesh_general_errory">SnappyHexMesh general errory<a class="headerlink" href="#snappyhexmesh_general_errory" title="Permanent link">#</a></h2>
+<h3 id="snappyhexmesh_general_errory">SnappyHexMesh general errory<a class="headerlink" href="#snappyhexmesh_general_errory" title="Permanent link">#</a></h3>
 <p>It may happen that snappy is not able to generate a mesh. The reasons for this can be quite different: insufficient RAM, geometrical issues with input STL files, etc. Once the snappyHexMesh solver runs if the solver did not finish properly the following error message is reported:</p>
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
@@ -333,7 +327,7 @@
 @@@        check log.snappyHexMesh
 </code></pre></div>
 </div>
-<h2 id="general_problem_with_openfoam_solver">General problem with OpenFOAM solver<a class="headerlink" href="#general_problem_with_openfoam_solver" title="Permanent link">#</a></h2>
+<h3 id="general_problem_with_openfoam_solver">General problem with OpenFOAM solver<a class="headerlink" href="#general_problem_with_openfoam_solver" title="Permanent link">#</a></h3>
 <p>When executing any simulation with any openfoam solver, the first control regards the presence of the <em>polyMesh</em> folder in the dictionary uploaded. If this folder is not present the simulation is going to report the following error.</p>
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
@@ -341,7 +335,7 @@
 @@@        Your simulation may fail
 </code></pre></div>
 </div>
-<h2 id="decomposepardict">decomposeParDict<a class="headerlink" href="#decomposepardict" title="Permanent link">#</a></h2>
+<h3 id="decomposepardict">decomposeParDict<a class="headerlink" href="#decomposepardict" title="Permanent link">#</a></h3>
 <p>In order to run your OpenFOAM analysis, if you use our default solvers, it is recommended to use a correct settings of <em>decomposeParDict</em>. By default in fact the solver assumes:</p>
 <ul>
 <li>decomposition method: <em>scotch</em> or <em>hierarchical</em></li>
@@ -360,7 +354,7 @@ numberOfSubdomains 10
 </div>
 <p>The OpenFOAM analysis might start anyway with the only difference that <em>numberOfSubdomains</em> is not adjusted by the system and is up to the user using all the vCPU and cores allocated in the instance for your simulation.</p>
 <p>In case you need help, it is possible to refer to our <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/OpenFOAM/system/decomposeParDict">template</a> and replace your current decomposeParDict with one that match the requests.</p>
-<h2 id="controldict">controlDict<a class="headerlink" href="#controldict" title="Permanent link">#</a></h2>
+<h3 id="controldict">controlDict<a class="headerlink" href="#controldict" title="Permanent link">#</a></h3>
 <p>In order to correctly set-up your controlDict file, it is mandatory to remember:</p>
 <ul>
 <li>use '<em>application</em>' dictionary to specify the solver to use</li>
@@ -373,7 +367,7 @@ numberOfSubdomains 10
 <div class="highlight"><pre><span></span><code>@@@ WARNING -&gt; suggested to use startFrom latestTime in system/controlDict
 </code></pre></div>
 </div>
-<h1 id="code_aster_settings">Code Aster settings<a class="headerlink" href="#code_aster_settings" title="Permanent link">#</a></h1>
+<h2 id="code_aster_settings">Code Aster settings<a class="headerlink" href="#code_aster_settings" title="Permanent link">#</a></h2>
 <p>Runnin Code_Aster on the cloudHPC requires the user to upload at least three files:</p>
 <ul>
 <li><code>.export</code> . It's the file that specifies which input file are going to be executed, where your mesh is located and which output have to be produced</li>
@@ -381,7 +375,7 @@ numberOfSubdomains 10
 <li><code>.med</code> or <code>.unv</code> . It's your mesh. This can be in MED file format or UNV file format.</li>
 </ul>
 <p>We made available <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/code-aster">this template</a> where you can actually see example of the above three files.</p>
-<h2 id="export_file_missing">export file missing<a class="headerlink" href="#export_file_missing" title="Permanent link">#</a></h2>
+<h3 id="export_file_missing">export file missing<a class="headerlink" href="#export_file_missing" title="Permanent link">#</a></h3>
 <p>The three files mentioned before ( <code>.export</code>, <code>.comm</code> and <code>.med</code>/<code>.unv</code>) are mandatory to execute any analysis. In the file <code>.export</code> is missing the system reports you the following error.</p>
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
