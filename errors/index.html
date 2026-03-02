@@ -70,6 +70,12 @@
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href="#">ERRORS</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#fds_incorrect_settings">FDS incorrect settings</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#openfoam_incorrect_settings">OpenFOAM incorrect settings</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#code_aster_settings">Code Aster settings</a>
+    </li>
     </ul>
                 </li>
               </ul>
@@ -124,7 +130,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h2 id="detecting_execution_errors">Detecting execution errors<a class="headerlink" href="#detecting_execution_errors" title="Permanent link">#</a></h2>
+                <h1 id="detecting_execution_errors">Detecting execution errors<a class="headerlink" href="#detecting_execution_errors" title="Permanent link">#</a></h1>
 <p>When running analysis on the cloudHPC it may happen that your simulation finishes ( STATUS = COMPLETED ) even if it actually ended with an error. This situation depends on the way you configured your analysis to run on the system and it generally depends on the input file of the analysis and also on the choice in terms of vCPU and RAM. The easiest way to detect the error is reading the 'Output' section of your simulation page as highlighted by the following image.</p>
 <p align="center">
    <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/ErrorOutput.png">
@@ -150,8 +156,8 @@
 <p>In any case, the solution is to increase either the number of vCPU or the RAM allocation by selecting 'standard' or 'highmem'.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-</div>
 <p>RAM issue are more frequent on low number of vCPU and when RAM is configured to 'highcpu' or 'hypercpu'. In particular when vCPU is 1, the little amount of RAM allocated allows just to run simple scripts and generally no software can run under this configuration.</p>
+</div>
 <h3 id="hard_disk_use">Hard disk use<a class="headerlink" href="#hard_disk_use" title="Permanent link">#</a></h3>
 <p>Every simulation runs on a dedicated virtual machine. These are provided a fixed size hard disk whose <a href="../simulation/#instance_hard_disk">"size spans"</a> from 100Gb to 2000Gb. It may happen that your simulation produces a huge amount of data and those hard disk sizes are not sufficient to store all your information. In this case the system provides you the following warning message in the output window:</p>
 <div class="admonition warning">
