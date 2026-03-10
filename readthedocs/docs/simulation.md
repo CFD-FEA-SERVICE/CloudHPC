@@ -68,10 +68,13 @@ The commands can be classified into two types: the first classification regards 
 Every time you execute a simulation, a specific hard disk is allocated to actually compute the simulation. Currently most of the times this hard disk size is 400 GB. There are few exceptions though:
 
 1. 4 vCPU machines (every type of RAM) are provided an hard disk of 200 GB
-1. 1 vCPU and 2 vCPU machines (every type of RAM) are provided an hard disk of 100 GB 
-1. highmem/REG machines with at least 16 vCPU are provided an hard disk of 2000 GB
+1. highmem/REG  machines with at least 16 vCPU are provided an hard disk of 2000 GB
+1. highmem/SPOT machines with at least 16 vCPU are provided an hard disk of 600 GB
 
 Keep in mind these limitations when executing simulations on the platform.
+
+!!! note
+    For specific needs you can get in touch with the support team that will assist with storage description and expansion
 
 ### SPOT instance correct setup
 Since SPOT instance my be subjected to restart at any time during the simulation, it's important the user correctly set-up the case in order to avoid losing computing power. Every software requires a peculiar set-up which is demanded to the user.
