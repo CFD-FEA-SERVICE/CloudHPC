@@ -71,7 +71,11 @@ Every time you execute a simulation, a specific hard disk is allocated to actual
 1. highmem/REG  machines with at least 16 vCPU are provided an hard disk of 2000 GB
 1. highmem/SPOT machines with at least 16 vCPU are provided an hard disk of 600 GB
 
-Keep in mind these limitations when executing simulations on the platform.
+The actual Hard Disk allocation can be verified on the output window as highligted by the following sketch.
+
+<p align="center">
+   <img width="500" src="https://docs.cloudhpc.cloud/images/StorageVerification.png">
+</p>
 
 !!! note
     For specific needs you can get in touch with the support team that will assist with storage description and expansion
