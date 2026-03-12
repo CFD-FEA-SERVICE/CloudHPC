@@ -334,12 +334,11 @@ hierarchicalCoeffs
 <ul>
 <li><a href="https://cloudhpc.cloud/2025/07/08/pushing-the-boundaries-cloudhpcs-journey-at-the-openfoam-workshop-2025-hpc-challenge-in-vienna/" target="_blank">Pushing the Boundaries: CloudHPC’s Journey at the OpenFOAM Workshop 2025 HPC Challenge in Vienna!</a></li>
 </ul>
+<h3 id="openfoam_scripts">OpenFOAM scripts<a class="headerlink" href="#openfoam_scripts" title="Permanent link">#</a></h3>
+<p>The default OpenFOAM scripts execute a list of operations as highlighted by the following chart</p>
 <h2 id="code_aster">Code Aster<a class="headerlink" href="#code_aster" title="Permanent link">#</a></h2>
 <p>Code Aster can take advantage of both OpenMPI and OpenMP at the same time. The versions currently compiled under the cloudHPC platform do not always implement both methodologies. You can execute simultaneously OpenMPI/OpenMP on versions marked with the suffix <em>_mpi</em> such as:</p>
 <ul>
-<li>14.6 - Compiled with OpenMPI/OpenMP</li>
-<li>15.4 - Compiled with OpenMPI/OpenMP</li>
-<li>16.4 - Compiled with OpenMPI/OpenMP</li>
 <li>17.0 - Compiled with OpenMPI/OpenMP</li>
 </ul>
 <p>When using an OpenMP-only version, the <code>.comm</code> file coming from the AsterStudy is usually adequate to use the hardware resources you are selecting. For OpenMPI/OpenMP versions instead you have to adapt the <code>.comm</code> file following <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/code-aster/input.comm">our template</a>.</p>
