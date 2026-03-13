@@ -9,8 +9,9 @@ nav:
   - SIMULATIONS: simulation.md
   - MONITOR: monitor.md
   - SCALABILITY: scalability.md
-  - BILLING: billing.md
+  - EXECUTIONS: executions.md
   - ERRORS: errors.md
+  - BILLING: billing.md
   - TUTORIALS: https://www.youtube.com/playlist?list=PLQGw2-08T-MFtKEKscwJyyzJMfLwKA6Cw
   - TOOLS:
     - cloudHPC dedicated tools: https://github.com/CFD-FEA-SERVICE/CloudHPC/releases

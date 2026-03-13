@@ -158,9 +158,6 @@ hierarchicalCoeffs
 ## Code Aster
 Code Aster can take advantage of both OpenMPI and OpenMP at the same time. The versions currently compiled under the cloudHPC platform do not always implement both methodologies. You can execute simultaneously OpenMPI/OpenMP on versions marked with the suffix _\_mpi_ such as:
 
-* 14.6 - Compiled with OpenMPI/OpenMP
-* 15.4 - Compiled with OpenMPI/OpenMP
-* 16.4 - Compiled with OpenMPI/OpenMP
 * 17.0 - Compiled with OpenMPI/OpenMP
 
 When using an OpenMP-only version, the `.comm` file coming from the AsterStudy is usually adequate to use the hardware resources you are selecting. For OpenMPI/OpenMP versions instead you have to adapt the `.comm` file following [our template](https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/code-aster/input.comm).
