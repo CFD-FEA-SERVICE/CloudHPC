@@ -132,55 +132,14 @@
               
                 <h1 id="executions">Executions<a class="headerlink" href="#executions" title="Permanent link">#</a></h1>
 <p>This section of the guide aims at showing the graphs of the scripts executions as provided by the system. </p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To zoom in, click on the images of this section.</p>
+</div>
 <h2 id="openfoam">OpenFOAM<a class="headerlink" href="#openfoam" title="Permanent link">#</a></h2>
-<div class="highlight"><pre><span></span><code>graph TD
-    Start([Start Script]) --&gt; EnvSetup[&lt;b&gt;1. Environment Setup&lt;/b&gt;&lt;br/&gt;Determine Software &amp; Version&lt;br/&gt;Source OpenFOAM bashrc]
-
-    EnvSetup --&gt; Hardware[&lt;b&gt;2. Hardware Detection&lt;/b&gt;&lt;br/&gt;Calculate Physical Cores&lt;br/&gt;Remove legacy folders]
-
-    Hardware --&gt; Compilation{Custom Code to compile?}
-    Compilation -- Allwmake/wmake --&gt; Compile[Compile User Solver]
-    Compilation -- No --&gt; SanityCheck[&lt;b&gt;3. Sanity Checks&lt;/b&gt;&lt;br/&gt;Validate controlDict location&lt;br/&gt;Generate .foam files]
-
-    Compile --&gt; SanityCheck
-
-    SanityCheck --&gt; Decompose[&lt;b&gt;4. Parallel Config&lt;/b&gt;&lt;br/&gt;Set numberOfSubdomains&lt;br/&gt;Calculate Hierarchical Coeffs]
-
-    Decompose --&gt; Allrun{Is Allrun file present?}
-    Allrun -- Yes --&gt; ExecAllrun[Execute Allrun]
-    Allrun -- No --&gt; MeshCheck{Mesh Exists?}
-
-    MeshCheck -- No --&gt; MeshGen[&lt;b&gt;5. Mesh Generation&lt;/b&gt;]
-    MeshGen --&gt; BlockMesh[blockMesh]
-    BlockMesh --&gt; SurfaceFeature[surfaceFeatures&lt;br/&gt;surfaceFeatureExtract]
-    SurfaceFeature --&gt; Snappy[decomposePar&lt;br/&gt;snappyHexMesh&lt;br/&gt;reconstructParMesh]
-    Snappy --&gt; MeshVerification[renumberMesh&lt;br/&gt;checkMesh&lt;br/&gt;createPatch&lt;br/&gt;changeDictionary&lt;br/&gt;scaleFactor]
-
-    MeshCheck -- Yes --&gt; SolverInit[&lt;b&gt;6. Solver Initialization&lt;/b&gt;&lt;br/&gt;Copy 0.org/0.orig to 0&lt;br/&gt;Set controlDict/stopAt endTime&lt;br/&gt;Set controlDict/startFrom latestTime]
-
-    MeshVerification --&gt; SolverInit
-    SolverInit --&gt; SolverDecompose[decomposePar]
-    SolverDecompose --&gt; Potential{controlDict/potentialFoam == true}
-
-    Potential -- Yes --&gt; PotExec[Execute potentialFoam]
-    Potential -- No --&gt; SolveLoop
-
-    PotExec --&gt; SolveLoop[&lt;b&gt;7. Solver Run&lt;/b&gt;&lt;br/&gt;solver specified in controlDict/application]
-
-    SolveLoop --&gt; Recon[&lt;b&gt;9. Reconstruction&lt;/b&gt;&lt;br/&gt;reconstructPar&lt;br/&gt;Delete processor folders]
-
-    ExecAllrun --&gt; End([End Script])
-    Recon --&gt; End([End Script])
-
-    %% Styling
-    style EnvSetup fill:#f9f,stroke:#333
-    style Compilation fill:#99f,stroke:#333
-    style MeshCheck fill:#0f0,stroke:#333
-    style Allrun fill:#f00,stroke:#333
-    style Potential fill:#ff8,stroke:#333
-    style SolveLoop fill:#bfb,stroke:#333
-    style Recon fill:#fbb,stroke:#333
-</code></pre></div>
+<p align="center">
+   <img heigh="200" src="https://docs.cloudhpc.cloud/images/openfoamDiagram.png">
+</p>
               
             </div>
           </div><footer>
