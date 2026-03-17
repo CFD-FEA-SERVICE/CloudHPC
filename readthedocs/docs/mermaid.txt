@@ -2,6 +2,50 @@
 
 This section of the guide aims at showing the graphs of the scripts executions as provided by the system. 
 
+## FDS
+
+```mermaid
+graph TD
+    Start([Start Script]) --> CheckFile{Is .fds file present?}
+    CheckFile -->|No| ExitError([Exit with Error])
+    CheckFile -->|Yes| MeshDecomp{Is there only 1 Mesh<br/>& multiple CPUs?}
+    MeshDecomp -->|Yes| RunPython[Run FDS Mesh Decomposition]
+    MeshDecomp -->|No| RestartLogic
+    RunPython --> RestartLogic[Update .fds file with<br/>new Mesh coordinates]
+    
+    
+    %% Restart Management
+    RestartLogic{Does .restart file exist<br/>& Restart not in MISC?}
+    RestartLogic -->|Yes| InjectRestart[Inject RESTART=TRUE<br/>into &MISC/&TAIL]
+    RestartLogic -->|No| Cleanup[Clean possible old simulation files]
+    
+    InjectRestart --> CoreCalc
+    Cleanup --> CoreCalc
+    
+    %% Core & Thread Calculation
+    CoreCalc[Calculate MPI Processes<br/>& OMP Threads<br/> from input FDS file]
+    CoreCalc --> HardwareCheck{Are requested cores<br/>> available cores?}
+    HardwareCheck -->|Yes| CapCores[Cap nProc to<br/>available hardware]
+    HardwareCheck -->|No| Execution
+    CapCores --> Execution
+    
+    %% Execution
+    Execution[Run FDS solver]
+
+    Execution --> PostProcess[Convert CSV to XLSX]
+    
+       
+    PostProcess --> End([End Script])
+
+    %% Styling
+    style ExitError fill:#f00,stroke:#333
+    style MeshDecomp  fill:#ff0,stroke:#333
+    style RestartLogic fill:#0f0,stroke:#333
+    style HardwareCheck fill:#0ff,stroke:#333
+    style Execution fill:#4a0,stroke:#333
+    style End fill:#f00,stroke:#333
+```
+
 ## OpenFOAM
 
 ```mermaid
