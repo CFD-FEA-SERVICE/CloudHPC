@@ -97,3 +97,34 @@ graph TD
     style SolveLoop fill:#bfb,stroke:#333
     style Recon fill:#fbb,stroke:#333
 ```
+
+## CUSTOM
+
+```mermaid
+graph TD
+    Start((Start)) --> FindShell{Find *.sh files}
+    
+    %% Shell Script Loop
+    FindShell -- Files Found --> ExecShell[Set Permissions: chmod ugo+x]
+    ExecShell --> RunShell[Run bash script]
+    RunShell --> LogShell[Save output to .log]
+    LogShell --> FindShell
+    
+    %% Python Script Loop
+    FindShell -- No more .sh --> FindPy{Find *.py files}
+    FindPy -- Files Found --> Venv[Create venv: py-cloudhpc]
+    Venv --> Activate[Activate venv]
+    Activate --> Install[pip install -r requirements.txt]
+    Install --> RunPy[Run python3 script]
+    RunPy --> LogPy[Save output to .log]
+    LogPy --> FindPy
+    
+    FindPy -- No more .py --> End((End))
+
+    style Start fill:#f9f,stroke:#333
+    style FindShell fill:#ff0,stroke:#333
+    style FindPy  fill:#ff0,stroke:#333
+    style End fill:#f9f,stroke:#333
+    style RunShell fill:#bbf,stroke:#333
+    style RunPy fill:#bbf,stroke:#333
+```
