@@ -1,0 +1,993 @@
+#PYTHON
+
+DEBUT()
+#POURSUITE()
+#DETRUIRE (CONCEPT = _F (NOM = ( tblmod ) ) )
+
+#############################################################################################
+# IMPOSTAZIONE DELLA SIMULAZIONE ############################################################
+#############################################################################################
+
+#TIPO DI ANALISI
+PESOPROPRIO  = False
+STATICA      = True
+MODALE       = False
+DINAMICA_VIB = False
+FATICA       = False
+FATICA_VIB   = False
+
+nIter = 10
+t_end = 1.0 #1.0 in caso di STAT NON LINE
+
+SaveFreq = 5 #Frequenza salvataggio
+
+# Scala la mesh di un fattore fact
+fact= 1.0
+
+###############################################
+#Database Materiali
+###############################################
+#NOTA: nu = E / ( 2 G ) - 1
+Mat = {}
+Fat = {}
+
+# Alluminio non saldato
+AluTensStrenght=215 * 1e6   #Tensione a Rotturna in MPa
+
+SNAlu = DEFI_FONCTION(
+               INTERPOL=('LOG', 'LOG'), 
+               NOM_PARA='SIGM', 
+               VALE=( 0.74 * 0.3 * AluTensStrenght, 1e8, 
+                             0.3 * AluTensStrenght, 1e6,
+                                   AluTensStrenght, 1e3,
+                            1.01 * AluTensStrenght, 1,
+                            1000 * AluTensStrenght, 0.001
+                    )
+             )
+
+Mat["alu"] = DEFI_MATERIAU(ELAS=_F(E= 69000e+06, NU=0.327, RHO=2700.0), )
+Fat["alu"] = DEFI_MATERIAU(ELAS=_F(E= 69000e+06, NU=0.327, RHO=2700.0), FATIGUE=_F( WOHLER=SNAlu ), RCCM = _F( SU=AluTensStrenght ), )
+
+# Acciaio non saldato
+SteTensStrenght=420 * 1e6  #Tensione a Rotturna in MPa
+
+SNSte = DEFI_FONCTION(
+               INTERPOL=('LOG', 'LOG'), 
+               NOM_PARA='SIGM', 
+               VALE=( 0.5 * SteTensStrenght, 2e6,
+                            SteTensStrenght, 1e3,
+                     1.01 * SteTensStrenght, 1,
+                     1000 * SteTensStrenght, 0.001
+                    )
+             )
+
+Mat["ste"] = DEFI_MATERIAU(ELAS=_F(E=200000e+06, NU=0.29 , RHO=7850.0), )
+Mat["stT"] = DEFI_MATERIAU(ELAS=_F(E=200000e+06, NU=0.29 , RHO=7850.0,  ALPHA=0.001 ), ) #Acciaio comprimibile per i bulloni
+Fat["ste"] = DEFI_MATERIAU(ELAS=_F(E=200000e+06, NU=0.29 , RHO=7850.0), FATIGUE=_F( WOHLER=SNSte ), RCCM = _F( SU=SteTensStrenght ), )
+
+#Non linearita' (piccole o grandi deformazioni)
+Comportamento="PETIT"
+#Comportamento="GROT_GDEP"
+
+#Elenco delle parti solide e materiali
+solid_parts_3D = []
+solid_mater_3D = []
+solid_parts_1D = []
+solid_mater_1D = []
+solid_parts_0D = []
+
+solid_parts_3D.append( "solid")
+solid_mater_3D.append( "ste")
+
+#solid_parts_1D.append( "bulloni")
+#solid_mater_1D.append( "stT")
+
+#solid_parts_0D.append( "massastatore" )
+
+###############################################
+#Modellazioni ed elementi
+###############################################
+
+#N. di bulloni + Constraint
+NBulloni    = 0
+NConstraint = 0
+#Precarico: EpsiloPerMille = Precarico / ( E * A ) * 1000
+EpsilonPerMille = 0.0
+
+#N. di liaison solide [facce 100% rigide]
+# Superfici master nominate "liaison_solide_i"
+# Se si usa un valore negativo => simula un contatto solido usando "contact_master_i" e "contact_slave_i"
+NLiaisonSolide = 0
+
+#Altri LIAISON SOLIDE
+liaisonSolide = []
+#liaisonSolide.append(  _F (GROUP_NO=( "massa", "reb3_connection_0" ) ) )
+
+#RBE3
+liaisonRbe3 = []
+#liaisonRbe3.append( _F( GROUP_NO_MAIT=('massa'), GROUP_NO_ESCL=('reb3_connection_0'),
+#                        DDL_MAIT=('DX','DY','DZ'), DDL_ESCL=('DX-DY-DZ'), 
+#                        COEF_ESCL=( 1.0, ), ), ),
+
+#Elenco master/slaves dei contatti - caso LIAISON MAIL
+# Il master deve essere un elemento 3D
+# Superfici sleave da legare al master
+liaisonMail = []
+#liaisonMail.append(  _F ( GROUP_MA_ESCL= "contact_slave_0", GROUP_MA_MAIT= "camion", TYPE_RACCORD = 'MASSIF', DISTANCE_MAX = 0.001, ))  #Ignora connessioni piu' distanti di 1mm
+
+#Elenco master/slaves dei contatti - caso DEFI_CONTACT
+# Superfici master nominate "contact_master_i"
+# Superfici slave nominate  "contact_slave_i"
+NContact    = 0
+
+#Tipo di contatto
+# 0 -> Contatto con attrito
+# 1 -> Contatto DISCRETE [TODO quando si usa]
+# 2 -> Contatto CONTINUE [TODO quando si usa]
+TypeContact = 0
+Friction    = 0.15 # coefficiente di attrito [TypeContact = 0]
+
+
+###############################################
+#Carichi e vincoli
+###############################################
+
+#SPECIFICA CARICHI
+gravita_x=0.0
+gravita_y=0.0
+gravita_z=0.0
+
+rotax_x=0.0
+rotax_y=0.0
+rotax_z=0.0
+rotw_rpm=0.0
+
+force_superficie=[]
+force_nodali=[]
+pressione=[]
+
+#Forza superficie in N/m2
+force_superficie.append( _F(GROUP_MA=('traction'), FZ=2000/0.000482, FY=0.0, FX=0.0, ) )
+
+#Forza nodale in N e coppia in Nm
+#force_nodali.append( _F(GROUP_NO=('carico1'), FX=0, FY=100, FZ=0.0, MX=0.0, MY=0.0, MZ=0.0 ) )
+
+#Pressione normale alla faccia
+#pressione.append( _F( GROUP_MA=('voluta'), PRES=31000, ) )
+
+#SPECIFICA VINCOLI
+# il tag _f indica le condizioni con funzioni
+ddl_vincoli=[]
+face_vincoli=[]
+ddl_vincoli_f=[]
+face_vincoli_f=[]
+
+#Limitazione gradi di libertà
+ddl_vincoli.append( _F(DX=0.0, DY=0.0, DZ=0.0, GROUP_NO=('fixed')) )
+
+#Limitazione gradi di libertà con funzione
+#form_1 = FORMULE(VALE='2.5579E-5*sin(291.21 * INST)', NOM_PARA='INST')
+#ddl_vincoli_f.append( _F(DX=form_1, GROUP_NO=('vincolo')) )
+
+#Vincolo di Simmetria
+face_vincoli.append( _F( GROUP_MA= ("symmetry1"), DNOR=0.0, SANS_GROUP_MA=("fixed") ) )
+face_vincoli.append( _F( GROUP_MA= ("symmetry2"), DNOR=0.0, SANS_GROUP_MA=("fixed") ) )
+
+#############################################################################################
+# FINE SETUP DEL CASO          ##############################################################
+# NON MODIFICARE DA QUI IN POI ##############################################################
+#############################################################################################
+
+mesh = LIRE_MAILLAGE(FORMAT='MED', UNITE=2)
+
+mesh = MODI_MAILLAGE(reuse=mesh, MAILLAGE=mesh, ECHELLE= fact, )
+
+# Definizione dei gruppi di nodi a partire da quelli delle facce
+mesh = DEFI_GROUP(
+             reuse=mesh,
+             MAILLAGE=mesh,
+             CREA_GROUP_NO=(_F( TOUT_GROUP_MA='OUI' ) ),
+             )
+
+# Definizione dei modelli solidi utilizzati
+affe_modele = []
+
+affe_modele.append( _F( MODELISATION=('3D', ), PHENOMENE='MECANIQUE', TOUT='OUI' ) )
+
+if ( len( solid_parts_1D ) > 0 ):
+   affe_modele.append( _F( MODELISATION=('POU_D_E', ), PHENOMENE='MECANIQUE', GROUP_MA=solid_parts_1D ) )
+
+if ( len( solid_parts_0D ) > 0 ):
+   affe_modele.append( _F( MODELISATION=('DIS_T', ), PHENOMENE='MECANIQUE', GROUP_MA=solid_parts_0D ) )
+   #affe_modele.append( _F( MODELISATION=('DIS_TR', ), PHENOMENE='MECANIQUE', GROUP_MA=solid_parts_0D ) )
+
+model = AFFE_MODELE(  AFFE=( affe_modele ), MAILLAGE=mesh )
+
+# Assegnazione di massa e dimensione dei bulloni
+if ( len( solid_parts_1D ) + len( solid_parts_0D ) > 0 ):
+   elemprop = AFFE_CARA_ELEM( 
+       MODELE=model,
+       # Assegnazione di una massa puntiforme
+       #DISCRET=( _F( CARA='M_T_D_N', GROUP_MA=solid_parts_0D, VALE=18.5 ),
+       #          _F( CARA='K_T_D_N', GROUP_MA=solid_parts_0D, VALE=(0.0, 0.0, 0.0),),),
+       # Assegnazione di una massa puntiforme con Inerzie Ix, Iy, Iz, Ixy, Ixz, Iyz, ex, ey, ez
+       #DISCRET=( _F( CARA='M_TR_D_N', GROUP_MA=solid_parts_0D, VALE=(18.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), ),
+       #          _F( CARA='K_TR_D_N', GROUP_MA=solid_parts_0D, VALE=(0.0, 0.0, 0.0, 0.0, 0.0, 0.0), ), )
+       # Dimensione dei bulloni (sezione) [VALE => RAGGIO]
+       #POUTRE=( _F( CARA=('R', ), GROUP_MA=solid_parts_1D, SECTION='CERCLE', VALE=(0.008, ) ) )
+   )
+else:
+   elemprop = None
+
+############### PASSI TEMPORALI E DI INTEGRAZIONE
+listr = DEFI_LIST_REEL(DEBUT=0.0, INTERVALLE=_F(JUSQU_A=t_end, NOMBRE=nIter))
+times = DEFI_LIST_INST(DEFI_LIST=_F(LIST_INST=listr))
+
+if ( FATICA ):
+   # per le analisi a fatica impostare qui la storia di carico
+   loadhis = DEFI_FONCTION(NOM_PARA='INST',
+                           PROL_DROITE ='LINEAIRE',
+                           PROL_GAUCHE ='LINEAIRE',
+                           VALE=( 0.0        ,   0.0,
+                                  0.5 * t_end,   1.0,
+                                  t_end      ,   0.0,
+                                    )
+                          )
+else:
+   loadhis = DEFI_FONCTION(NOM_PARA='INST',
+                           PROL_DROITE ='LINEAIRE',
+                           PROL_GAUCHE ='LINEAIRE',
+                           VALE=( 0.0  ,     0.0,
+                                  t_end,     1.0,
+                                     )
+                          )
+
+############### GIUNZIONI
+
+# tutto moltiplicato per due: ognu bullone ha testa e ronda
+junction = [None] * ( NBulloni * 2 + NConstraint )
+NodoMa   = [None] * NBulloni * 2
+NodoNo   = [None] * NBulloni * 2
+NodoCoMa = [None] * NConstraint
+NodoCoNo = [None] * NConstraint
+
+for i in range( NBulloni):
+   NodoMa[i]          = 'teste3D_' + str(i)
+   NodoNo[i]          = 'teste1D_' + str(i)
+   NodoMa[i+NBulloni] = 'ronde3D_' + str(i)
+   NodoNo[i+NBulloni] = 'ronde1D_' + str(i)
+
+
+#per teste e ronde si usa LIAISON_SOLIDE che va meglio
+for i in range( NBulloni * 2 ):
+   junction[i] = _F( GROUP_MA_1=(NodoMa[i], ),
+                     GROUP_NO_2=(NodoNo[i], ),
+                     OPTION='3D_POU' 
+                   )
+
+for i in range( NConstraint):
+   NodoCoMa[i]          = 'const3D_' + str(i)
+   NodoCoNo[i]          = 'const1D_' + str(i)
+
+#TODO questo va cambiato a livello di relazione [constraint]
+for i in range( NConstraint):
+   junction[ i + NBulloni * 2] = _F( GROUP_MA_1=(NodoCoMa[i], ),
+                                     GROUP_NO_2=(NodoCoNo[i], ),
+                                     OPTION='3D_POU'
+                                   )
+
+if ( abs( NBulloni ) > 0 ):
+   #Definizione del precarico dei bulloni [si moltiplica loadhis per Epsilon]
+   Tramp = CALC_FONCTION( COMB= _F( FONCTION=loadhis, COEF=EpsilonPerMille) )
+   #Tramp = DEFI_FONCTION(NOM_PARA='INST',VALE=(0, 0, t_end, EpsilonPerMille,),INTERPOL='LIN',PROL_DROITE='LINEAIRE',PROL_GAUCHE='LINEAIRE',);
+
+   Tprec = CREA_CHAMP(TYPE_CHAM='NOEU_TEMP_F',
+                      OPERATION='AFFE',
+                      MODELE=model,
+                      AFFE=_F(GROUP_MA=solid_parts_1D,
+                              NOM_CMP='TEMP',
+                              VALE_F=Tramp,),
+                     );
+
+   TemPr = CREA_RESU(OPERATION='AFFE',
+                     TYPE_RESU='EVOL_THER',
+                     NOM_CHAM='TEMP',
+                     AFFE=_F(CHAM_GD=Tprec,
+                             LIST_INST=listr,
+                             NUME_FIN=20,),
+                    );
+
+if ( abs( NBulloni ) > 0 ):
+   junc = AFFE_CHAR_MECA( LIAISON_ELEM=junction, MODELE=model )
+
+if( EpsilonPerMille != 0.0 ):
+   AffPrec = _F( GROUP_MA=solid_parts_1D,
+                 NOM_VARC='TEMP',
+                 EVOL=TemPr,
+                 VALE_REF=0 
+               )
+else:
+   AffPrec = []
+
+########## VINCOLI E CARICHI
+# VINCOLI FISSI
+vincoli = AFFE_CHAR_MECA( DDL_IMPO=ddl_vincoli, FACE_IMPO=face_vincoli, MODELE=model )
+
+#vinc_f  = AFFE_CHAR_MECA_F( DDL_IMPO=ddl_vincoli_f, FACE_IMPO=face_vincoli_f, MODELE=model, )
+
+# GRAVITA -> mettere TRUE/FALSE [Ruggero]
+if ( gravita_x != 0.0 or gravita_y != 0.0 or gravita_z != 0.0 ):
+   gravita = AFFE_CHAR_MECA(
+       MODELE=model, PESANTEUR=_F(DIRECTION=(gravita_x, gravita_y, gravita_z), GRAVITE=9.81)
+   )
+
+# CARICO -> Definire valore forza?! Sarebbe bello calcolare anche l'area
+carico = AFFE_CHAR_MECA( FORCE_FACE=force_superficie, FORCE_NODALE=force_nodali, PRES_REP=pressione, MODELE=model )
+
+# ROTAZIONE -> definisce una certa velocita di rotazione
+if( rotw_rpm > 0 ):
+   rotation = AFFE_CHAR_MECA(
+       ROTATION=( _F( TOUT  ='OUI',
+                      AXE   =( rotax_x, rotax_y, rotax_z),
+                      CENTRE=( 0, 0, 0),
+                      VITESSE=rotw_rpm * 3.14159265359 / 30.0, ), ), 
+       MODELE=model
+   )
+
+########## CONTATTI
+zone_contact = []
+
+if ( TypeContact == 0 ):
+   algo_cont      ='PENALISATION'
+   algo_frot      ='PENALISATION'
+   coef_pena_cont = 210e+9
+   coef_pena_frot = 210e+8
+   coulomb        = Friction
+
+   formulation    ='CONTINUE'
+   frottement     ='COULOMB'
+   reac_geom      ='AUTOMATIQUE' #'CONTROLE'
+   iter_geom_maxi = None
+   resi_geom      = None         #tolleranza per passare al passo successivo  
+   algo_reso_geom ='POINT_FIXE'
+   algo_reso_cont ='NEWTON'
+   algo_reso_frot ='NEWTON'
+   rech_lineaire  = None         #NON_ADMISSIBLE
+   lissage        ='NON'         # 'OUI' or 'NON', spesso OUI peggiora
+   pre_cond       = None
+   iter_gcp_maxi  = None
+   resi_abso      = None
+
+elif ( TypeContact == 1 ):
+   algo_cont      = 'GCP'
+   algo_frot      = None
+   coef_pena_cont = None
+   coef_pena_frot = None
+   coulomb        = None
+
+   formulation    ='DISCRETE'
+   frottement     = None
+   reac_geom      ='AUTOMATIQUE' #'CONTROLE'
+   iter_geom_maxi = 50
+   resi_geom      = 0.01         #tolleranza per passare al passo successivo  
+   algo_reso_geom ='POINT_FIXE'
+   algo_reso_cont = None
+   algo_reso_frot = None
+   rech_lineaire  ='ADMISSIBLE'  #NON_ADMISSIBLE
+   lissage        ='NON'         # 'OUI' or 'NON', spesso OUI peggiora
+   pre_cond       ='SANS'
+   iter_gcp_maxi  = 100
+   resi_abso      = 2.0e-7       #1e-3 taglia elemento in caso di 0-attrito con GCP DISCRETE
+
+elif ( TypeContact == 2 ):
+   algo_cont      ='STANDARD'
+   algo_frot      = None
+   coef_pena_cont = None
+   coef_pena_frot = None
+   coulomb        = None
+
+   formulation    ='CONTINUE'
+   frottement     = None
+   reac_geom      ='AUTOMATIQUE' #'CONTROLE'
+   iter_geom_maxi = 50
+   resi_geom      = 0.01         #tolleranza per passare al passo successivo  
+   algo_reso_geom ='POINT_FIXE'
+   algo_reso_cont ='POINT_FIXE'
+   algo_reso_frot = None
+   rech_lineaire  = None         #NON_ADMISSIBLE
+   lissage        ='NON'         # 'OUI' or 'NON', spesso OUI peggiora
+   pre_cond       = None
+   iter_gcp_maxi  = None
+   resi_abso      = None
+
+for i in range( NContact ):
+   contact_master_surface = "contact_master_" + str( i)
+   contact_slave_surface  = "contact_slave_" + str( i)
+
+   #I contatti soffronto se per caso ci sono nodi comuni tra le varie parti
+   # => conviene toglierli bellamente per vivere sereni
+   group_sans = []
+
+   for j in range( NContact ):
+      if ( j != i ):
+         group_sans.append( "contact_master_" + str(j) )
+         group_sans.append( "contact_slave_" + str(j) )
+
+   #Parametri ###############################
+   zone_contact.append( _F( ALGO_CONT=algo_cont,
+                            ALGO_FROT=algo_frot, 
+                            COEF_PENA_CONT=coef_pena_cont,
+                            COEF_PENA_FROT=coef_pena_frot,
+                            COULOMB= coulomb ,
+                            GROUP_MA_ESCL=( contact_master_surface, ), 
+                            GROUP_MA_MAIT=( contact_slave_surface, ),
+                            SANS_GROUP_MA=( group_sans), 
+                             ) )
+
+if ( NContact > 0 ):
+   contact = DEFI_CONTACT(
+       FORMULATION=formulation,
+       FROTTEMENT=frottement,
+       REAC_GEOM=reac_geom, 
+       ITER_GEOM_MAXI = iter_geom_maxi,
+       RESI_GEOM= resi_geom,
+       ALGO_RESO_GEOM=algo_reso_geom,
+       ALGO_RESO_CONT=algo_reso_cont,
+       ALGO_RESO_FROT=algo_reso_frot,
+       RECH_LINEAIRE=rech_lineaire,
+       LISSAGE = lissage,
+       PRE_COND = pre_cond,
+       ITER_GCP_MAXI=iter_gcp_maxi,
+       RESI_ABSO=resi_abso,
+       MODELE=model,
+       ZONE=zone_contact,
+       )
+
+   matriRigiSyme='OUI'
+
+else:
+   contact = None
+   matriRigiSyme='NON'
+
+########## RELAZIONE RBE3
+rb3con = AFFE_CHAR_MECA( LIAISON_RBE3=liaisonRbe3, MODELE=model ) 
+
+########## MOVIMENTI RIGIDI
+for i in range( abs( NLiaisonSolide) ):
+   if ( NLiaisonSolide > 0 ):
+      liaisonSolide_surface = "liaison_solide_" + str( i)
+      liaisonSolide.append(  _F (GROUP_NO=( liaison_solide_surface ) ) )
+   elif ( NLiaisonSolide < 0 ):
+      liaisonSolide_master  = "contact_master_" + str( i)
+      liaisonSolide_slave   = "contact_slave_" + str( i)
+      liaisonSolide.append( _F (GROUP_NO=( liaisonSolide_master, liaisonSolide_slave ) ) )
+
+solidjun = AFFE_CHAR_MECA( LIAISON_SOLIDE=liaisonSolide, MODELE=model )
+
+########## MOVIMENTI UNIFORMI MESH
+mailjun = AFFE_CHAR_MECA( LIAISON_MAIL=liaisonMail, MODELE=model )
+
+########## ASSEGNAZIONE MODELLI DI MATERIALI
+
+#Assegnare un materiale ad un singolo gruppo
+mater = []
+
+for i in range( len( solid_mater_3D )):
+   mater.append( _F(GROUP_MA=solid_parts_3D[i], MATER=( Mat[ solid_mater_3D[i]] ,)),);
+
+for i in range( len( solid_mater_1D )):
+   mater.append( _F(GROUP_MA=solid_parts_1D[i], MATER=( Mat[ solid_mater_1D[i]] ,)),);
+
+fieldmat = AFFE_MATERIAU( AFFE=mater, AFFE_VARC=AffPrec, MODELE=model )
+
+##########################################
+####### ANALISI STATICA - 1 [PESO PROPRIO]
+##########################################
+
+if ( PESOPROPRIO ):
+
+   loadr = []
+
+   #BULLONI
+   if 'junc' in locals():
+      loadr.append( _F( CHARGE=junc), )
+
+   #VINCOLI
+   if 'vincoli' in locals():
+      loadr.append( _F(CHARGE=vincoli), )
+
+   #RBE3
+   if 'rb3con' in locals():
+      loadr.append( _F(CHARGE=rb3con), )
+
+   #GRAVITA
+   if 'gravita' in locals():
+      loadr.append( _F(CHARGE=gravita), )
+
+   #MOVIMENTI SOLIDI
+   if 'solidjun' in locals():
+      loadr.append( _F(CHARGE=solidjun), )
+
+   if 'mailjun' in locals():
+      loadr.append( _F(CHARGE=mailjun), )
+
+   stat1 = STAT_NON_LINE(
+       CARA_ELEM=elemprop,
+       CHAM_MATER=fieldmat,
+       CONTACT=contact,
+       EXCIT=loadr,
+       COMPORTEMENT=_F(RELATION='ELAS', DEFORMATION=Comportamento, TOUT='OUI', ),
+       INCREMENT=_F(LIST_INST=times),
+       NEWTON=_F(MATR_RIGI_SYME=matriRigiSyme,),
+       ARCHIVAGE=_F(PAS_ARCH=SaveFreq),
+       MODELE=model
+   )
+
+   #Post Processing elementi 3D
+   stat1   = CALC_CHAMP(
+       reuse=stat1,
+       CHAM_MATER=fieldmat,
+       CONTRAINTE=('SIGM_ELNO', 'SIGM_NOEU'),
+       CRITERES=('SIEQ_ELNO', 'SIEQ_NOEU'),
+       GROUP_MA=solid_parts_3D,
+       MODELE=model,
+       RESULTAT=stat1
+   )
+
+   #Post Processing elementi 1D
+   if ( len(solid_parts_1D) > 0 ):
+      #EFGE_   section forces: axial (N), 2 shear (VY, VZ), torsion (MT), 2 bending mom (MFY, MFZ)
+      #SIPO_   stresses due to EFGE: axial (SN), 2 shear (SVY, SVZ), torsion (SMT), 2 bending (SMFY, SMFZ)
+      #SIPM_   maximum superposed stress components from SIPO
+      stat1 = CALC_CHAMP(
+          reuse=stat1,
+          CARA_ELEM=elemprop,
+          CHAM_MATER=fieldmat,
+          CONTRAINTE=('EFGE_ELNO','SIPO_ELNO','EFGE_NOEU','SIPO_NOEU','SIPM_ELNO',),
+          FORCE=('REAC_NODA', ),
+          GROUP_MA=solid_parts_1D,
+          MODELE=model,
+          RESULTAT=stat1
+      )
+
+   #Il calcolo della reazione conviene farlo a parte
+   stat1 = CALC_CHAMP(
+       reuse=stat1,
+       CARA_ELEM=elemprop,
+       CHAM_MATER=fieldmat,
+       FORCE=('REAC_NODA', ),
+       MODELE=model,
+       RESULTAT=stat1
+   )
+
+   IMPR_RESU(FORMAT='MED', RESU=_F(RESULTAT=stat1), UNITE=3)
+
+   table1 = POST_RELEVE_T(
+       ACTION=_F(
+           GROUP_NO=('vincolo', ),
+           INTITULE='REAZIONE',
+           NOM_CHAM='REAC_NODA',
+           OPERATION=('EXTRACTION', ),
+           RESULTANTE=('DX', 'DY', 'DZ'),
+           RESULTAT=stat1
+       )
+   )
+
+   IMPR_TABLE(FORMAT_R='1PE12.6', TABLE=table1, UNITE=11)
+
+############################################
+####### ANALISI STATICA - 2 [CARICO ESTERNO]
+############################################
+
+if ( STATICA ):
+
+   loadr = []
+
+   #BULLONI
+   if 'junc' in locals():
+      loadr.append( _F( CHARGE=junc), )
+
+   #VINCOLI
+   if 'vincoli' in locals():
+      loadr.append( _F(CHARGE=vincoli), )
+
+   if 'vinc_f' in locals():
+      loadr.append( _F(CHARGE=vinc_f), )
+
+   #RBE3
+   if 'rb3con' in locals():
+      loadr.append( _F(CHARGE=rb3con), )
+
+   #CARICHI VARI
+   if 'carico' in locals():
+      loadr.append( _F(CHARGE=carico, FONC_MULT=loadhis), )
+
+   if 'rotation' in locals():
+      loadr.append( _F(CHARGE=rotation, FONC_MULT=loadhis), )
+
+   if 'gravita' in locals():
+      loadr.append( _F(CHARGE=gravita, FONC_MULT=loadhis), )
+
+   #MOVIMENTI SOLIDI
+   if 'solidjun' in locals():
+      loadr.append( _F(CHARGE=solidjun), )
+
+   if 'mailjun' in locals():
+      loadr.append( _F(CHARGE=mailjun), )
+
+   IMPR_RESU( FORMAT='MED', CONCEPT=(_F(CHAM_MATER = fieldmat ), _F(CARA_ELEM = elemprop ), _F( loadr ), ), UNITE=5 );
+
+   stat2 = STAT_NON_LINE(
+       CARA_ELEM=elemprop,
+       CHAM_MATER=fieldmat,
+       CONTACT=contact,
+       EXCIT=loadr,
+       COMPORTEMENT=_F(RELATION='ELAS', DEFORMATION=Comportamento, TOUT='OUI', ),
+       INCREMENT=_F(LIST_INST=times),
+       NEWTON=_F(MATR_RIGI_SYME=matriRigiSyme,),
+       ARCHIVAGE=_F(PAS_ARCH=SaveFreq),
+       MODELE=model
+   )
+
+   #Post Processing elementi 3D
+   stat2   = CALC_CHAMP(
+       reuse=stat2,
+       CHAM_MATER=fieldmat,
+       CONTRAINTE=('SIGM_ELNO', 'SIGM_NOEU'),
+       CRITERES=('SIEQ_ELNO', 'SIEQ_NOEU'),
+       GROUP_MA=solid_parts_3D,
+       MODELE=model,
+       RESULTAT=stat2
+   )
+
+   #Post Processing elementi 1D
+   if ( len(solid_parts_1D) > 0 ):
+      #EFGE_   section forces: axial (N), 2 shear (VY, VZ), torsion (MT), 2 bending mom (MFY, MFZ)
+      #SIPO_   stresses due to EFGE: axial (SN), 2 shear (SVY, SVZ), torsion (SMT), 2 bending (SMFY, SMFZ)
+      #SIPM_   maximum superposed stress components from SIPO
+      stat2 = CALC_CHAMP(
+          reuse=stat2,
+          CARA_ELEM=elemprop,
+          CHAM_MATER=fieldmat,
+          CONTRAINTE=('EFGE_ELNO','SIPO_ELNO','EFGE_NOEU','SIPO_NOEU','SIPM_ELNO',),
+          FORCE=('REAC_NODA', ),
+          GROUP_MA=solid_parts_1D,
+          MODELE=model,
+          RESULTAT=stat2
+      )
+
+   IMPR_RESU(FORMAT='MED', RESU=_F(RESULTAT=stat2), UNITE=32)
+
+   #Stampiamo le tensioni massime e minime per ogni solid_parts_3D
+   tblsta = [None] * len( solid_parts_3D )
+
+   for i in range( len( solid_parts_3D)):
+
+      tblsta[i] = POST_RELEVE_T(
+          ACTION=_F(
+              GROUP_NO=solid_parts_3D[i],
+              INTITULE=solid_parts_3D[i],
+              NOM_CHAM='SIEQ_NOEU',
+              NOM_CMP='VMIS',
+              OPERATION=('EXTREMA', ),
+              RESULTAT=stat2
+          )
+      )
+   
+      IMPR_TABLE(FORMAT_R='1PE12.6', TABLE=tblsta[i], UNITE=35)
+
+###################################################
+####### ANALISI TERMO-STATICA - 1 [CARICHI TERMICI]
+###################################################
+
+#############################################
+####### ANALISI DINAMICA - 1 [CARICO ESTERNO]
+#############################################
+
+if ( DINAMICA_VIB ):
+
+   loadr = []
+
+   #BULLONI
+   if 'junc' in locals():
+      loadr.append( _F( CHARGE=junc), )
+
+   #VINCOLI
+   if 'vincoli' in locals():
+      loadr.append( _F(CHARGE=vincoli), )
+
+   if 'vinc_f' in locals():
+      loadr.append( _F(CHARGE=vinc_f), )
+
+   #RBE3
+   if 'rb3con' in locals():
+      loadr.append( _F(CHARGE=rb3con), )
+
+   #CARICHI VARI
+   if 'carico' in locals():
+      loadr.append( _F(CHARGE=carico), )
+
+   if 'rotation' in locals():
+      loadr.append( _F(CHARGE=rotation), )
+
+   if 'gravita' in locals():
+      loadr.append( _F(CHARGE=gravita), )
+
+   #MOVIMENTI SOLIDI
+   if 'solidjun' in locals():
+      loadr.append( _F(CHARGE=solidjun), )
+
+   if 'mailjun' in locals():
+      loadr.append( _F(CHARGE=mailjun), )
+
+   dyna1   = DYNA_NON_LINE(
+       CARA_ELEM=elemprop,
+       CHAM_MATER=fieldmat,
+       CONTACT=contact,
+       EXCIT=loadr,
+       SCHEMA_TEMPS=_F(FORMULATION='DEPLACEMENT', SCHEMA='NEWMARK'),
+       COMPORTEMENT=_F(RELATION='ELAS', DEFORMATION=Comportamento, TOUT='OUI', ),
+       INCREMENT=_F(LIST_INST=times),
+       NEWTON=_F(MATR_RIGI_SYME=matriRigiSyme, REAC_ITER = 1, ),
+       CONVERGENCE=_F (RESI_GLOB_RELA = 1.E-6, ITER_GLOB_MAXI = 10),
+       ARCHIVAGE=_F(PAS_ARCH=SaveFreq),
+       MODELE=model,
+   )
+
+   #Post Processing elementi 3D
+   dyna1   = CALC_CHAMP(
+       reuse=dyna1,
+       CHAM_MATER=fieldmat,
+       CONTRAINTE=('SIGM_ELNO', 'SIGM_NOEU'),
+       CRITERES=('SIEQ_ELNO', 'SIEQ_NOEU'),
+       GROUP_MA=solid_parts_3D,
+       MODELE=model,
+       RESULTAT=dyna1
+   )
+
+   if ( len(solid_parts_1D) > 0 ):
+   #Post Processing elementi 1D
+   #EFGE_   section forces: axial (N), 2 shear (VY, VZ), torsion (MT), 2 bending mom (MFY, MFZ)
+   #SIPO_   stresses due to EFGE: axial (SN), 2 shear (SVY, SVZ), torsion (SMT), 2 bending (SMFY, SMFZ)
+   #SIPM_   maximum superposed stress components from SIPO
+      dyna1 = CALC_CHAMP(
+          reuse=dyna1,
+          CARA_ELEM=elemprop,
+          CHAM_MATER=fieldmat,
+          CONTRAINTE=('EFGE_ELNO','SIPO_ELNO','EFGE_NOEU','SIPO_NOEU','SIPM_ELNO',),
+          FORCE=('REAC_NODA', ),
+          GROUP_MA=solid_parts_1D,
+          MODELE=model,
+          RESULTAT=dyna1
+      )
+
+   IMPR_RESU(FORMAT='MED', RESU=_F(RESULTAT=dyna1), UNITE=60)
+
+#######################################
+####### ANALISI MODALE  - 1 [FREE FREE]
+#######################################
+
+##########################################
+####### ANALISI MODALE  - 2 [VINCOLI SOLO]
+##########################################
+
+if ( MODALE ) or ( FATICA_VIB ):
+
+   loadr = []
+
+   #BULLONI
+   if 'junc' in locals():
+      loadr.append( junc )
+
+   #VINCOLI
+   if 'vincoli' in locals():
+      loadr.append( vincoli )
+
+   if 'vinc_f' in locals():
+      loadr.append( _F(CHARGE=vinc_f), )
+
+   #RBE3
+   if 'rb3con' in locals():
+      loadr.append( rb3con )
+
+   #MOVIMENTI SOLIDI
+   if 'solidjun' in locals():
+      loadr.append( solidjun )
+
+   if 'mailjun' in locals():
+      loadr.append( mailjun )
+
+   ASSEMBLAGE(
+      MATR_ASSE=(
+        _F(MATRICE=CO('RIGMOD'), OPTION='RIGI_MECA'),
+        _F(MATRICE=CO('MASMOD'), OPTION='MASS_MECA')
+      ),
+      CHARGE=loadr,
+      CHAM_MATER=fieldmat,
+      CARA_ELEM=elemprop, 
+      MODELE=model,
+      NUME_DDL=CO('NDDLAMO')
+   )
+
+   analmoda = CALC_MODES(
+      CALC_FREQ=_F( NMAX_FREQ=5 ), 
+      #CALC_FREQ=_F( FREQ=(-0.1, 500 ) ), 
+      MATR_MASS=MASMOD, 
+      MATR_RIGI=RIGMOD, 
+      OPTION='PLUS_PETITE', 
+      #OPTION='BANDE', 
+      SOLVEUR_MODAL=_F(
+        COEF_DIM_ESPACE=4, 
+        METHODE='SORENSEN'
+      ), 
+      VERI_MODE=_F( STOP_ERREUR='NON' )
+   )
+
+   #La fatica VIB usa questo concetto per calcolare la vita a fatica
+   if ( FATICA_VIB ):
+      analmoda = CALC_CHAMP(
+         reuse=analmoda,
+         CARA_ELEM=elemprop,
+         CHAM_MATER=fieldmat,
+         CONTRAINTE=('SIEF_ELGA', 'SIGM_ELNO'),
+         CRITERES=('SIEQ_ELGA', 'SIEQ_ELNO'),
+         GROUP_MA=solid_parts_3D,
+         MODELE=model,
+         RESULTAT=analmoda
+      )
+
+   IMPR_RESU(FORMAT='MED', RESU=_F(RESULTAT=analmoda), UNITE=90)
+
+   #Creazione delle tabelle dei MAX e MIN scostamenti
+   #Aiutano e velocizzano l'analisi in caso di FATICA VIBRAZIONI
+   tblmod = [None] * 3
+
+   tblmod[0] = POST_RELEVE_T(
+       ACTION=_F(
+           GROUP_NO=solid_parts_3D,
+           INTITULE='SCOSTAMENTI',
+           NOM_CHAM='DEPL',
+           NOM_CMP='DX',
+           OPERATION=('EXTREMA', ),
+           RESULTAT=analmoda
+       )
+   )
+
+   tblmod[1] = POST_RELEVE_T(
+       ACTION=_F(
+           GROUP_NO=solid_parts_3D,
+           INTITULE='SCOSTAMENTI',
+           NOM_CHAM='DEPL',
+           NOM_CMP='DY',
+           OPERATION=('EXTREMA', ),
+           RESULTAT=analmoda
+       )
+   )
+
+   tblmod[2] = POST_RELEVE_T(
+       ACTION=_F(
+           GROUP_NO=solid_parts_3D,
+           INTITULE='SCOSTAMENTI',
+           NOM_CHAM='DEPL',
+           NOM_CMP='DZ',
+           OPERATION=('EXTREMA', ),
+           RESULTAT=analmoda
+       )
+   )
+
+   IMPR_TABLE(FORMAT_R='1PE12.6', TABLE=tblmod[0], UNITE=91)
+   IMPR_TABLE(FORMAT_R='1PE12.6', TABLE=tblmod[1], UNITE=91)
+   IMPR_TABLE(FORMAT_R='1PE12.6', TABLE=tblmod[2], UNITE=91)
+
+########################################
+####### ANALISI FATICA  - 1 [WOHLER]
+########################################
+
+if ( FATICA ):
+
+   #per l'analisi a fatica usiamo la storia di carico cosi' come definita in un'analisi STATICA
+   fatigue = CALC_FATIGUE(
+                 #CORR_SIGM_MOYE='GOODMAN', 
+                 DOMMAGE='WOHLER', 
+                 HISTOIRE=_F(
+                   RESULTAT = stat2,
+                   EQUI_GD = 'VMIS_SG'
+                 ), 
+                 MATER=Fat[ solid_mater_3D[0]], #Scelto il materiale del primo componente
+                 OPTION='DOMA_ELNO_SIGM', 
+                 TYPE_CALCUL='CUMUL_DOMMAGE',
+               )
+
+   IMPR_RESU(FORMAT='MED', RESU=( _F(CHAM_GD=fatigue), ), UNITE=92)
+
+########################################
+####### ANALISI FATICA  - 2 [VIBRAZIONI]
+########################################
+
+if ( FATICA_VIB ):
+
+   #Per essere tranquilli eseguiamo MECA_STATIQE per calcolare la tensione media
+   #Tutta questa parte potrebbe essere fatta estraendo i risultati da STAT_NON_LINE
+   loadr = []
+
+   #BULLONI
+   if 'junc' in locals():
+      loadr.append( _F( CHARGE=junc), )
+
+   #VINCOLI
+   if 'vincoli' in locals():
+      loadr.append( _F(CHARGE=vincoli), )
+
+   if 'vinc_f' in locals():
+      loadr.append( _F(CHARGE=vinc_f), )
+
+   #RBE3
+   if 'rb3con' in locals():
+      loadr.append( _F(CHARGE=rb3con), )
+
+   #CARICHI VARI
+   if 'carico' in locals():
+      loadr.append( _F(CHARGE=carico), )
+
+   if 'rotation' in locals():
+      loadr.append( _F(CHARGE=rotation), )
+
+   if 'gravita' in locals():
+      loadr.append( _F(CHARGE=gravita), )
+
+   #MOVIMENTI SOLIDI
+   if 'solidjun' in locals():
+      loadr.append( _F(CHARGE=solidjun), )
+
+   if 'mailjun' in locals():
+      loadr.append( _F(CHARGE=mailjun), )
+
+   statvibr = MECA_STATIQUE( CARA_ELEM=elemprop, MODELE=model, CHAM_MATER=fieldmat, EXCIT=loadr )
+
+   statvibr = CALC_CHAMP(
+       reuse=statvibr,
+       CHAM_MATER=fieldmat,
+       CONTRAINTE=('SIGM_ELNO', 'SIGM_NOEU'),
+       CRITERES=('SIEQ_ELNO', 'SIEQ_NOEU'),
+       GROUP_MA=solid_parts_3D,
+       MODELE=model,
+       RESULTAT=statvibr
+   )
+
+   #Definizione dei modi di vibrare. Usiamo i primi 3 risultati e li combiniamo
+   modivibr = [None] * 7
+   fatvib   = [None] * 7
+   toPlot = []
+
+   modivibr[0] = (1.0, 0.0, 0.0, 0.0, 0.0)
+   modivibr[1] = (0.0, 1.0, 0.0, 0.0, 0.0)
+   modivibr[2] = (0.0, 0.0, 1.0, 0.0, 0.0)
+   modivibr[3] = (1.0, 1.0, 0.0, 0.0, 0.0)
+   modivibr[4] = (1.0, 0.0, 1.0, 0.0, 0.0)
+   modivibr[5] = (0.0, 1.0, 1.0, 0.0, 0.0)
+   modivibr[6] = (1.0, 1.0, 1.0, 0.0, 0.0)
+
+   for i in range( len( modivibr) ):
+      fatvib[i] = CALC_FATIGUE(
+         CORR_SIGM_MOYE='GOODMAN', 
+         DOMMAGE='WOHLER', 
+         HISTOIRE=_F(
+            #Coefficienti di peso dei modi di vibrare NUME_MODE
+            FACT_PARTICI=modivibr[i],
+            MODE_MECA=analmoda, 
+            RESULTAT =statvibr,
+            NUME_MODE=( 1, 2, 3, 4, 5),
+            EQUI_GD = 'VMIS_SG'
+         ), 
+         MATER=Fat[ solid_mater_3D[0]], #Scelto il materiale del primo componente
+         OPTION='DOMA_ELNO_SIGM', 
+         TYPE_CALCUL='FATIGUE_VIBR'
+      )
+
+      toPlot.append( _F( CHAM_GD = fatvib[i] ) )
+
+   toPlot.append( _F( RESULTAT = statvibr ) )
+
+   IMPR_RESU(FORMAT='MED', RESU=toPlot, UNITE=95)
+
+FIN()

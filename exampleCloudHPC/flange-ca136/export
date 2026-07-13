@@ -1,0 +1,34 @@
+P actions make_etude
+P memjob 20504576
+P memory_limit 20024.0
+P mode interactif
+P mpi_nbcpu 1
+P mpi_nbnoeud 1
+P ncpus 8
+P nomjob RunCase_1_fem
+P origine AsterStudy 2017.0
+P rep_trav /tmp/current-code-aster
+P studyid current-code-aster
+P tpsjob 76
+P version stable
+A memjeveux 2503.0
+P time_limit 35996400.0
+F comm fem.comm D  1
+F libr mesh.med D  2
+F libr verifica_modello_fem.rmed R  5
+F libr analisi_statica1_peso_proprio.rmed R  3
+F libr analisi_statica1_peso_proprio.dat R  11
+F libr analisi_statica2_carico-esterno.rmed R  32
+F libr analisi_statica2_carico-esterno.dat  R  35
+F libr analisi_statica_composito_2d_shell.rmed  R  50
+F libr analisi_statica_composito_2d.rmed  R  51
+F libr analisi_dinamica1_carico-esterno.rmed R  40
+F libr analisi_dinamica2_vibrazioni.rmed R  60
+F libr analisi_modale1_freefree.rmed R  80
+F libr analisi_modale2_vincoli.rmed R  90
+F libr analisi_modale2_vincoli.dat  R  91
+F libr analisi_fatica1_wohler.rmed R  92
+F libr analisi_fatica2_vibrazioni.rmed R  95
+R base base-stage1 RC 0 
+F mess message.dat R  6
+A args -max_base 10000000

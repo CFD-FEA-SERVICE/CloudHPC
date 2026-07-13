@@ -1,0 +1,13 @@
+pyfonts
+descartes 
+PyInstaller
+argparse
+pathlib
+logging
+seaborn
+tensorflow-cpu
+scikit-learn
+db-dtypes
+darcyforchheimer
+jinja2
+google-genai

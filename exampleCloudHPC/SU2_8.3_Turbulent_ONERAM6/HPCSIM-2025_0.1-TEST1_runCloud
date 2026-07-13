@@ -1,0 +1,57 @@
+#!/bin/bash
+
+array=(
+#"SOLVEUR=_F(METHODE='MUMPS', MATR_DISTRIBUEE=matriDistribue),"
+#"SOLVEUR=_F(METHODE='MUMPS', TYPE_RESOL='NONSYM',ELIM_LAGR='NON', MATR_DISTRIBUEE=matriDistribue),"
+#"SOLVEUR=_F(METHODE='MUMPS', TYPE_RESOL='NONSYM',RESI_RELA=-1.,ELIM_LAGR='NON', MATR_DISTRIBUEE=matriDistribue),"
+"SOLVEUR=_F(METHODE='PETSC', MATR_DISTRIBUEE=matriDistribue),"
+#"SOLVEUR=_F(METHODE='PETSC', PRE_COND='LDLT_INC', ALGORITHME='CG', MATR_DISTRIBUEE=matriDistribue),"
+#"SOLVEUR=_F(METHODE='MULT_FRONT'),"
+)
+#array=(
+#"SOLVEUR=_F(METHODE='PETSC', MATR_DISTRIBUEE=matriDistribue),"
+#"SOLVEUR=_F(METHODE='PETSC', PRE_COND='GAMG', ALGORITHME='CG', MATR_DISTRIBUEE=matriDistribue),"
+#"SOLVEUR=_F(METHODE='PETSC', PRE_COND='GAMG', MATR_DISTRIBUEE=matriDistribue),"
+#)
+
+#CORES=( 2 4 8 16 )
+CORES=( 4 )
+#Threads=( 4 8 16 32 ) #In realta vCPU
+Threads=( 16 ) #In realta vCPU
+
+for iThreads in "${Threads[@]}"
+do
+for iCORES in "${CORES[@]}"
+do
+
+sim_id=0
+
+   if [ $iCORES -ge $iThreads ]
+   then
+      echo "@@@ SKIP CONFIGURATION $iCORES - $iThreads"
+      continue
+   fi
+
+for i in "${array[@]}"
+do
+   echo "Variabile = $i - $iCORES - $iThreads"
+   cp fem.comm.ori fem.comm
+   cp export.ori export
+   cp DRONE_FEM_Mesh_4.0M.med mesh.med
+
+   sed -i "s/STRINGA_SOLVEUR/$i/g" fem.comm
+   sed -i "s/MPI_NBCPU/P mpi_nbcpu $iCORES/g" export
+
+   output=${i:20}
+   output=$( echo ${output:0:4})
+   echo $output
+
+   #echo "HPCSIM_MPI${iCORES}_${iThreads}vCPU_$output-$sim_id"
+   cloudHPCexec -batch $iThreads highmem codeAster-17.0_mpi HPCSIM_MPI${iCORES}_${iThreads}vCPU_$output-$sim_id
+   ((sim_id++))
+done 
+done 
+done 
+
+#ESTRAZIONE DEI RISULTATI
+#grep STAT_NON_LINE ../.CloudHPCSTORAGE/HPCSIM_*/code_aster.log | tac | sort -u -t: -k1,1 | cut -c 21-
