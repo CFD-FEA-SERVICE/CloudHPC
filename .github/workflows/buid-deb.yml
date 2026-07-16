@@ -1,0 +1,62 @@
+name: Build cloudHPCexec .deb
+
+# Builds the Debian package from exampleAPI/cloudHPCexec-1.1 and uploads it
+# as an asset of the v0.1-alpha release.
+#
+# Runs:
+#  - manually from the Actions tab (workflow_dispatch)
+#  - automatically when the packaging tree changes on master
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths:
+      - 'exampleAPI/cloudHPCexec-1.1/**'
+
+permissions:
+  contents: write   # required to upload release assets
+
+env:
+  RELEASE_TAG: v0.1-alpha
+  PKG_DIR: exampleAPI/cloudHPCexec-1.1
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fix permissions (git does not preserve them fully)
+        run: |
+          chmod 755 "${PKG_DIR}/DEBIAN"
+          chmod 755 "${PKG_DIR}/usr/bin/cloudHPCexec"
+
+      - name: Build .deb
+        run: |
+          dpkg-deb --build --root-owner-group "${PKG_DIR}"
+          DEB_FILE="${PKG_DIR}.deb"
+          echo "DEB_FILE=${DEB_FILE}" >> "$GITHUB_ENV"
+          dpkg-deb --info "${DEB_FILE}"
+          dpkg-deb --contents "${DEB_FILE}"
+
+      - name: Smoke-test installation
+        run: |
+          sudo dpkg -i "${DEB_FILE}"
+          test -x /usr/bin/cloudHPCexec
+          echo "Installed OK"
+
+      - name: Upload asset to release ${{ env.RELEASE_TAG }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # --clobber replaces the asset if it already exists on the release
+          gh release upload "${RELEASE_TAG}" "${DEB_FILE}" --clobber
+
+      - name: Also keep it as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudHPCexec-deb
+          path: ${{ env.DEB_FILE }}
