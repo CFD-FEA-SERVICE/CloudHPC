@@ -1,23 +1,18 @@
 <?xml version="1.0"?>
 <setupData>
 	<XMLFileDescription filename="CFD_input.xml" appname="bcSnappy">
-                <Attachments type="frame">
-                     <file   type="file"  singleFile="False">stl,vtk</file>
-                </Attachments>
+		<GEO type="frame">
+		    <CAD type="CAD" probePoint="true">step</CAD>
+		</GEO>
 
 		<MESH type="frame">
 			<coarseMesh type="float">0.25</coarseMesh>
 			<scale type="float">1.0</scale>
-			<pointInside type="frame">
-				<x type="float">0.0</x>
-				<y type="float">0.0</y>
-				<z type="float">0.0</z>
-			</pointInside>
                         <splitMesh type="dropdown">largest<option type="string">largest</option>
                                                           <option type="string">true</option>
                                                           <option type="string">false</option>
                         </splitMesh>
-	                <patch    type="multiple" specifyName="true">
+	                <patch    type="multiple" specifyName="CADgroups">
                             <type type="dropdown">wall<option type="string">wall</option>
                                                       <option type="string">patch</option>
                                                       <option type="string">symmetry</option>
@@ -27,14 +22,14 @@
 	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
 	                    <expansionRatio type="float">1.2</expansionRatio>
                 	</patch>
-	                <baffle   type="multiple" specifyName="true">
+	                <baffle   type="multiple" specifyName="CADgroups">
                             <type type="dropdown">wall<option type="string">wall</option></type>
 	                    <refLevel       type="int">0</refLevel>
 	                    <refOnCorners   type="int">2</refOnCorners>
 	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
 	                    <expansionRatio type="float">1.2</expansionRatio>
                 	</baffle>
-	                <cellZone type="multiple" specifyName="true">
+	                <cellZone type="multiple" specifyName="CADgroups">
 	                    <refLevel        type="int">0</refLevel>
 	                    <refOnCorners    type="int">2</refOnCorners>
                             <NonConformalCouples type="dropdown">false<option type="string">true</option>
@@ -42,19 +37,20 @@
                             </NonConformalCouples>
 			    <boundingPatches type="string">impeller</boundingPatches>
                 	</cellZone>
-	                <faceZone type="multiple" specifyName="true">
+	                <faceZone type="multiple" specifyName="CADgroups">
                 	</faceZone>
-	                <refinement type="multiple" specifyName="true">
+	                <refinement type="multiple" specifyName="CADgroups">
 	                    <refLevel     type="int">0</refLevel>
                 	</refinement>
-	                <extrusion type="multiple" specifyName="true">
+	                <extrusion type="multiple" specifyName="CADgroups">
 	                    <directionX type="float">0</directionX>
 	                    <directionY type="float">0</directionY>
 	                    <directionZ type="float">1.0</directionZ>
 	                    <thickness  type="float">1.0</thickness>
 	                    <expansionRatio type="float">1.1</expansionRatio>
                 	</extrusion>
-                        <script type="dropdown">snappyHexMesh-of13<option type="string">snappyHexMesh-of13</option>
+                        <script type="dropdown">snappyHexMesh-of14<option type="string">snappyHexMesh-of14</option>
+                                                                  <option type="string">snappyHexMesh-of13</option>
                                                                   <option type="string">snappyHexMesh-of12</option>
                         </script>
 		</MESH>

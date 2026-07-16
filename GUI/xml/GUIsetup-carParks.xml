@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <setupData>
 	<XMLFileDescription filename="CFD_input.xml" appname="carParks">
-                <Attachments type="frame">
-                     <file   type="file"  singleFile="False">stl,vtk<option type="string">wall</option>
+		<GEO type="frame">
+			<CAD type="CAD" probePoint="true">step
+                                                                    <option type="string">wall</option>
                                                                     <option type="string">floor</option>
                                                                     <option type="string">fire</option>
                                                                     <option type="string">supply</option>
@@ -10,19 +11,12 @@
                                                                     <option type="string">jet-push</option>
                                                                     <option type="string">jet-pull</option>
                                                                     <option type="string">opening</option>
-                                                                    <option type="string">point</option>
-                                                                    <option type="string">faceZone</option>
-                                                                    <option type="string">custom</option>
-                     </file>
-                </Attachments>
+			</CAD>
+		</GEO>
+
 		<MESH type="frame">
 			<coarseMesh type="float">0.25</coarseMesh>
 			<scale type="float">1.0</scale>
-			<pointInside type="frame">
-				<x type="float">0.0</x>
-				<y type="float">0.0</y>
-				<z type="float">0.0</z>
-			</pointInside>
 	                <wall type="frame">
 	                    <refLevel type="int">0</refLevel>
 	                    <refOnCorners type="int">0</refOnCorners>
@@ -67,7 +61,7 @@
 	                    <refOnCorners type="int">3</refOnCorners>
 			    <geotype type="dropdown">cellZone<option type="string">cellZone</option></geotype>
                 	</fire>
-                        <patch type="multiple" specifyName="true">
+                        <patch type="multiple" specifyName="CADgroups">
                            <type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
                            <refLevel       type="int">0</refLevel>
                            <refOnCorners   type="int">0</refOnCorners>

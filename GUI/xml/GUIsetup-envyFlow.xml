@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <setupData>
 	<XMLFileDescription filename="CFD_input.xml" appname="envyFlow">
-                <Attachments type="frame">
-                     <file   type="file"  singleFile="False">stl,vtk<option type="string">body_1</option>
+		<GEO type="frame">
+			<CAD type="CAD" probePoint="true">step
+                                                                    <option type="string">body_1</option>
                                                                     <option type="string">body_2</option>
                                                                     <option type="string">body_3</option>
-                                                                    <option type="string">point</option>
-                                                                    <option type="string">custom</option>
-                     </file>
-                </Attachments>
+			</CAD>
+		</GEO>
+
 		<MESH type="frame">
                         <boundingBox type="frame">
 				<xMin type="float">1.0</xMin>
@@ -21,11 +21,6 @@
                         </boundingBox>
 			<coarseMesh type="float">0.25</coarseMesh>
 			<scale type="float">1.0</scale>
-			<pointInside type="frame">
-				<x type="float">0.0</x>
-				<y type="float">0.0</y>
-				<z type="float">0.0</z>
-			</pointInside>
 	                <xMin type="frame">
 	                    <refLevel     type="int">0</refLevel>
 	                    <refOnCorners type="int">1</refOnCorners>
@@ -109,7 +104,7 @@
 	                    <expansionRatio type="float">1.2</expansionRatio>
                             <type type="dropdown">wall<option type="string">wall</option></type>
                 	</body_3>
-                        <refinement type="multiple" specifyName="true">
+                        <refinement type="multiple" specifyName="CADgroups">
                             <refLevel     type="int">0</refLevel>
                         </refinement>
                         <meshingAlgorithm type="dropdown">snappyHexMesh<option type="string">snappyHexMesh</option></meshingAlgorithm>
