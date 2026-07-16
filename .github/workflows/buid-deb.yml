@@ -37,7 +37,9 @@ jobs:
       - name: Build .deb
         run: |
           dpkg-deb --build --root-owner-group "${PKG_DIR}"
-          DEB_FILE="${PKG_DIR}.deb"
+          # Rename to the published asset name
+          DEB_FILE="cloudHPCexec.Ubuntu.deb"
+          mv "${PKG_DIR}.deb" "${DEB_FILE}"
           echo "DEB_FILE=${DEB_FILE}" >> "$GITHUB_ENV"
           dpkg-deb --info "${DEB_FILE}"
           dpkg-deb --contents "${DEB_FILE}"
@@ -52,8 +54,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # --clobber replaces the asset if it already exists on the release
-          gh release upload "${RELEASE_TAG}" "${DEB_FILE}" --clobber
+          # Remove ALL existing .deb assets from the release (old names,
+          # old versions), then upload the freshly built one.
+          for asset in $(gh release view "${RELEASE_TAG}" \
+                           --json assets --jq '.assets[].name' | grep '\.deb$' || true); do
+            echo "Deleting previous asset: ${asset}"
+            gh release delete-asset "${RELEASE_TAG}" "${asset}" --yes
+          done
+          gh release upload "${RELEASE_TAG}" "${DEB_FILE}"
 
       - name: Also keep it as a workflow artifact
         uses: actions/upload-artifact@v4
