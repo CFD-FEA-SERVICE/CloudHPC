@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<setupData>
+	<XMLFileDescription filename="IA_input.xml" appname="cloudIA">
+                <Attachments type="frame">
+			<file   type="file"  singleFile="False">csv<option type="string">training</option>
+  		                                                   <option type="string">prediction</option>
+		        </file>
+		</Attachments>
+
+		<TARGET type="multiple" specifyName="true">
+			<dataType type="dropdown">float<option type="string">float</option>
+			</dataType>
+		</TARGET>
+	</XMLFileDescription>
+        <cloudExecution>
+	      <script>cloudHPC-cloudIA</script>
+	      <ram>highmem</ram>
+              <nopre>1</nopre>
+	      <download>CODE-ASTER.tar.gz</download>
+        </cloudExecution>
+</setupData>

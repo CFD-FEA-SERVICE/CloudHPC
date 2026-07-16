@@ -1,0 +1,272 @@
+<?xml version="1.0" ?>
+<setupData>
+	<XMLFileDescription filename="FEM_input.xml" appname="fea">
+                <Attachments type="frame">
+			<file   type="file"  singleFile="True">med</file>
+		</Attachments>
+                <MATERIAL type="multiple" specifyName="false">
+                   <mater type="string">ste</mater>
+                   <E type="float">210000000000</E>
+                   <NU type="float">0.3</NU>
+                   <RHO type="float">7850.0</RHO>
+                   <SY type="float">550000000</SY>
+                   <D_SIGM_EPSI type="float">70000000000</D_SIGM_EPSI>
+                   <ALPHA type="float">0.000010</ALPHA>
+                   <LAMBDA type="float">16.0</LAMBDA>
+                   <RHO_CP type="float">2430000.0</RHO_CP>
+                   <ULTIMATE_STRENGTH type="float">250000000.0</ULTIMATE_STRENGTH>
+                </MATERIAL>
+
+		<MODEL type="frame">
+			<STATICA type="dropdown">True<option type="string">True</option>
+			  			     <option type="string">False</option></STATICA>
+			<MODALE  type="dropdown">False<option type="string">True</option>
+			  			      <option type="string">False</option></MODALE>
+			<BUCKLING type="dropdown">False<option type="string">True</option>
+ 			  			       <option type="string">False</option></BUCKLING>
+			<FATICA_VIB type="dropdown">False<option type="string">True</option>
+  			  			         <option type="string">False</option></FATICA_VIB>
+			<LABILITY_CHECK type="dropdown">False<option type="string">True</option>
+  			  			             <option type="string">False</option></LABILITY_CHECK>
+
+                        <SOLID3D type="multiple" specifyName="false">
+                           <GROUP_MA type="string">groupma</GROUP_MA>
+                           <mater type="string">ste</mater>
+                           <RELATION type="dropdown">ELAS<option type="string">ELAS</option>
+                                                         <option type="string">ELAS_HYPER</option>
+                                                         <option type="string">VMIS_ISOT_LINE</option>
+                           </RELATION>
+                           <DEFORMATION type="dropdown">PETIT<option type="string">PETIT</option>
+                                                             <option type="string">PETIT_REAC</option>
+                                                             <option type="string">GROT_GDEP</option>
+                                                             <option type="string">SIMO_MIEHE</option>
+                                                             <option type="string">GREEN_LAGRANGE</option>
+                           </DEFORMATION>
+                        </SOLID3D>
+
+                        <SHELL2D type="multiple" specifyName="false">
+                           <GROUP_MA type="string">groupma</GROUP_MA>
+                           <mater type="string">ste</mater>
+                           <model type="dropdown">DKT<option type="string">DKT</option>
+                                                     <option type="string">COQUE_3D</option>
+                           </model>
+                           <EPAIS type="float">0.003</EPAIS>
+                           <RELATION type="dropdown">ELAS<option type="string">ELAS</option>
+                                                         <option type="string">ELAS_HYPER</option>
+                                                         <option type="string">VMIS_ISOT_LINE</option>
+                           </RELATION>
+                           <DEFORMATION type="dropdown">PETIT<option type="string">PETIT</option>
+                                                             <option type="string">PETIT_REAC</option>
+                                                             <option type="string">GROT_GDEP</option>
+                                                             <option type="string">SIMO_MIEHE</option>
+                                                             <option type="string">GREEN_LAGRANGE</option>
+                           </DEFORMATION>
+                        </SHELL2D>
+
+                        <BEAM1D type="multiple" specifyName="false">
+                           <GROUP_MA type="string">groupma</GROUP_MA>
+                           <mater type="string">ste</mater>
+                           <SECTION type="dropdown">CERCLE<option type="string">CERCLE</option></SECTION>
+                           <VALE_1 type="float">0.006</VALE_1>
+                           <RELATION type="dropdown">ELAS<option type="string">ELAS</option>
+                                                         <option type="string">ELAS_HYPER</option>
+                                                         <option type="string">VMIS_ISOT_LINE</option>
+                           </RELATION>
+                           <DEFORMATION type="dropdown">PETIT<option type="string">PETIT</option>
+                                                             <option type="string">PETIT_REAC</option>
+                                                             <option type="string">GROT_GDEP</option>
+                                                             <option type="string">SIMO_MIEHE</option>
+                                                             <option type="string">GREEN_LAGRANGE</option>
+                           </DEFORMATION>
+                        </BEAM1D>
+
+                        <POINT0D type="multiple" specifyName="false">
+                           <GROUP_MA type="string">groupma</GROUP_MA>
+                           <M_T_D_N type="float">0.0</M_T_D_N>
+                           <K_T_D_N_1 type="float">1.0</K_T_D_N_1>
+                           <K_T_D_N_2 type="float">1.0</K_T_D_N_2>
+                           <K_T_D_N_3 type="float">1.0</K_T_D_N_3>
+                           <RELATION type="dropdown">ELAS<option type="string">ELAS</option></RELATION>
+                           <DEFORMATION type="dropdown">PETIT<option type="string">PETIT</option></DEFORMATION>
+                        </POINT0D>
+
+                        <POINT0DR type="multiple" specifyName="false">
+                           <GROUP_MA type="string">groupma</GROUP_MA>
+                           <M_T_D_N type="float">0.0</M_T_D_N>
+                           <K_T_D_N_1 type="float">1.0</K_T_D_N_1>
+                           <K_T_D_N_2 type="float">1.0</K_T_D_N_2>
+                           <K_T_D_N_3 type="float">1.0</K_T_D_N_3>
+                           <K_T_D_N_4 type="float">0.0</K_T_D_N_4>
+                           <K_T_D_N_5 type="float">0.0</K_T_D_N_5>
+                           <K_T_D_N_6 type="float">0.0</K_T_D_N_6>
+                           <RELATION type="dropdown">ELAS<option type="string">ELAS</option></RELATION>
+                           <DEFORMATION type="dropdown">PETIT<option type="string">PETIT</option></DEFORMATION>
+                        </POINT0DR>
+
+                        <time type="frame">
+			   <nIter type="int">10</nIter>
+			   <t_end type="float">1.0</t_end>
+			   <SaveFreq type="float">1.0</SaveFreq>
+                        </time>
+
+                        <listquad type="multiple" specifyName="false">
+                           <GROUP_MA type="string">groupma</GROUP_MA>
+                        </listquad>
+
+                        <refHOM type="int">0</refHOM>
+		</MODEL>
+
+		<CONNECTIONS type="frame">
+                        <liaisonSOLIDE type="multiple">
+                           <GROUP_MA type="string">surface</GROUP_MA>
+                        </liaisonSOLIDE>
+                        <liaisonRBE3   type="multiple">
+                           <GROUP_NO_MAIT type="string">node</GROUP_NO_MAIT>
+                           <GROUP_NO_ESCL type="string">surface</GROUP_NO_ESCL>
+                        </liaisonRBE3>
+                        <liaisonMAIL   type="multiple">
+                           <GROUP_MA_MAIT type="string">volume</GROUP_MA_MAIT>
+                           <GROUP_MA_ESCL type="string">surface</GROUP_MA_ESCL>
+                           <DISTANCE_MAX type="float">0.0001</DISTANCE_MAX>
+                        </liaisonMAIL>
+                        <liaisonELEM   type="multiple">
+                           <GROUP_MA_1 type="string">surface</GROUP_MA_1>
+                           <GROUP_NO_2 type="string">node</GROUP_NO_2>
+                           <OPTION type="dropdown">3D_POU<option type="string">3D_POU</option></OPTION>
+                        </liaisonELEM>
+                        <contact type="frame">
+                           <NContact type="int">0</NContact>
+                           <TypeContact type="dropdown">0-DISCRETE<option type="string">0-DISCRETE</option>
+                                                         <option type="string">1-CONTINUE_DEFAULT_FRICTION</option>
+                                                         <option type="string">11-CONTINUE_NEWTON_FRICTION</option>
+                                                         <option type="string">12-CONTINUE_POINT_FIXE_AUTOMATIQUE_FRICTION</option>
+                                                         <option type="string">13-CONTINUE_POINT_FIXE_CONTROLE_FRICTION</option>
+                                                         <option type="string">2-CONTINUE</option>
+                                                         <option type="string">21-CONTINUE_NEWTON</option>
+                                                         <option type="string">22-CONTINUE_POINT_FIXE_AUTOMATIQUE</option>
+                                                         <option type="string">23-CONTINUE_POINT_FIXE_CONTROLE</option>
+                                                         <option type="string">3-CONTINUE_LAC</option>
+                           </TypeContact>
+                           <Friction type="float">0.0</Friction>
+                           <SANS_GROUP_MA type="dropdown">True<option type="string">True</option>
+                                                              <option type="string">False</option>
+                           </SANS_GROUP_MA>
+                        </contact>
+                        <Bulloni type="frame">
+                           <NBulloni type="int">0</NBulloni>
+                           <bulloniConf type="dropdown">1-3D<option type="string">1-3D</option>
+                                                            <option type="string">2-2D</option>
+                           </bulloniConf>
+                           <EpsilonSuAlpha type="float">0</EpsilonSuAlpha>
+                        </Bulloni>
+		</CONNECTIONS>
+
+		<LOADS type="frame">
+                   <ddl_vincoli type="multiple" specifyName="false">
+                      <GROUP_MA type="string">surface_or_nodes</GROUP_MA>
+                      <DX type="dropdown">FIXED<option type="string">FIXED</option>
+                                               <option type="string">FREE</option>
+                      </DX>
+                      <DY type="dropdown">FIXED<option type="string">FIXED</option>
+                                               <option type="string">FREE</option>
+                      </DY>
+                      <DZ type="dropdown">FIXED<option type="string">FIXED</option>
+                                               <option type="string">FREE</option>
+                      </DZ>
+                      <DRX type="dropdown">FREE<option type="string">FIXED</option>
+                                               <option type="string">FREE</option>
+                      </DRX>
+                      <DRY type="dropdown">FREE<option type="string">FIXED</option>
+                                               <option type="string">FREE</option>
+                      </DRY>
+                      <DRZ type="dropdown">FREE<option type="string">FIXED</option>
+                                               <option type="string">FREE</option>
+                      </DRZ>
+                      <DNOR type="dropdown">FREE<option type="string">FIXED</option>
+                                                <option type="string">FREE</option>
+                      </DNOR>
+                   </ddl_vincoli>
+
+                   <force_face type="multiple" specifyName="false">
+                      <GROUP_MA type="string">surface</GROUP_MA>
+                      <FX type="float">0.0</FX>
+                      <FY type="float">0.0</FY>
+                      <FZ type="float">0.0</FZ>
+                   </force_face>
+
+                   <force_shell type="multiple" specifyName="false">
+                      <GROUP_MA type="string">surface</GROUP_MA>
+                      <FX type="float">0.0</FX>
+                      <FY type="float">0.0</FY>
+                      <FZ type="float">0.0</FZ>
+                   </force_shell>
+
+                   <force_node type="multiple" specifyName="false">
+                      <GROUP_NO type="string">node</GROUP_NO>
+                      <FX type="float">0.0</FX>
+                      <FY type="float">0.0</FY>
+                      <FZ type="float">0.0</FZ>
+                      <MX type="float">0.0</MX>
+                      <MY type="float">0.0</MY>
+                      <MZ type="float">0.0</MZ>
+                   </force_node>
+
+                   <history type="multiple" specifyName="false">
+                      <loadhis_time type="float">1.0</loadhis_time>
+                      <loadhis_coef type="float">1.0</loadhis_coef>
+                      <vinhis_time type="float">1.0</vinhis_time>
+                      <vinhis_coef type="float">1.0</vinhis_coef>
+                   </history>
+
+                   <pressione type="multiple" specifyName="false">
+                      <GROUP_MA type="string">surface</GROUP_MA>
+                      <PRES type="float">0.0</PRES>
+                   </pressione>
+
+                   <gravity type="frame">
+                      <gravityX type="float">0.0</gravityX>
+                      <gravityY type="float">0.0</gravityY>
+                      <gravityZ type="float">0.0</gravityZ>
+                   </gravity>
+
+                   <rotation type="frame">
+                      <crot_X type="float">0.0</crot_X>
+                      <crot_Y type="float">0.0</crot_Y>
+                      <crot_Z type="float">0.0</crot_Z>
+                      <rotax_X type="float">0.0</rotax_X>
+                      <rotax_Y type="float">0.0</rotax_Y>
+                      <rotax_Z type="float">0.0</rotax_Z>
+                      <rotw_rpm type="float">0.0</rotw_rpm>
+                   </rotation>
+		</LOADS>
+		<THERMAL type="frame">
+                   <logStationaire type="dropdown">True<option type="string">True</option>
+                                                       <option type="string">False</option>
+                   </logStationaire>
+                   <Tstart type="float">20.0</Tstart>
+                   <t_impo type="multiple" specifyName="false">
+                      <GROUP_MA type="string">volume</GROUP_MA>
+                      <TEMP type="float">776.0</TEMP>
+                   </t_impo>
+                   <exchange type="multiple" specifyName="false">
+                      <GROUP_MA type="string">surface</GROUP_MA>
+                      <COEF_H type="float">20.0</COEF_H>
+                      <TEMP_EXT type="float">776.0</TEMP_EXT>
+                   </exchange>
+                   <flux type="multiple" specifyName="false">
+                      <GROUP_MA type="string">surface</GROUP_MA>
+                      <FLUN type="float">776.0</FLUN>
+                   </flux>
+                   <source type="multiple" specifyName="false">
+                      <GROUP_MA type="string">volume</GROUP_MA>
+                      <SOUR type="float">776.0</SOUR>
+                   </source>
+		</THERMAL>
+	</XMLFileDescription>
+        <cloudExecution>
+              <script>cloudHPC-fea</script>
+	      <ram>highmem</ram>
+              <nopre>0</nopre>
+	      <download>CODE-ASTER.tar.gz</download>
+        </cloudExecution>
+</setupData>

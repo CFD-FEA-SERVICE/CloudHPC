@@ -1,0 +1,178 @@
+<?xml version="1.0" ?>
+<setupData>
+	<XMLFileDescription filename="FEM_input.xml" appname="tenuFEM">
+		<mesh_settings type="frame"> 
+			<loadDirection type="dropdown">X-<option type="string">X-</option>
+			                                 <option type="string">X+</option>
+			                                 <option type="string">Y-</option>
+			                                 <option type="string">Y+</option>
+			                                 <option type="string">Z-</option>
+			                                 <option type="string">Z+</option>
+			</loadDirection>
+
+			<man_bounding type="dropdown">True<option type="string">True</option>
+				  			  <option type="string">False</option>
+			</man_bounding>
+
+			<mesh_layer type="frame">
+				<MaxSize type="float">0.001</MaxSize>
+				<MinSize type="float">0.0001</MinSize>
+				<GrowthRate type="float">0.2</GrowthRate>
+				<NbSegPerEdge type="float">2.0</NbSegPerEdge>
+				<NbSegPerRadius type="float">3.0</NbSegPerRadius>
+			</mesh_layer>
+			
+			<mesh_bounding type="frame">
+				<MaxSize type="float">0.01</MaxSize>
+				<MinSize type="float">0.0005</MinSize>
+				<GrowthRate type="float">0.3</GrowthRate>
+				<NbSegPerEdge type="float">2.0</NbSegPerEdge>
+				<NbSegPerRadius type="float">2.0</NbSegPerRadius>
+			</mesh_bounding>
+		</mesh_settings>
+
+		<Attachments type="frame">
+				<file   type="file"  singleFile="True">med</file>
+		</Attachments>
+
+		<inferiore type="frame">
+			<thick type="float">0.04343</thick>
+			<step type="int">4</step>
+			<E type="float">74000000000</E>
+			<nu type="float">0.327</nu>
+			<rho type="float">2300</rho>
+		</inferiore>
+	
+		<layer type="multiple" specifyName="false">
+			<thick type="float">0.00025</thick>
+                        <stack type="dropdown">1<option type="int">1</option>
+                                                <option type="int">2</option>
+                        </stack>
+			<step type="int">2</step>
+			<contact type="dropdown">True<option type="string">True</option>
+ 						     <option type="string">False</option>
+			</contact>
+			<E type="float">210000000000</E>
+			<nu type="float">0.3</nu>
+			<rho type="float">2300</rho>
+			<SY type="float">1148900000</SY>
+
+			<RELATION type="dropdown">VMIS_ISOT_LINE<option type="string">ELAS</option>
+							        <option type="string">VMIS_ISOT_LINE</option>
+			   					<option type="string">VMIS_ISOT_PUIS</option>
+								<option type="string">ELAS_HYPER</option>
+			</RELATION>
+
+			<DEFORMATION type="dropdown">SIMO_MIEHE<option type="string">PETIT</option>
+							       <option type="string">GROT_GDEP</option>
+							       <option type="string">SIMO_MIEHE</option>
+			</DEFORMATION>
+
+			<D_SIGM_EPSI type="float">22000000</D_SIGM_EPSI>
+
+			<A_PUIS type="float">19.38</A_PUIS>
+			<N_PUIS type="float">4.2424</N_PUIS>
+
+			<C10 type="float">10</C10>
+			<C01 type="float">10</C01>
+			<C20 type="float">10</C20>
+		</layer>
+
+		<superiore type="frame">
+			<thick type="float">0.06465</thick>
+                        <stack type="dropdown">1<option type="int">1</option>
+                                                <option type="int">2</option>
+                        </stack>
+			<step type="int">4</step>
+			<contact type="dropdown">True<option type="string">True</option>
+						     <option type="string">False</option>
+			</contact>
+			<E type="float">74000000000</E>
+			<nu type="float">0.327</nu>
+			<rho type="float">2300</rho>
+		</superiore>
+      
+		<fem_settings type="frame">
+                        <NCerniere type="int">3</NCerniere>
+
+			<loadEps type="dropdown">0<option type="int">0</option>
+					 	  <option type="int">1</option>
+			</loadEps>
+
+			<boltE  type="float">210000000000</boltE>
+			<boltNu type="float">0.29</boltNu>
+
+			<nodalLoad type="float">12000</nodalLoad>
+
+			<nIter type="int">5</nIter>
+
+			<nCut  type="int">5</nCut>
+
+			<FIX type="dropdown">1<option type="string">0</option>
+					      <option type="string">1</option>
+					      <option type="string">2</option>
+			</FIX>
+
+			<configuration type="dropdown">1<option type="int">1</option>
+							<option type="int">2</option>
+							<option type="int">3</option>
+			</configuration> 
+
+			<simRestart type="dropdown">False<option type="string">True</option>
+							 <option type="string">False</option>
+			</simRestart>
+
+			<toleInterp type="float">1e-5</toleInterp>
+
+			<singleForce type="multiple" specifyName="false">
+				<surface type="string">pressure</surface>
+
+			        <restart type="dropdown">False<option type="string">True</option>
+						 	      <option type="string">False</option>
+				</restart>
+
+				<Fx      type="float">0.0</Fx>
+				<Fy      type="float">10.0</Fy>
+				<Fz      type="float">0.0</Fz>
+			</singleForce>
+
+			<singlePressure type="multiple" specifyName="false">
+				<surface type="string">pressure</surface>
+
+			        <restart type="dropdown">False<option type="string">True</option>
+						 	      <option type="string">False</option>
+				</restart>
+
+				<Pres    type="float">5000</Pres>
+			</singlePressure>
+
+			<singleDisplacement type="multiple" specifyName="false">
+				<surface type="string">pressure</surface>
+
+			        <restart type="dropdown">False<option type="string">True</option>
+						 	      <option type="string">False</option>
+				</restart>
+
+				<DX      type="float">0.0</DX>
+				<DY      type="float">0.0</DY>
+				<DZ      type="float">0.0</DZ>
+			</singleDisplacement>
+
+			<singleLoad type="multiple" specifyName="false">
+				<boltID type="int">0</boltID>
+				<diam   type="float">0.006</diam>
+				<Load   type="float">0</Load>
+                                <L0     type="float">0.1472</L0>
+                                <eps    type="float">0.000143</eps>
+			</singleLoad>
+
+		</fem_settings>
+	</XMLFileDescription>
+        <cloudExecution>
+              <script>cloudHPC-tenuFEM</script>
+	      <ram>highmem</ram>
+              <nopre>0</nopre>
+              <download>RESULTS.tar.gz</download>
+              <download>logs.tar.gz</download>
+        </cloudExecution>
+</setupData>

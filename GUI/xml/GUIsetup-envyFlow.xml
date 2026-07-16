@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<setupData>
+	<XMLFileDescription filename="CFD_input.xml" appname="envyFlow">
+                <Attachments type="frame">
+                     <file   type="file"  singleFile="False">stl,vtk<option type="string">body_1</option>
+                                                                    <option type="string">body_2</option>
+                                                                    <option type="string">body_3</option>
+                                                                    <option type="string">point</option>
+                                                                    <option type="string">custom</option>
+                     </file>
+                </Attachments>
+		<MESH type="frame">
+                        <boundingBox type="frame">
+				<xMin type="float">1.0</xMin>
+				<xMax type="float">1.0</xMax>
+				<yMin type="float">1.0</yMin>
+				<yMax type="float">1.0</yMax>
+				<zMin type="float">1.0</zMin>
+				<zMax type="float">1.0</zMax>
+                                <activate type="dropdown">true<option type="string">true</option></activate>
+                        </boundingBox>
+			<coarseMesh type="float">0.25</coarseMesh>
+			<scale type="float">1.0</scale>
+			<pointInside type="frame">
+				<x type="float">0.0</x>
+				<y type="float">0.0</y>
+				<z type="float">0.0</z>
+			</pointInside>
+	                <xMin type="frame">
+	                    <refLevel     type="int">0</refLevel>
+	                    <refOnCorners type="int">1</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">patch-freestream<option type="string">patch-freestream</option>
+                                                                  <option type="string">patch-ABLinlet</option>
+                                                                  <option type="string">patch-outlet</option>
+                                                                  <option type="string">symmetry-symmetry</option></type>
+                	</xMin>
+	                <xMax type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">1</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">patch-freestream<option type="string">patch-freestream</option>
+                                                                  <option type="string">patch-ABLinlet</option>
+                                                                  <option type="string">patch-outlet</option>
+                                                                  <option type="string">symmetry-symmetry</option></type>
+                	</xMax>
+	                <yMin type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">1</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">patch-freestream<option type="string">patch-freestream</option>
+                                                                  <option type="string">patch-ABLinlet</option>
+                                                                  <option type="string">patch-outlet</option>
+                                                                  <option type="string">symmetry-symmetry</option></type>
+                	</yMin>
+	                <yMax type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">1</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">patch-freestream<option type="string">patch-freestream</option>
+                                                                  <option type="string">patch-ABLinlet</option>
+                                                                  <option type="string">patch-outlet</option>
+                                                                  <option type="string">symmetry-symmetry</option></type>
+                	</yMax>
+	                <zMin type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">1</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">patch-freestream<option type="string">patch-freestream</option>
+                                                                  <option type="string">patch-ABLinlet</option>
+                                                                  <option type="string">patch-outlet</option>
+                                                                  <option type="string">wall-floor</option>
+                                                                  <option type="string">wall-terrain</option>
+                                                                  <option type="string">symmetry-symmetry</option></type>
+                	</zMin>
+	                <zMax type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">1</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">patch-freestream<option type="string">patch-freestream</option>
+                                                                  <option type="string">patch-ABLinlet</option>
+                                                                  <option type="string">patch-outlet</option>
+                                                                  <option type="string">symmetry-symmetry</option></type>
+                	</zMax>
+	                <body_1 type="frame">
+	                    <refLevel type="int">2</refLevel>
+	                    <refOnCorners type="int">4</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">wall<option type="string">wall</option></type>
+                	</body_1>
+	                <body_2 type="frame">
+	                    <refLevel type="int">2</refLevel>
+	                    <refOnCorners type="int">4</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">wall<option type="string">wall</option></type>
+                	</body_2>
+	                <body_3 type="frame">
+	                    <refLevel type="int">2</refLevel>
+	                    <refOnCorners type="int">4</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">wall<option type="string">wall</option></type>
+                	</body_3>
+                        <refinement type="multiple" specifyName="true">
+                            <refLevel     type="int">0</refLevel>
+                        </refinement>
+                        <meshingAlgorithm type="dropdown">snappyHexMesh<option type="string">snappyHexMesh</option></meshingAlgorithm>
+		</MESH>
+                <CFD type="frame">
+             	   <app type="dropdown">envyFlow<option type="string">envyFlow</option>
+                   </app>
+                   <rhoInf type="float">1.20</rhoInf>
+                   <mu     type="float">0.00001825</mu>
+                   <UInitial type="frame">
+                 	<X type="float">4.5</X>
+                 	<Y type="float">0.0</Y>
+                 	<Z type="float">0.0</Z>
+             	   </UInitial>
+                   <momentumSource type="dropdown">false<option type="string">true</option>
+                                                        <option type="string">false</option>
+                   </momentumSource>
+             	   <UFloor type="frame">
+                 	<X type="float">0.0</X>
+                 	<Y type="float">0.0</Y>
+                 	<Z type="float">0.0</Z>
+             	   </UFloor>
+	           <ABLConditions type="frame">
+             	        <Zref     type="float">20.0</Zref>
+             	        <z0       type="float">0.10</z0>
+             	        <zGround  type="float">935.0</zGround>
+                   </ABLConditions>
+                   <turbulence type="frame">
+             	   	<RASmodel type="dropdown">kEpsilon<option type="string">kEpsilon</option>
+             	                                     	  <option type="string">kOmegaSST</option>
+             	                                     	  <option type="string">SpalartAllmaras</option>
+                   	</RASmodel>
+             	   	<intensityInlet type="float">0.05</intensityInlet>
+             	   	<mixingLengthInlet type="float">0.2</mixingLengthInlet>
+                   </turbulence>
+             	   <sections type="frame">
+                 	<S1X type="float">0.0</S1X>
+                 	<S2Y type="float">0.0</S2Y>
+                 	<S3Z type="float">0.0</S3Z>
+             	   </sections>
+                   <endTime  type="int">3000</endTime>
+                   <script type="dropdown">openFoam-of12<option type="string">openFoam-of12</option></script>
+                </CFD>
+	</XMLFileDescription>
+        <cloudExecution>
+              <script>cloudHPC-CFDtemplate</script>
+	      <ram>hypercore</ram>
+              <nopre>0</nopre>
+	      <download>OPENFOAM-solution.tar.gz</download>
+	      <download>OPENFOAM-constant.tar.gz</download>
+	      <download>OPENFOAM-system.tar.gz</download>
+        </cloudExecution>
+</setupData>

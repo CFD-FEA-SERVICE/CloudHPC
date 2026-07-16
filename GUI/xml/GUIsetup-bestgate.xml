@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<setupData>
+	<XMLFileDescription filename="CFD_input.xml" appname="bestgate">
+		<deltat type="float">0.002</deltat>
+		<tEnd   type="float">10.0</tEnd>
+
+                <Attachments type="frame" singleFile="true">
+                     <file   type="file"  singleFile="True">stl</file>
+                </Attachments>
+
+		<inputData type="frame">
+		    <scale       type="float">0.001</scale>
+		    <coarseMesh  type="float">0.0005</coarseMesh>
+		    <TMelt       type="float">250.0</TMelt>
+		    <TSolid      type="float">170.0</TSolid>
+		    <TMold       type="float">80.0</TMold>
+		    <heatTransferCoefficient type="float">1200.0</heatTransferCoefficient>
+		    <plastic type="frame">
+			<density        type="float">1410.0</density>	
+			<heatCapacity   type="float">1400.0</heatCapacity>
+			<heatConduction type="float">0.24</heatConduction>
+                    </plastic>
+		</inputData>
+	</XMLFileDescription>
+        <cloudExecution>
+              <script>cloudHPC-bestGateWeb</script>
+	      <ram>highmem</ram>
+              <nopre>0</nopre>
+              <download>logs.tar.gz</download>
+        </cloudExecution>
+</setupData>

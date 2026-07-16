@@ -1,0 +1,186 @@
+<?xml version="1.0"?>
+<setupData>
+	<XMLFileDescription filename="CFD_input.xml" appname="turboApp">
+                <Attachments type="frame">
+                     <file   type="file"  singleFile="False">stl,vtk, zip<option type="string">impeller</option>
+                                                                         <option type="string">wall</option>
+                                                                         <option type="string">stator</option>
+                                                                         <option type="string">volume-inlet</option>
+                                                                         <option type="string">mass-inlet</option>
+                                                                         <option type="string">pressure-inlet</option>
+                                                                         <option type="string">outlet</option>
+                                                                         <option type="string">rotor</option>
+                                                                         <option type="string">faceZone</option>
+                                                                         <option type="string">point</option>
+                                                                         <option type="string">custom</option>
+                                                                         <option type="string">paraGEOM</option>
+		     </file>
+                </Attachments>
+		<MESH type="frame">
+			<coarseMesh type="float">0.0025</coarseMesh>
+			<scale type="float">1.0</scale>
+			<pointInside type="frame">
+				<x type="float">0.0</x>
+				<y type="float">0.0</y>
+				<z type="float">0.0</z>
+			</pointInside>
+	                <impeller type="frame">
+	                    <refLevel type="int">2</refLevel>
+	                    <refOnCorners type="int">4</refOnCorners>
+	                    <nSurfaceLayers type="int">4</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <geotype type="dropdown">patch<option type="string">patch</option>
+                                                          <option type="string">baffle</option>
+                            </geotype>
+                            <type type="dropdown">wall-impellers<option type="string">wall-impellers</option></type>
+                	</impeller>
+	                <stator type="frame">
+	                    <refLevel type="int">2</refLevel>
+	                    <refOnCorners type="int">4</refOnCorners>
+	                    <nSurfaceLayers type="int">4</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <geotype type="dropdown">patch<option type="string">patch</option>
+                                                          <option type="string">baffle</option>
+                            </geotype>
+                            <type  type="dropdown">wall-stators<option type="string">wall-stators</option></type>
+                	</stator>
+	                <wall type="frame">
+	                    <refLevel type="int">1</refLevel>
+	                    <refOnCorners type="int">2</refOnCorners>
+	                    <nSurfaceLayers type="int">4</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
+                	</wall>
+	                <volume-inlet type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">0</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">patch<option type="string">patch</option></type>
+                	</volume-inlet>
+	                <mass-inlet type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">0</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">patch<option type="string">patch</option></type>
+                	</mass-inlet>
+	                <pressure-inlet type="frame">
+	                    <refLevel type="int">2</refLevel>
+	                    <refOnCorners type="int">4</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">patch<option type="string">patch</option></type>
+                	</pressure-inlet>
+	                <outlet type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">0</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">patch<option type="string">patch</option></type>
+                	</outlet>
+	                <rotor type="frame">
+	                    <refLevel type="int">1</refLevel>
+	                    <refOnCorners type="int">1</refOnCorners>
+                            <NonConformalCouples type="dropdown">true<option type="string">true</option></NonConformalCouples>
+			    <boundingPatches type="dropdown">impeller<option type="string">impeller</option></boundingPatches>
+			    <geotype           type="dropdown">cellZone<option type="string">cellZone</option></geotype>
+                	</rotor>
+                        <patch type="multiple" specifyName="true">
+                           <type type="dropdown">wall-walls<option type="string">wall-walls</option>
+                                                           <option type="string">wall-impellers</option>
+                                                           <option type="string">wall-stators</option>
+                                                           <option type="string">symmetry-symmetry</option>
+                           </type>
+                           <refLevel       type="int">0</refLevel>
+                           <refOnCorners   type="int">0</refOnCorners>
+                           <nSurfaceLayers type="int">0</nSurfaceLayers>
+                           <expansionRatio type="float">1.2</expansionRatio>
+                        </patch>
+                        <refinement type="multiple" specifyName="true">
+                           <refLevel     type="int">0</refLevel>
+                        </refinement>
+	                <extrusion type="multiple" specifyName="true">
+	                    <directionX type="float">0</directionX>
+	                    <directionY type="float">0</directionY>
+	                    <directionZ type="float">1.0</directionZ>
+	                    <thickness  type="float">1.0</thickness>
+	                    <expansionRatio type="float">1.1</expansionRatio>
+                	</extrusion>
+                        <meshingAlgorithm type="dropdown">snappyHexMesh<option type="string">snappyHexMesh</option></meshingAlgorithm>
+		</MESH>
+                <CFD type="frame">
+             	   <app type="dropdown">turboAppINCOMPRESSIBLE<option type="string">turboAppINCOMPRESSIBLE</option>
+             	                                              <option type="string">turboAppCOMPRESSIBLE</option></app>
+             	   <ddtTime type="dropdown">Euler<option type="string">steadyState</option>
+             	                                 <option type="string">Euler</option></ddtTime>
+                   <incompressible type="frame">
+                      <rhoInf type="float">1.20</rhoInf>
+                   </incompressible>
+                   <compressible type ="frame">
+                      <Cp type="float">1004.4</Cp>
+                      <Pr type="float">0.705</Pr>
+                   </compressible>
+                   <mu     type="float">0.00001825</mu>
+                   <pPaInitial type="float">101325.0</pPaInitial>
+                   <inlet type="frame">
+                      <Qm3sInlet type="float">1.0</Qm3sInlet>
+                      <QkgsInlet type="float">1.0</QkgsInlet>
+                      <pPaInlet type="float">1.0</pPaInlet>
+                   </inlet>
+                   <turbulence type="frame">
+             	      <RASmodel type="dropdown">kEpsilon<option type="string">kEpsilon</option>
+             	                                        <option type="string">kOmegaSST</option>
+             	                                        <option type="string">SpalartAllmaras</option>
+                      </RASmodel>
+             	      <intensityInlet type="float">0.05</intensityInlet>
+             	      <mixingLengthInlet type="float">0.2</mixingLengthInlet>
+                   </turbulence>
+                   <omegaRPM type="float">1450</omegaRPM>
+                   <axis type="frame">
+                 	<X type="float">0.0</X>
+                 	<Y type="float">0.0</Y>
+                 	<Z type="float">1.0</Z>
+             	   </axis>
+             	   <CoR type="frame">
+                 	<X type="float">0.0</X>
+                 	<Y type="float">0.0</Y>
+                 	<Z type="float">0.0</Z>
+             	   </CoR>
+                   <script type="dropdown">openFoam-of12<option type="string">openFoam-of12</option></script>
+                </CFD>
+                <PARAMETRICS type="frame">
+		   <instances type="frame">
+                      <vCPU type="dropdown">48<option type="int">8</option>
+                                              <option type="int">16</option>
+                                              <option type="int">32</option>
+                                              <option type="int">48</option>
+                                              <option type="int">112</option>
+                      </vCPU>
+		      <RAM  type="dropdown">hypercore<option type="string">hypercore</option></RAM>
+		   </instances>
+                   <variables type="frame">
+                      <variable type="dropdown">false<option type="string">false</option>
+                                                     <option type="string">Qm3sInlet</option>
+                                                     <option type="string">QkgsInlet</option>
+                                                     <option type="string">pPaInlet</option>
+                                                     <option type="string">omegaRPM</option>
+                      </variable>
+                      <MIN type="float">1.0</MIN>
+                      <MAX type="float">1.0</MAX>
+                      <nStep type="int">5</nStep>
+                   </variables>
+                   <paraGEOM type="dropdown">false<option type="string">false</option>
+                                                  <option type="string">true</option>
+                   </paraGEOM> 
+                </PARAMETRICS>
+	</XMLFileDescription>
+        <cloudExecution>
+              <script>cloudHPC-CFDtemplate</script>
+	      <ram>hypercore</ram>
+              <nopre>0</nopre>
+	      <download>OPENFOAM-solution.tar.gz</download>
+	      <download>OPENFOAM-constant.tar.gz</download>
+	      <download>OPENFOAM-system.tar.gz</download>
+        </cloudExecution>
+</setupData>

@@ -1,0 +1,30 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Requirements for the cloudHPC pre-processing GUI (xmlreader.py + GEO tab)
+#
+# Tested with Python 3.13 on Linux (X11/xcb).
+#
+# NOTE on pythonocc-core: it is NOT available on PyPI — install it from
+# conda-forge BEFORE pip-installing the rest:
+#
+#     conda create -n cloudhpc-gui python=3.13
+#     conda activate cloudhpc-gui
+#     conda install -c conda-forge pythonocc-core
+#     pip install -r requirements.txt
+#
+# System packages (Linux):
+#     sudo apt install libxcb-cursor0    # required by Qt 6.5+ on xcb
+#     sudo apt install python3-tk        # tkinter, used by the CloudHPC dialog
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Core GUI framework (XML GUI, all widgets, embedded STEP viewer host)
+PySide6>=6.5
+
+# 3D visualisation of exported STL/VTK files ("Visualize CAD" button)
+pyvista>=0.43
+pyvistaqt>=0.11
+
+# cloudHPC REST API client ("Run on Cloud" button)
+requests>=2.31
+
+# ── Installed via conda-forge, NOT pip (listed for documentation only) ──────
+# pythonocc-core>=7.7    # OpenCASCADE: STEP import, meshing, 3D viewport

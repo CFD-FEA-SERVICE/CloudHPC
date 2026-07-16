@@ -1,0 +1,261 @@
+<?xml version="1.0"?>
+<setupData>
+	<XMLFileDescription filename="CFD_input.xml" appname="valveFlow">
+                <Attachments type="frame">
+                     <file   type="file"  singleFile="False">stl,vtk<option type="string">inlet</option>
+						<option type="string">outlet</option>
+						<option type="string">symmetry</option>
+						<option type="string">wall-0</option>
+						<option type="string">wall-1</option>
+						<option type="string">wall-2</option>
+						<option type="string">wall-3</option>
+						<option type="string">wall-4</option>
+						<option type="string">wall-5</option>
+						<option type="string">wall-6</option>
+						<option type="string">wall-7</option>
+						<option type="string">wall-8</option>
+						<option type="string">wall-9</option>
+						<option type="string">battente-0</option>
+						<option type="string">battente-1</option>
+						<option type="string">battente-2</option>
+						<option type="string">battente-3</option>
+						<option type="string">battente-4</option>
+						<option type="string">battente-5</option>
+						<option type="string">battente-6</option>
+						<option type="string">battente-7</option>
+						<option type="string">battente-8</option>
+						<option type="string">battente-9</option>
+						<option type="string">battente-10</option>
+                     </file>
+                </Attachments>
+
+		<GEO type="frame">
+			<stepInitial type="float">0.02</stepInitial>
+			<stepFinal   type="float">4.5</stepFinal>
+			<nStep       type="int">3</nStep>
+                        <stepArray type="frame">
+				<x type="float">0.0</x>
+				<y type="float">1.0</y>
+				<z type="float">0.0</z>
+                        </stepArray>
+		</GEO>
+
+		<MESH type="frame">
+			<algorithm type="dropdown">snappyHexMesh-v2112<option type="string">snappyHexMesh-v2112</option>
+               	                        	                      <option type="string">cfMeshCartesian-v2112</option>
+               	                           	                      <option type="string">cfMesh+-cartesianMesh</option>
+                        </algorithm>
+			<coarseMesh type="float">5.00</coarseMesh>
+			<scale type="float">0.001</scale>
+			<pointInside type="frame">
+				<x type="float">1.0</x>
+				<y type="float">2.0</y>
+				<z type="float">1.0</z>
+			</pointInside>
+		        <inlet type="frame">
+				<refLevel type="int">0</refLevel>
+				<refOnCorners type="int">0</refOnCorners>
+	  	    		<type type="dropdown">patch<option type="string">patch</option></type>
+			</inlet>
+		        <outlet type="frame">
+				<refLevel type="int">0</refLevel>
+				<refOnCorners type="int">0</refOnCorners>
+	  	    		<type type="dropdown">patch<option type="string">patch</option></type>
+			</outlet>
+			<symmetry type="frame">
+				<refLevel type="int">0</refLevel>
+				<refOnCorners type="int">0</refOnCorners>
+	  	    		<type type="dropdown">symmetry<option type="string">symmetry</option></type>
+			</symmetry>
+			<wall-0 type="frame">
+				<refLevel type="int">0</refLevel>
+				<refOnCorners type="int">4</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
+			</wall-0>
+			<wall-1 type="frame">
+				<refLevel type="int">1</refLevel>
+				<refOnCorners type="int">4</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
+			</wall-1>
+			<wall-2 type="frame">
+				<refLevel type="int">2</refLevel>
+				<refOnCorners type="int">4</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
+			</wall-2>
+			<wall-3 type="frame">
+				<refLevel type="int">3</refLevel>
+				<refOnCorners type="int">4</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
+			</wall-3>
+			<wall-4 type="frame">
+				<refLevel type="int">4</refLevel>
+				<refOnCorners type="int">4</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
+			</wall-4>
+			<wall-5 type="frame">
+				<refLevel type="int">5</refLevel>
+				<refOnCorners type="int">5</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
+			</wall-5>
+			<wall-6 type="frame">
+				<refLevel type="int">6</refLevel>
+				<refOnCorners type="int">6</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
+			</wall-6>
+			<wall-7 type="frame">
+				<refLevel type="int">7</refLevel>
+				<refOnCorners type="int">7</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
+			</wall-7>
+			<wall-8 type="frame">
+				<refLevel type="int">8</refLevel>
+				<refOnCorners type="int">8</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
+			</wall-8>
+			<wall-9 type="frame">
+				<refLevel type="int">9</refLevel>
+				<refOnCorners type="int">9</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
+			</wall-9>
+			<wall-10 type="frame">
+				<refLevel type="int">10</refLevel>
+				<refOnCorners type="int">10</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
+			</wall-10>
+			<battente-0 type="frame">
+				<refLevel type="int">0</refLevel>
+				<refOnCorners type="int">4</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-battente<option type="string">wall-battente</option></type>
+			</battente-0>
+			<battente-1 type="frame">
+				<refLevel type="int">1</refLevel>
+				<refOnCorners type="int">4</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-battente<option type="string">wall-battente</option></type>
+			</battente-1>
+			<battente-2 type="frame">
+				<refLevel type="int">2</refLevel>
+				<refOnCorners type="int">4</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-battente<option type="string">wall-battente</option></type>
+			</battente-2>
+			<battente-3 type="frame">
+				<refLevel type="int">3</refLevel>
+				<refOnCorners type="int">4</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-battente<option type="string">wall-battente</option></type>
+			</battente-3>
+			<battente-4 type="frame">
+				<refLevel type="int">4</refLevel>
+				<refOnCorners type="int">4</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-battente<option type="string">wall-battente</option></type>
+			</battente-4>
+			<battente-5 type="frame">
+				<refLevel type="int">5</refLevel>
+				<refOnCorners type="int">5</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-battente<option type="string">wall-battente</option></type>
+			</battente-5>
+			<battente-6 type="frame">
+				<refLevel type="int">6</refLevel>
+				<refOnCorners type="int">6</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-battente<option type="string">wall-battente</option></type>
+			</battente-6>
+			<battente-7 type="frame">
+				<refLevel type="int">7</refLevel>
+				<refOnCorners type="int">7</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-battente<option type="string">wall-battente</option></type>
+			</battente-7>
+			<battente-8 type="frame">
+				<refLevel type="int">8</refLevel>
+				<refOnCorners type="int">8</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-battente<option type="string">wall-battente</option></type>
+			</battente-8>
+			<battente-9 type="frame">
+				<refLevel type="int">9</refLevel>
+				<refOnCorners type="int">9</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-battente<option type="string">wall-battente</option></type>
+			</battente-9>
+			<battente-10 type="frame">
+				<refLevel type="int">10</refLevel>
+				<refOnCorners type="int">10</refOnCorners>
+				<nSurfaceLayers type="int">5</nSurfaceLayers>
+	                        <expansionRatio type="float">1.2</expansionRatio>
+	  	    		<type type="dropdown">wall-battente<option type="string">wall-battente</option></type>
+			</battente-10>
+		</MESH>
+
+		<CFD type="frame">
+ 			<Tinlet type="float">296</Tinlet>
+			<pinlet type="float">2.9e5</pinlet>
+			<poutlet type="float">1e5</poutlet>
+			<molWeight type="float">28.96</molWeight>
+			<Cp type="float">1004.4</Cp>
+			<gamma type="float">1.4</gamma>
+			<mu type="float">0.00001831</mu>
+			<Prandtl type="float">0.713</Prandtl>
+			<turbulentIntensity type="float">0.05</turbulentIntensity>
+			<d_idrInlet type="float">0.006</d_idrInlet>
+			<nutWallFunction type="dropdown">nutkWallFunction<option type="string">nutkWallFunction</option>
+        	                           	   			 <option type="string">nutLowReWallFunction</option>
+			</nutWallFunction>
+			<divSchemesDefault type="dropdown">bounded Gauss upwind<option type="string">bounded Gauss upwind</option>
+        	        			                       	       <option type="string">Gauss upwind</option>
+			</divSchemesDefault>
+			<writeInterval type="int">100</writeInterval>
+			<nitertot type="int">2000</nitertot>
+  			<vCPU type="dropdown">32<option type="int">8</option>
+			                        <option type="int">16</option>
+			                        <option type="int">32</option>
+			                        <option type="int">48</option>
+			                        <option type="int">64</option>
+	                </vCPU>
+			<algorithm type="dropdown">openFoam-v2112<option type="string">openFoam-v2112</option></algorithm>
+		</CFD>
+	</XMLFileDescription>
+        <cloudExecution>
+              <script>cloudHPC-valveFlow</script>
+	      <ram>highmem</ram>
+              <nopre>1</nopre>
+              <download>RESULTS.tar.gz</download>
+              <download>logs.tar.gz</download>
+        </cloudExecution>
+</setupData>

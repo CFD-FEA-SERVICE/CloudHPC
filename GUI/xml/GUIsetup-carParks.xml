@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<setupData>
+	<XMLFileDescription filename="CFD_input.xml" appname="carParks">
+                <Attachments type="frame">
+                     <file   type="file"  singleFile="False">stl,vtk<option type="string">wall</option>
+                                                                    <option type="string">floor</option>
+                                                                    <option type="string">fire</option>
+                                                                    <option type="string">supply</option>
+                                                                    <option type="string">exhaust</option>
+                                                                    <option type="string">jet-push</option>
+                                                                    <option type="string">jet-pull</option>
+                                                                    <option type="string">opening</option>
+                                                                    <option type="string">point</option>
+                                                                    <option type="string">faceZone</option>
+                                                                    <option type="string">custom</option>
+                     </file>
+                </Attachments>
+		<MESH type="frame">
+			<coarseMesh type="float">0.25</coarseMesh>
+			<scale type="float">1.0</scale>
+			<pointInside type="frame">
+				<x type="float">0.0</x>
+				<y type="float">0.0</y>
+				<z type="float">0.0</z>
+			</pointInside>
+	                <wall type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">0</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">wall<option type="string">wall</option></type>
+                	</wall>
+	                <floor type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">0</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">wall<option type="string">wall</option></type>
+                	</floor>
+	                <supply type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">4</refOnCorners>
+                            <type type="dropdown">patch<option type="string">patch</option></type>
+                	</supply>
+	                <exhaust type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">4</refOnCorners>
+                            <type type="dropdown">patch<option type="string">patch</option></type>
+                	</exhaust>
+	                <jet-push type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">4</refOnCorners>
+                            <type type="dropdown">patch<option type="string">patch</option></type>
+                	</jet-push>
+	                <jet-pull type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">4</refOnCorners>
+                            <type type="dropdown">patch<option type="string">patch</option></type>
+                	</jet-pull>
+	                <opening type="frame">
+	                    <refLevel type="int">2</refLevel>
+	                    <refOnCorners type="int">4</refOnCorners>
+                            <type type="dropdown">patch<option type="string">patch</option></type>
+                	</opening>
+	                <fire type="frame">
+	                    <refLevel type="int">1</refLevel>
+	                    <refOnCorners type="int">3</refOnCorners>
+			    <geotype type="dropdown">cellZone<option type="string">cellZone</option></geotype>
+                	</fire>
+                        <patch type="multiple" specifyName="true">
+                           <type type="dropdown">wall-walls<option type="string">wall-walls</option></type>
+                           <refLevel       type="int">0</refLevel>
+                           <refOnCorners   type="int">0</refOnCorners>
+                           <nSurfaceLayers type="int">0</nSurfaceLayers>
+                           <expansionRatio type="float">1.2</expansionRatio>
+                        </patch>
+                        <meshingAlgorithm type="dropdown">snappyHexMesh<option type="string">snappyHexMesh</option></meshingAlgorithm>
+		</MESH>
+                <CFD type="frame">
+             	   <app type="dropdown">CarParkCO<option type="string">CarParkCO</option>
+             	                                 <option type="string">CarParkFIRE</option>
+						 <option type="string">CarPark12101</option>
+		   </app>
+                   <rhoInf type="float">1.20</rhoInf>
+                   <mu     type="float">0.00001825</mu>
+                   <Diffusivity type="float">0.00002170</Diffusivity>
+                   <Qm3hSupply type="float">10000</Qm3hSupply>
+                   <Qm3hExhaust type="float">10000</Qm3hExhaust>
+                   <Qm3hJetFans type="float">10000</Qm3hJetFans>
+
+                   <UInitial type="frame">
+                 	<X type="float">0.0</X>
+                 	<Y type="float">0.0</Y>
+                 	<Z type="float">0.0</Z>
+             	   </UInitial>
+
+             	   <CarParkCO type="frame">
+                 	<NAuto type="float">63</NAuto>
+             	   </CarParkCO>
+
+             	   <CarParkFIRE-12101 type="frame">
+                 	<Talpha type="float">150.0</Talpha>
+                 	<RHRmax type="float">5e6</RHRmax>
+                 	<Energy  type="float">30000e6</Energy>
+                 	<Xc      type="float">1.00</Xc>
+                 	<Tsprinkler type="float">20e3</Tsprinkler>
+			<Texhaust   type="float">100.0</Texhaust>
+                 	<DTdelayJetFans  type="float">0.0</DTdelayJetFans>
+			<DTdelayFanStart type="float">20.0</DTdelayFanStart>
+			<probes_location type="string">( (0 0 0) (1 1 1) )</probes_location>
+			<Tevac      type="float">600.0</Tevac>
+             	   </CarParkFIRE-12101>
+
+	           <opening type="frame">
+               	        <openConditionU type="dropdown">pressureInletOutletVelocity<option type="string">pressureInletOutletVelocity</option>
+						<option type="string">pressureInletVelocity</option>
+             	                                <option type="string">pressureInletUniformVelocity</option>
+             	                                <option type="string">pressureNormalInletOutletVelocity</option>
+             	                                <option type="string">zeroGradient</option>
+             	                                <option type="string">inverted</option>
+                        </openConditionU>
+               	        <openConditionp_rgh type="dropdown">prghEntrainmentPressure<option type="string">prghEntrainmentPressure</option>
+						<option type="string">prghTotalPressure</option>
+             	                                <option type="string">prghPressure</option>
+             	                                <option type="string">fixedValue</option>
+             	                                <option type="string">zeroGradient</option>
+                        </openConditionp_rgh>
+	           </opening>
+                   <turbulence type="frame">
+               	   	<RASmodel type="dropdown">kEpsilon<option type="string">kEpsilon</option>
+             	                                     	  <option type="string">kOmegaSST</option>
+             	                                     	  <option type="string">SpalartAllmaras</option>
+                   	</RASmodel>
+             	   	<intensityInlet type="float">0.05</intensityInlet>
+             	   	<mixingLengthInlet type="float">0.2</mixingLengthInlet>
+                   </turbulence>
+                   <endTime  type="int">1800</endTime>
+                   <script type="dropdown">openFoam-of12<option type="string">openFoam-of12</option></script>
+                </CFD>
+	</XMLFileDescription>
+        <cloudExecution>
+              <script>cloudHPC-CFDtemplate</script>
+	      <ram>hypercore</ram>
+              <nopre>0</nopre>
+	      <download>OPENFOAM-solution.tar.gz</download>
+	      <download>OPENFOAM-constant.tar.gz</download>
+	      <download>OPENFOAM-system.tar.gz</download>
+        </cloudExecution>
+</setupData>

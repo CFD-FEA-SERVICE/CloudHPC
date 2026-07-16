@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<setupData>
+	<XMLFileDescription filename="CFD_input.xml" appname="watAirFlux">
+                <Attachments type="frame">
+                     <file   type="file"  singleFile="False">stl,vtk<option type="string">wall</option>
+                                                                    <option type="string">inlet-liquid</option>
+                                                                    <option type="string">inlet-gas</option>
+                                                                    <option type="string">variableHeight-inlet</option>
+                                                                    <option type="string">opening</option>
+                                                                    <option type="string">outlet</option>
+                                                                    <option type="string">symmetry</option>
+                                                                    <option type="string">point</option>
+                                                                    <option type="string">custom</option>
+                     </file>
+                </Attachments>
+		<MESH type="frame">
+			<coarseMesh type="float">0.25</coarseMesh>
+			<scale type="float">1.0</scale>
+			<pointInside type="frame">
+				<x type="float">0.0</x>
+				<y type="float">0.0</y>
+				<z type="float">0.0</z>
+			</pointInside>
+	                <wall type="frame">
+	                    <refLevel type="int">1</refLevel>
+	                    <refOnCorners type="int">2</refOnCorners>
+	                    <nSurfaceLayers type="int">0</nSurfaceLayers>
+	                    <expansionRatio type="float">1.2</expansionRatio>
+                            <type type="dropdown">wall<option type="string">wall</option></type>
+                	</wall>
+	                <inlet-liquid type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">2</refOnCorners>
+                            <type type="dropdown">patch<option type="string">patch</option></type>
+                	</inlet-liquid>
+	                <inlet-gas type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">2</refOnCorners>
+                            <type type="dropdown">patch<option type="string">patch</option></type>
+                	</inlet-gas>
+	                <opening type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">2</refOnCorners>
+                            <type type="dropdown">patch<option type="string">patch</option></type>
+                	</opening>
+	                <outlet type="frame">
+	                    <refLevel type="int">0</refLevel>
+	                    <refOnCorners type="int">2</refOnCorners>
+                            <type type="dropdown">patch<option type="string">patch</option></type>
+                	</outlet>
+                        <patch type="multiple" specifyName="true">
+                           <type type="dropdown">wall-walls<option type="string">wall-walls</option>
+                                                           <option type="string">symmetry-symmetry</option></type>
+                           <refLevel       type="int">0</refLevel>
+                           <refOnCorners   type="int">0</refOnCorners>
+                           <nSurfaceLayers type="int">0</nSurfaceLayers>
+                           <expansionRatio type="float">1.2</expansionRatio>
+                        </patch>
+                        <refinement type="multiple" specifyName="true">
+                           <refLevel     type="int">0</refLevel>
+                        </refinement>
+                        <meshingAlgorithm type="dropdown">snappyHexMesh<option type="string">snappyHexMesh</option></meshingAlgorithm>
+		</MESH>
+                <CFD type="frame">
+             	   <app type="dropdown">watAirFlux<option type="string">watAirFlux</option></app>
+                   <liquid type="frame">
+                      <rhoInf_liquid  type="float">998.2</rhoInf_liquid>
+                      <mu_liquid      type="float">0.00010016</mu_liquid>
+                      <surfaceTension type="float">0.07</surfaceTension>
+                   </liquid>
+                   <gas type="frame">
+                      <rhoInf type="float">1.20</rhoInf>
+                      <mu     type="float">0.00001825</mu>
+                   </gas>
+                   <endTime  type="float">3000</endTime>
+                   <Inlet type="frame">
+                      <Qm3sInlet_gas    type="float">1.0</Qm3sInlet_gas>
+                      <Qm3sInlet_liquid type="float">1.0</Qm3sInlet_liquid>
+                   </Inlet>
+                   <turbulence type="frame">
+               	   	<RASmodel type="dropdown">kEpsilon<option type="string">kEpsilon</option>
+             	                                     	  <option type="string">kOmegaSST</option>
+             	                                     	  <option type="string">SpalartAllmaras</option>
+                   	</RASmodel>
+             	   	<intensityInlet type="float">0.05</intensityInlet>
+             	   	<mixingLengthInlet type="float">0.2</mixingLengthInlet>
+                   </turbulence>
+                   <script type="dropdown">openFoam-of12<option type="string">openFoam-of12</option></script>
+                </CFD>
+	</XMLFileDescription>
+        <cloudExecution>
+              <script>cloudHPC-CFDtemplate</script>
+	      <ram>hypercore</ram>
+              <nopre>0</nopre>
+	      <download>OPENFOAM-solution.tar.gz</download>
+	      <download>OPENFOAM-constant.tar.gz</download>
+	      <download>OPENFOAM-system.tar.gz</download>
+        </cloudExecution>
+</setupData>
