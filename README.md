@@ -14,6 +14,7 @@ The whole content of this repository is under the [GPLv3 license](https://github
 
 | Folder | Content |
 |---|---|
+| [`GUI/`](GUI/) | cloudHPC tools to perform simulations [![APP generation](https://github.com/CFD-FEA-SERVICE/CloudHPC/actions/workflows/cloudhpc-tools.yml/badge.svg)](https://github.com/CFD-FEA-SERVICE/CloudHPC/actions/workflows/cloudhpc-tools.yml) |
 | [`OpenFOAM/`](OpenFOAM/) | Mesh conversion utility: CGNS → OpenFOAM polyMesh |
 | [`SU2/`](SU2/) | Mesh conversion utility: OpenFOAM polyMesh → CGNS (for SU2) |
 | [`exampleAPI/`](exampleAPI/) | `cloudHPCexec` clients (Bash, Python/Tkinter, PowerShell) and Debian packaging — submit simulations from your terminal via the cloudHPC REST API |

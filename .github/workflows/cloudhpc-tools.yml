@@ -24,7 +24,7 @@ permissions:
 
 env:
   RELEASE_TAG: v0.1-alpha
-  INSTALLER_NAME: CFS_cloudHPC_tools-installer-0.1.exe
+  INSTALLER_NAME: CFS_cloudHPC_tools-installer-1.0.exe
 
 jobs:
   windows-installer:
