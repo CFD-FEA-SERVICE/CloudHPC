@@ -1,4 +1,4 @@
-name: APP generation
+name: cloudHPC tools .exe build
 
 # Builds the Windows executables of the XML-GUI tools with PyInstaller
 # inside a conda (Miniforge) environment so that pythonocc-core — which is

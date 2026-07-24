@@ -1,4 +1,4 @@
-name: Build cloudHPCexec .deb
+name: cloudHPCexec .deb build
 
 # Builds the Debian package from exampleAPI/cloudHPCexec-1.1 and uploads it
 # as an asset of the v0.1-alpha release.
