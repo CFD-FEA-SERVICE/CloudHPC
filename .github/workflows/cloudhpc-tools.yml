@@ -59,12 +59,28 @@ jobs:
 
       - name: Build applications (PyInstaller)
         run: |
-          $apps = @("bcSnappy", "carParks", "turboApp", "envyFlow", "fea")
+          # TEMPORANEO: si compila solo bcSnappy per accorciare i tempi di test.
+          # Per tornare a compilare tutto basta scommentare la riga sotto
+          # ed eliminare quella con la sola bcSnappy.
+          # $apps = @("bcSnappy", "carParks", "turboApp", "envyFlow", "fea")
+          $apps = @("bcSnappy")
           foreach ($app in $apps) {
             Write-Host "=== Building $app ==="
             python -m PyInstaller --noconfirm "GUI\build\SPEC\$app.spec"
             if ($LASTEXITCODE -ne 0) { exit 1 }
           }
+
+      - name: List bundled Qt libraries (diagnostic)
+        run: |
+          # In caso di "DLL load failed while importing QtWidgets" serve sapere
+          # quali Qt sono finite nel bundle e con che versione.
+          Get-ChildItem -Path "dist\bcSnappy" -Recurse -Filter "Qt6*.dll" |
+            Select-Object Name, @{n='MB';e={[math]::Round($_.Length/1MB,1)}},
+                          @{n='FileVersion';e={$_.VersionInfo.FileVersion}} |
+            Format-Table -AutoSize | Out-String -Width 200 | Write-Host
+          $shib = Get-ChildItem -Path "dist\bcSnappy" -Recurse -Filter "shiboken6*" |
+                  Select-Object -First 1
+          if ($shib) { Write-Host "shiboken6: $($shib.Name)" }
 
       - name: Verify OCC libraries were frozen in
         run: |

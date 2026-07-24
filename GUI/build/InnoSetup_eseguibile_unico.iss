@@ -63,35 +63,35 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ;Source: "..\xml\GUIsetup-HVACFlow.xml";         DestDir: "C:\Program Files (x86)\CFD FEA Service\HVACFlow"; DestName: "GUIsetup.xml"; Flags: ignoreversion;       Components: HVACFlow
 ;Source: "..\LOGO.png";                      DestDir: "C:\Program Files (x86)\CFD FEA Service\HVACFlow"; DestName: "LOGO.png"; Flags: ignoreversion;           Components: HVACFlow
 
-Source: "..\..\dist\bcSnappy\bcSnappy.exe";    DestDir: "C:\Program Files (x86)\CFD FEA Service\bcSnappy"; Flags: ignoreversion;                                 Components: bcSnappy
-Source: "..\..\dist\bcSnappy\*";               DestDir: "C:\Program Files (x86)\CFD FEA Service\bcSnappy"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: bcSnappy
-Source: "..\xml\GUIsetup-bcSnappy.xml";         DestDir: "C:\Program Files (x86)\CFD FEA Service\bcSnappy"; DestName: "GUIsetup.xml"; Flags: ignoreversion;       Components: bcSnappy
-Source: "..\LOGO.png";                      DestDir: "C:\Program Files (x86)\CFD FEA Service\bcSnappy"; DestName: "LOGO.png"; Flags: ignoreversion;           Components: bcSnappy
+Source: "..\..\dist\bcSnappy\bcSnappy.exe";    DestDir: "C:\Program Files (x86)\CFD FEA Service\bcSnappy"; Flags: ignoreversion skipifsourcedoesntexist;                                 Components: bcSnappy
+Source: "..\..\dist\bcSnappy\*";               DestDir: "C:\Program Files (x86)\CFD FEA Service\bcSnappy"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Components: bcSnappy
+Source: "..\xml\GUIsetup-bcSnappy.xml";         DestDir: "C:\Program Files (x86)\CFD FEA Service\bcSnappy"; DestName: "GUIsetup.xml"; Flags: ignoreversion skipifsourcedoesntexist;       Components: bcSnappy
+Source: "..\LOGO.png";                      DestDir: "C:\Program Files (x86)\CFD FEA Service\bcSnappy"; DestName: "LOGO.png"; Flags: ignoreversion skipifsourcedoesntexist;           Components: bcSnappy
 
 ;Source: "..\..\dist\bestgate\bestgate.exe";    DestDir: "C:\Program Files (x86)\CFD FEA Service\bestgate"; Flags: ignoreversion;                                 Components: bestgate
 ;Source: "..\..\dist\bestgate\*";               DestDir: "C:\Program Files (x86)\CFD FEA Service\bestgate"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: bestgate
 ;Source: "..\xml\GUIsetup-bestgate.xml";         DestDir: "C:\Program Files (x86)\CFD FEA Service\bestgate"; DestName: "GUIsetup.xml"; Flags: ignoreversion;       Components: bestgate
 ;Source: "..\LOGO.png";                      DestDir: "C:\Program Files (x86)\CFD FEA Service\bestgate"; DestName: "LOGO.png"; Flags: ignoreversion;           Components: bestgate
 
-Source: "..\..\dist\carParks\carParks.exe";    DestDir: "C:\Program Files (x86)\CFD FEA Service\carParks"; Flags: ignoreversion;                                 Components: carParks
-Source: "..\..\dist\carParks\*";               DestDir: "C:\Program Files (x86)\CFD FEA Service\carParks"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: carParks
-Source: "..\xml\GUIsetup-carParks.xml";         DestDir: "C:\Program Files (x86)\CFD FEA Service\carParks"; DestName: "GUIsetup.xml"; Flags: ignoreversion;       Components: carParks
-Source: "..\LOGO.png";                      DestDir: "C:\Program Files (x86)\CFD FEA Service\carParks"; DestName: "LOGO.png"; Flags: ignoreversion;           Components: carParks
+Source: "..\..\dist\carParks\carParks.exe";    DestDir: "C:\Program Files (x86)\CFD FEA Service\carParks"; Flags: ignoreversion skipifsourcedoesntexist;                                 Components: carParks
+Source: "..\..\dist\carParks\*";               DestDir: "C:\Program Files (x86)\CFD FEA Service\carParks"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Components: carParks
+Source: "..\xml\GUIsetup-carParks.xml";         DestDir: "C:\Program Files (x86)\CFD FEA Service\carParks"; DestName: "GUIsetup.xml"; Flags: ignoreversion skipifsourcedoesntexist;       Components: carParks
+Source: "..\LOGO.png";                      DestDir: "C:\Program Files (x86)\CFD FEA Service\carParks"; DestName: "LOGO.png"; Flags: ignoreversion skipifsourcedoesntexist;           Components: carParks
 
-Source: "..\..\dist\envyFlow\envyFlow.exe";    DestDir: "C:\Program Files (x86)\CFD FEA Service\envyFlow"; Flags: ignoreversion;                                 Components: envyFlow
-Source: "..\..\dist\envyFlow\*";               DestDir: "C:\Program Files (x86)\CFD FEA Service\envyFlow"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: envyFlow
-Source: "..\xml\GUIsetup-envyFlow.xml";         DestDir: "C:\Program Files (x86)\CFD FEA Service\envyFlow"; DestName: "GUIsetup.xml"; Flags: ignoreversion;       Components: envyFlow
-Source: "..\LOGO.png";                      DestDir: "C:\Program Files (x86)\CFD FEA Service\envyFlow"; DestName: "LOGO.png"; Flags: ignoreversion;           Components: envyFlow
+Source: "..\..\dist\envyFlow\envyFlow.exe";    DestDir: "C:\Program Files (x86)\CFD FEA Service\envyFlow"; Flags: ignoreversion skipifsourcedoesntexist;                                 Components: envyFlow
+Source: "..\..\dist\envyFlow\*";               DestDir: "C:\Program Files (x86)\CFD FEA Service\envyFlow"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Components: envyFlow
+Source: "..\xml\GUIsetup-envyFlow.xml";         DestDir: "C:\Program Files (x86)\CFD FEA Service\envyFlow"; DestName: "GUIsetup.xml"; Flags: ignoreversion skipifsourcedoesntexist;       Components: envyFlow
+Source: "..\LOGO.png";                      DestDir: "C:\Program Files (x86)\CFD FEA Service\envyFlow"; DestName: "LOGO.png"; Flags: ignoreversion skipifsourcedoesntexist;           Components: envyFlow
 
 ;Source: "..\..\dist\tenuFEM\tenuFEM.exe";      DestDir: "C:\Program Files (x86)\CFD FEA Service\tenuFEM"; Flags: ignoreversion;                                 Components: tenuFEM
 ;Source: "..\..\dist\tenuFEM\*";                DestDir: "C:\Program Files (x86)\CFD FEA Service\tenuFEM"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: tenuFEM
 ;Source: "..\xml\GUIsetup-tenuFEM.xml";          DestDir: "C:\Program Files (x86)\CFD FEA Service\tenuFEM"; DestName: "GUIsetup.xml"; Flags: ignoreversion;       Components: tenuFEM
 ;Source: "..\LOGO.png";                      DestDir: "C:\Program Files (x86)\CFD FEA Service\tenuFEM"; DestName: "LOGO.png"; Flags: ignoreversion;           Components: tenuFEM
 
-Source: "..\..\dist\turboApp\turboApp.exe";    DestDir: "C:\Program Files (x86)\CFD FEA Service\turboApp"; Flags: ignoreversion;                                 Components: turboApp
-Source: "..\..\dist\turboApp\*";               DestDir: "C:\Program Files (x86)\CFD FEA Service\turboApp"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: turboApp
-Source: "..\xml\GUIsetup-turboApp.xml";         DestDir: "C:\Program Files (x86)\CFD FEA Service\turboApp"; DestName: "GUIsetup.xml"; Flags: ignoreversion;       Components: turboApp 
-Source: "..\LOGO.png";                      DestDir: "C:\Program Files (x86)\CFD FEA Service\turboApp"; DestName: "LOGO.png"; Flags: ignoreversion;           Components: turboApp
+Source: "..\..\dist\turboApp\turboApp.exe";    DestDir: "C:\Program Files (x86)\CFD FEA Service\turboApp"; Flags: ignoreversion skipifsourcedoesntexist;                                 Components: turboApp
+Source: "..\..\dist\turboApp\*";               DestDir: "C:\Program Files (x86)\CFD FEA Service\turboApp"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Components: turboApp
+Source: "..\xml\GUIsetup-turboApp.xml";         DestDir: "C:\Program Files (x86)\CFD FEA Service\turboApp"; DestName: "GUIsetup.xml"; Flags: ignoreversion skipifsourcedoesntexist;       Components: turboApp 
+Source: "..\LOGO.png";                      DestDir: "C:\Program Files (x86)\CFD FEA Service\turboApp"; DestName: "LOGO.png"; Flags: ignoreversion skipifsourcedoesntexist;           Components: turboApp
 
 ;Source: "..\..\dist\valveFlow\valveFlow.exe";  DestDir: "C:\Program Files (x86)\CFD FEA Service\valveFlow"; Flags: ignoreversion;                                 Components: valveFlow
 ;Source: "..\..\dist\valveFlow\*";              DestDir: "C:\Program Files (x86)\CFD FEA Service\valveFlow"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: valveFlow
@@ -103,10 +103,10 @@ Source: "..\LOGO.png";                      DestDir: "C:\Program Files (x86)\CFD
 ;Source: "..\xml\GUIsetup-watAirFlux.xml";         DestDir: "C:\Program Files (x86)\CFD FEA Service\watAirFlux"; DestName: "GUIsetup.xml"; Flags: ignoreversion;       Components: watAirFlux
 ;Source: "..\LOGO.png";                        DestDir: "C:\Program Files (x86)\CFD FEA Service\watAirFlux"; DestName: "LOGO.png"; Flags: ignoreversion;           Components: watAirFlux
 
-Source: "..\..\dist\fea\fea.exe";  DestDir: "C:\Program Files (x86)\CFD FEA Service\fea"; Flags: ignoreversion;                                 Components: fea
-Source: "..\..\dist\fea\*";        DestDir: "C:\Program Files (x86)\CFD FEA Service\fea"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: fea
-Source: "..\xml\GUIsetup-fea.xml";  DestDir: "C:\Program Files (x86)\CFD FEA Service\fea"; DestName: "GUIsetup.xml"; Flags: ignoreversion;       Components: fea
-Source: "..\LOGO.png";          DestDir: "C:\Program Files (x86)\CFD FEA Service\fea"; DestName: "LOGO.png"; Flags: ignoreversion;           Components: fea
+Source: "..\..\dist\fea\fea.exe";  DestDir: "C:\Program Files (x86)\CFD FEA Service\fea"; Flags: ignoreversion skipifsourcedoesntexist;                                 Components: fea
+Source: "..\..\dist\fea\*";        DestDir: "C:\Program Files (x86)\CFD FEA Service\fea"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Components: fea
+Source: "..\xml\GUIsetup-fea.xml";  DestDir: "C:\Program Files (x86)\CFD FEA Service\fea"; DestName: "GUIsetup.xml"; Flags: ignoreversion skipifsourcedoesntexist;       Components: fea
+Source: "..\LOGO.png";          DestDir: "C:\Program Files (x86)\CFD FEA Service\fea"; DestName: "LOGO.png"; Flags: ignoreversion skipifsourcedoesntexist;           Components: fea
 
 [Icons]
 ;Name: "{autodesktop}\HVACFlow"; Filename: "C:\Program Files (x86)\CFD FEA Service\HVACFlow\HVACFlow.exe"; Tasks: desktopicon

@@ -26,6 +26,34 @@ a = Analysis(['../../src/xmlreader.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
+
+# ── Qt de-duplication ─────────────────────────────────────────────────────
+# The conda build environment (pythonocc-core and its dependencies) can ship
+# its own Qt runtime under Library\bin and Library\plugins. If those DLLs end
+# up in the bundle they get loaded instead of the ones PySide6 was compiled
+# against, and QtWidgets then fails at import with
+#   "DLL load failed while importing QtWidgets: procedure not found"
+# Keep only the Qt runtime that ships inside PySide6 itself.
+import os as _os
+
+
+def _foreign_qt(entry):
+    dest = (entry[0] or '').lower()
+    src = (entry[1] or '').lower()
+    name = _os.path.basename(dest)
+    if (name.startswith('qt6') or name.startswith('qt5')) and 'pyside6' not in src:
+        return True
+    if '\\library\\plugins\\' in src or '/library/plugins/' in src:
+        return True
+    return False
+
+
+_dropped = [b for b in a.binaries if _foreign_qt(b)]
+for _b in _dropped:
+    print('[spec] dropping non-PySide6 Qt binary: %s  <-  %s' % (_b[0], _b[1]))
+print('[spec] dropped %d non-PySide6 Qt binaries' % len(_dropped))
+a.binaries = [b for b in a.binaries if not _foreign_qt(b)]
+
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
