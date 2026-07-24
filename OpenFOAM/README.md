@@ -14,3 +14,7 @@ Usage (see the script header for the full documentation and options):
 ```bash
 python3 cgns2foam.py mesh.cgns -o case/constant/polyMesh
 ```
+
+---
+
+Part of the [CloudHPC](https://github.com/CFD-FEA-SERVICE/CloudHPC) repository.

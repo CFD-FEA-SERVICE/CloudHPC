@@ -10,3 +10,7 @@ Open-source versions of the execution scripts used on the cloudHPC cluster to ru
 | `fds6.7.4` | FDS 6.7.4 | Bash script that sources the FDS environment (`FDS6VARS.sh`), normalises input file names (`.FDS` → `.fds`), sets `ulimit`, and launches the FDS run |
 
 Both scripts are released under GPLv3 (see headers).
+
+---
+
+Part of the [CloudHPC](https://github.com/CFD-FEA-SERVICE/CloudHPC) repository.

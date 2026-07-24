@@ -10,3 +10,7 @@ Recommended, cloudHPC-ready input templates for the most common solvers availabl
 | `code-aster/` | code_aster | `export` (job/export definition), `input.comm` (command file skeleton), `base-stage1` |
 
 Copy the relevant template into your case, adapt it to your model, then upload the case (see `exampleCloudHPC/` for complete working examples).
+
+---
+
+Part of the [CloudHPC](https://github.com/CFD-FEA-SERVICE/CloudHPC) repository.

@@ -12,3 +12,7 @@ The script assumes the input mesh is already composed of simple element types (t
 Recommended workflow (OpenFOAM.com v2406+): add a `cellDecomposer` entry to `system/controlDict` under `functions` (see the script header for the complete snippet), run the decomposition, then convert the decomposed region.
 
 See also `OpenFOAM/cgns2foam.py` in this repository for the opposite conversion (CGNS → OpenFOAM).
+
+---
+
+Part of the [CloudHPC](https://github.com/CFD-FEA-SERVICE/CloudHPC) repository.

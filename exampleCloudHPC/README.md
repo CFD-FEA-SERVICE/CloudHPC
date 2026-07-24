@@ -11,3 +11,7 @@ Complete example cases, one per solver, that can be uploaded and run as-is on th
 | `flange-ca136/` | code_aster 13.6 | Flange FEM analysis (`fem.comm`, `mesh.med`, `export`, `base-stage1`) |
 | `motorBike-of12/` | OpenFOAM 12 | Classic motorBike external aerodynamics tutorial (`0/`, `constant/`, `system/`, `Allrun`/`Allclean`) |
 | `python3.12/` | Python 3.12 | Minimal Python job: `script.py` + `requirements.txt` showing how to run generic Python workloads |
+
+---
+
+Part of the [CloudHPC](https://github.com/CFD-FEA-SERVICE/CloudHPC) repository.

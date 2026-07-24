@@ -11,3 +11,7 @@ Python scripts and plugins for the [Salome](https://www.salome-platform.org/) pl
 | `tenuFemPreprocessing.py` | FEM pre-processing script (generated with Salome's dump-python functionality, Salome v9.4.0) for structural analyses |
 
 To use a script inside Salome: `File → Load Script...` (or add it to your Salome plugins folder for the plugins).
+
+---
+
+Part of the [CloudHPC](https://github.com/CFD-FEA-SERVICE/CloudHPC) repository.

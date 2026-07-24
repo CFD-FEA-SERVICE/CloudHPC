@@ -11,4 +11,16 @@ Working clients for the cloudHPC **REST API**: upload files, choose solver/scrip
 | `cloudHPCexec.ps1` | PowerShell client for Windows |
 | `cloudHPCexec-1.1/` | Debian packaging tree (`DEBIAN/`, `usr/`) used to build the installable `.deb` of the Bash client |
 
-Pre-built packages are published in the repository [releases](https://github.com/CFD-FEA-SERVICE/CloudHPC/releases).
+The Debian package is built automatically by the
+[`build-deb.yml`](../.github/workflows/build-deb.yml) workflow from the
+`cloudHPCexec-1.1/` tree and published as `cloudHPCexec.Ubuntu.deb` on the
+[releases](https://github.com/CFD-FEA-SERVICE/CloudHPC/releases) page:
+
+```bash
+sudo dpkg -i cloudHPCexec.Ubuntu.deb
+cloudHPCexec -help
+```
+
+---
+
+Part of the [CloudHPC](https://github.com/CFD-FEA-SERVICE/CloudHPC) repository.

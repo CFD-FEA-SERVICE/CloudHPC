@@ -15,3 +15,7 @@ cd readthedocs
 mkdocs serve      # live preview at http://127.0.0.1:8000
 mkdocs build      # static site in site/
 ```
+
+---
+
+Part of the [CloudHPC](https://github.com/CFD-FEA-SERVICE/CloudHPC) repository.

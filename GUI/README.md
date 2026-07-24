@@ -1,96 +1,93 @@
-# Merged Project — STEP Manager + XML GUI
+# GUI — cloudHPC desktop pre-processing tools
 
-## Structure
+XML-driven desktop applications used to set up a simulation and submit it to the
+cloudHPC platform. A single engine reads an XML *setup* file and generates the
+whole interface from it — tabs, fields, dropdowns, repeatable blocks — so every
+tool (bcSnappy, carParks, turboApp, envyFlow, fea, ...) is the **same program**
+driven by a different configuration file in [`xml/`](xml/).
 
-```
-merged_project/
-├── xmlreader.py               ← MAIN ENTRY POINT (start here)
-├── step_surface_selector.py   ← STEP tool (PyQt5)
-├── xmlreader.py               ← XML GUI engine (Tkinter)
-├── GUI_drawer.py              ← XML GUI widget builder (patched)
-├── GUI_logic.py
-├── IO_service.py
-├── data_singleton.py
-├── tools.py
-├── utils.py
-├── CADvista.py
-├── GUIsetup*.xml              ← XML config files (choose one at launch)
-├── stl_bridge.json            ← auto-created at runtime (do not edit)
-└── LOGO.png
-```
+The interface also embeds a **STEP/CAD viewer** (OpenCASCADE via pythonocc):
+import a CAD model, group its surfaces, export one STL per group, and reference
+those groups directly from the simulation parameters.
 
-## Requirements
+## Folder layout
 
-```bash
-pip install pythonocc-core PyQt5 numpy-stl Pillow pyvista pyvistaqt
-```
+| Folder | Content |
+|---|---|
+| [`src/`](src/) | Python sources — `xmlreader.py` is the single entry point |
+| [`xml/`](xml/) | `GUIsetup-<tool>.xml` — one configuration per tool |
+| [`build/`](build/) | PyInstaller specs, Inno Setup script and local build helper for the Windows installer |
+| `requirements.txt` | Python dependencies (see the note on pythonocc-core inside) |
+| `LOGO.png` | Logo installed next to each tool |
 
-> For PyQt5 xcb issues on Linux:
-> ```bash
-> pip uninstall PyQt5 PyQt5-Qt5 PyQt5-sip -y && pip install PyQt5
-> export QT_QPA_PLATFORM=xcb
-> ```
+## Installation and launch
 
-## Launch
+### Windows
 
-```bash
-python xmlreader.py                          # prompts for XML setup file if GUIsetup.xml is absent
-python xmlreader.py GUIsetup-carParks.xml    # open a specific setup file directly
-```
+Download `CFS_cloudHPC_tools-installer-0.1.exe` from the
+[releases](https://github.com/CFD-FEA-SERVICE/CloudHPC/releases) and pick the
+tools you want during setup. Each one is installed with its own `GUIsetup.xml`
+and can be started from its shortcut.
 
-This starts **two windows**:
+### Linux / from sources
 
-| Window | Toolkit | Purpose |
-|---|---|---|
-| STEP Surface Selector | PyQt5 | Import STEP, assign surfaces to groups, export STL |
-| XML Parameter GUI | Tkinter | Fill simulation parameters, reference STL files |
-
-## Workflow
-
-1. **Open a STEP file** in the STEP tool (`Import STEP`)
-2. **Create surface groups** and assign faces to them
-3. **Export STL** (`File > Export STL...`) — choose output folder and resolution
-   - STL files are written to the chosen folder
-   - The file paths are automatically written to `stl_bridge.json`
-4. **Switch to the XML GUI** window
-5. In any `type="file"` field, click **"Import from STEP tool"**
-   - The files from the last STEP export are loaded automatically
-   - Only files matching the field's expected extensions (e.g. `stl,vtk`) are imported
-6. Fill remaining parameters and **Save As...** to produce the output XML
-
-## How the bridge works
-
-`stl_bridge.json` is a simple JSON file:
-```json
-{
-  "stl_files": [
-    "/path/to/group_A.stl",
-    "/path/to/group_B.stl"
-  ]
-}
-```
-
-- Written by `step_surface_selector.py` after each STL export
-- Read by the patched `handle_file_type` in `GUI_drawer.py` when the user
-  clicks "Import from STEP tool"
-- Cleared at launch so stale paths from a previous session are never imported
-
-## Running tools independently
-
-Both tools still work standalone:
+`pythonocc-core` is only distributed on conda-forge (not on PyPI), so a conda
+environment is the supported way to run from sources:
 
 ```bash
-# STEP tool only
-python step_surface_selector.py [file.step]
+conda create -n cloudhpc-gui python=3.11
+conda activate cloudhpc-gui
+conda install -c conda-forge pythonocc-core
+pip install -r requirements.txt
 
-# XML GUI only
-python xmlreader.py
+# Qt 6.5+ on Linux also needs:
+sudo apt install libxcb-cursor0
 ```
 
-## GEO requirements (optional)
+Then launch the engine with the setup file of the tool you want:
 
-The `type="CAD"` element can declare requirements that must be satisfied
-before `File > Save As...` will export:
+```bash
+python src/xmlreader.py xml/GUIsetup-carParks.xml
+python src/xmlreader.py            # no argument → file picker (or GUIsetup.xml next to the script)
+```
+
+The setup file can also be given through the `GUISETUP_FILE` environment
+variable. Without `pythonocc-core` the rest of the interface still works; only
+the CAD tab shows an "unavailable" placeholder.
+
+## Using the interface
+
+The window is organised in tabs, generated from the setup file. The navigation
+arrows move between tabs; `Run on Cloud` submits the job with the selected vCPU
+count; `File > Save As...` writes the output XML and the attachments.
+
+In a **CAD tab** you can import a STEP file, select surfaces (in the viewport or
+in the surface list), assign them to named **groups**, place a probe point and
+tune the STL export refinement. On save, one STL per group is written to an
+`attachments/` folder next to the output XML, together with the probe point in
+VTK format. The full CAD session (groups, colours, hidden faces, path of the
+STEP file) is embedded directly inside the output XML as base64-encoded JSON, so
+there is no separate session file to keep track of — reopening that XML restores
+the whole session, provided the STEP file is still at its original path.
+
+## Writing a setup file
+
+On top of the basic types (`string`, `int`, `float`, `dropdown`, `file`,
+`image`, `software`, `frame`), the engine understands the following.
+
+### `type="CAD"` — embed the CAD tool
+
+```xml
+<Geometry type="frame">
+    <CADdumb type="CAD">step</CADdumb>
+</Geometry>
+```
+
+The tab takes the name of the parent `frame` (**Geometry** here); the name of
+the `CAD` element itself is a placeholder and is never displayed. On export it
+holds the encoded CAD session.
+
+Two optional requirements can be declared, and are enforced when saving:
 
 ```xml
 <Geometry type="frame">
@@ -102,10 +99,53 @@ before `File > Save As...` will export:
 </Geometry>
 ```
 
-- `probePoint="true"` — the probe point must be placed before export
-- each `<option>` — a mandatory group: pre-created (empty) in the Groups
-  panel at startup, shown in red until at least one face is assigned,
-  and required to be non-empty at export time
+* `probePoint="true"` — a probe point must be placed before the export
+* each `<option>` — a **mandatory group**: created empty at startup, shown in
+  red in the Groups panel until at least one face is assigned to it
 
-Both are optional: a plain `<CADdumb type="CAD">step</CADdumb>` behaves
-exactly as before, with no requirements enforced.
+Without these attributes no requirement is enforced.
+
+### `type="CADgroups-dropdown"` — pick a CAD group
+
+```xml
+<BoundaryConditions type="frame">
+    <inletPatch type="CADgroups-dropdown">pick a group</inletPatch>
+</BoundaryConditions>
+```
+
+A dropdown listing the groups currently defined in the CAD tab, refreshed
+automatically whenever they change. The text content is only a placeholder: it
+never appears among the options nor in the output. The selected group name is
+exported like any other value: `<inletPatch>wall</inletPatch>`.
+
+### `type="multiple"` — repeatable blocks
+
+A block of fields that the user can add and remove several times (patches,
+refinement regions, ...). The `specifyName` attribute controls how each
+instance is named:
+
+| `specifyName` | Behaviour |
+|---|---|
+| `"false"` *(default)* | No name field. Instances are named automatically: `patch_cloudHPC_1`, `patch_cloudHPC_2`, ... |
+| `"true"` | A free-text field lets the user name each instance; default names are `patch_1`, `patch_2`, ... |
+| `"CADgroups"` | The name is chosen from a dropdown of the CAD groups. The instance picker keeps its fixed labels (`patch_1`, `patch_2`, ...) while the assigned group is what gets exported |
+
+```xml
+<patch type="multiple" specifyName="CADgroups">
+    <velocity   type="float">0.0</velocity>
+    <turbulence type="float">0.05</turbulence>
+</patch>
+```
+
+The prefix comes from the tag name, so `<refinement type="multiple">` produces
+`refinement_1`, `refinement_2`, and so on.
+
+## Building the Windows installer
+
+Handled automatically by the
+[`cloudhpc-tools.yml`](../.github/workflows/cloudhpc-tools.yml) workflow on every
+push touching `GUI/`. To reproduce it locally see [`build/README.md`](build/).
+
+---
+
+Part of the [CloudHPC](https://github.com/CFD-FEA-SERVICE/CloudHPC) repository.
