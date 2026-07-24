@@ -17,7 +17,9 @@ since there's only ever one X connection and one event loop to reason about.
 """
 import os, sys, copy
 
-os.environ["QT_QPA_PLATFORM"] = "xcb"  # must be set before QApplication is created
+# xmlreader.py — replace the unconditional line with:
+if sys.platform.startswith("linux"):
+    os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
 
 from PySide6.QtWidgets import QApplication, QFileDialog
 
