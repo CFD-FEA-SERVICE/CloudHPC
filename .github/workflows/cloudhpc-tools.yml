@@ -78,10 +78,29 @@ jobs:
           Write-Host "OCC libraries present:" $found[0].FullName
 
       - name: Build installer (Inno Setup)
-        uses: Minionguyjpro/Inno-Setup-Action@v1.2.7
-        with:
-          path: GUI/build/InnoSetup_eseguibile_unico.iss
-          options: /dMyAppName=CFS_cloudHPC_tools
+        run: |
+          # ISCC is called directly instead of through a JS action: with the
+          # OCC libraries bundled the compiler prints one line per packed file,
+          # which overflowed the Node child_process stdout buffer of the action
+          # ("stdout maxBuffer length exceeded"). /Q also keeps the log short.
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            Write-Host "Inno Setup not found on the runner, installing it..."
+            choco install innosetup -y --no-progress
+          }
+          if (-not (Test-Path $iscc)) { throw "ISCC.exe not found at $iscc" }
+          & $iscc /Q /DMyAppName=CFS_cloudHPC_tools "GUI\build\InnoSetup_eseguibile_unico.iss"
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE" }
+
+      - name: Check installer size
+        run: |
+          $exe = Get-Item "GUI\build\Output\$env:INSTALLER_NAME"
+          $mb  = [math]::Round($exe.Length / 1MB, 1)
+          Write-Host "Installer: $($exe.FullName) — $mb MB"
+          # GitHub refuses release assets larger than 2 GB.
+          if ($exe.Length -ge 2GB) {
+            throw "Installer is $mb MB: too large to be published as a release asset."
+          }
 
       - name: Publish installer to release
         env:
