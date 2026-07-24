@@ -67,11 +67,7 @@ jobs:
 
       - name: Build applications (PyInstaller)
         run: |
-          # TEMPORANEO: si compila solo bcSnappy per accorciare i tempi di test.
-          # Per tornare a compilare tutto basta scommentare la riga sotto
-          # ed eliminare quella con la sola bcSnappy.
-          # $apps = @("bcSnappy", "carParks", "turboApp", "envyFlow", "fea")
-          $apps = @("bcSnappy")
+          $apps = @("bcSnappy", "carParks", "turboApp", "envyFlow", "fea")
           foreach ($app in $apps) {
             Write-Host "=== Building $app ==="
             python -m PyInstaller --noconfirm "GUI\build\SPEC\$app.spec"
