@@ -17,7 +17,7 @@ The whole content of this repository is under the [GPLv3 license](https://github
 | [`GUI/`](GUI/) | cloudHPC tools to perform simulations [![APP generation](https://github.com/CFD-FEA-SERVICE/CloudHPC/actions/workflows/cloudhpc-tools.yml/badge.svg)](https://github.com/CFD-FEA-SERVICE/CloudHPC/actions/workflows/cloudhpc-tools.yml) |
 | [`OpenFOAM/`](OpenFOAM/) | Mesh conversion utility: CGNS → OpenFOAM polyMesh |
 | [`SU2/`](SU2/) | Mesh conversion utility: OpenFOAM polyMesh → CGNS (for SU2) |
-| [`exampleAPI/`](exampleAPI/) | `cloudHPCexec` clients (Bash, Python/Tkinter, PowerShell) and Debian packaging — submit simulations from your terminal via the cloudHPC REST API |
+| [`exampleAPI/`](exampleAPI/) | `cloudHPCexec` clients (Bash, Python/Tkinter, PowerShell) and Debian packaging — submit simulations from your terminal via the cloudHPC REST API [![Build cloudHPCexec .deb](https://github.com/CFD-FEA-SERVICE/CloudHPC/actions/workflows/build-deb.yml/badge.svg)](https://github.com/CFD-FEA-SERVICE/CloudHPC/actions/workflows/build-deb.yml) |
 | [`exampleCloudHPC/`](exampleCloudHPC/) | Ready-to-run example cases: SU2 (ONERA M6), FDS 6.7.5 (staircase fire), code_aster (flange), OpenFOAM (motorBike), Python 3.12 |
 | [`readthedocs/`](readthedocs/) | MkDocs sources of the online documentation published at https://docs.cloudhpc.cloud |
 | [`salome/`](salome/) | Salome plugins and scripts (bounding-box cell estimation, geometry plugins, FEM pre-processing) |
