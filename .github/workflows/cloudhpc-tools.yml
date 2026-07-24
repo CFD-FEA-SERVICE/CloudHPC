@@ -1,14 +1,17 @@
 name: APP generation
 
-# Builds the Windows executables of the XML-GUI tools with PyInstaller,
-# packs them into a single Inno Setup installer, and publishes it on the
-# v0.1-alpha release — replacing any previous installer asset.
+# Builds the Windows executables of the XML-GUI tools with PyInstaller
+# inside a conda (Miniforge) environment so that pythonocc-core — which is
+# only distributed on conda-forge, not PyPI — gets frozen into the apps and
+# the CAD/GEO tab works in the installed tools. The apps are then packed
+# into a single Inno Setup installer published on the v0.1-alpha release,
+# replacing any previous installer asset.
 #
 # Repository layout expected:
 #   GUI/src/            python sources (xmlreader.py entry point)
 #   GUI/xml/            GUIsetup-<app>.xml configuration files
-#   GUI/build/SPEC/     one PyInstaller .spec per app
-#   GUI/build/          InnoSetup_eseguibile_unico.iss, icon.ico
+#   GUI/build/SPEC/     one PyInstaller .spec per app (with collect_all('OCC'))
+#   GUI/build/          InnoSetup_eseguibile_unico.iss, SPEC/icon.ico
 #   GUI/LOGO.png        logo installed next to each app
 #   GUI/requirements.txt
 
@@ -30,22 +33,32 @@ jobs:
   windows-installer:
     runs-on: windows-latest
 
+    # All run steps use pwsh: setup-miniconda configures the PowerShell
+    # profile so the 'buildenv' conda environment is auto-activated.
+    defaults:
+      run:
+        shell: pwsh
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up Miniforge (conda)
+        uses: conda-incubator/setup-miniconda@v3
         with:
+          miniforge-version: latest
+          activate-environment: buildenv
           python-version: '3.11'
+          auto-activate-base: false
 
-      - name: Install dependencies
+      - name: Install dependencies (conda + pip)
         run: |
+          conda install -y -c conda-forge pythonocc-core
           python -m pip install --upgrade pip
           pip install -r GUI/requirements.txt pyinstaller
+          python -c "import OCC.Core.STEPControl; print('pythonocc-core OK')"
 
       - name: Build applications (PyInstaller)
-        shell: pwsh
         run: |
           $apps = @("bcSnappy", "carParks", "turboApp", "envyFlow", "fea")
           foreach ($app in $apps) {
@@ -54,6 +67,16 @@ jobs:
             if ($LASTEXITCODE -ne 0) { exit 1 }
           }
 
+      - name: Verify OCC libraries were frozen in
+        run: |
+          # A working OCC bundle must contain the OpenCASCADE TKernel DLL.
+          $found = Get-ChildItem -Path "dist\bcSnappy" -Recurse -Filter "TKernel*.dll"
+          if (-not $found) {
+            Write-Host "ERROR: OpenCASCADE DLLs missing from the frozen app" -ForegroundColor Red
+            exit 1
+          }
+          Write-Host "OCC libraries present:" $found[0].FullName
+
       - name: Build installer (Inno Setup)
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.7
         with:
@@ -61,7 +84,6 @@ jobs:
           options: /dMyAppName=CFS_cloudHPC_tools
 
       - name: Publish installer to release
-        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

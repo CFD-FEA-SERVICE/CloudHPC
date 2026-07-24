@@ -18,11 +18,8 @@ Session files (.sss) are JSON and store:
 
 import sys
 import os
-
-# step_surface_selector.py — same change to its line 21:
 if sys.platform.startswith("linux"):
     os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
-
 import json
 from collections import defaultdict
 

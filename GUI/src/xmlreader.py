@@ -17,7 +17,9 @@ since there's only ever one X connection and one event loop to reason about.
 """
 import os, sys, copy
 
-# xmlreader.py — replace the unconditional line with:
+# X11-only: on Linux force the xcb plugin (part of the BadWindow fixes).
+# On Windows/macOS Qt must pick its native platform plugin — forcing xcb
+# there makes every frozen app abort with "no Qt platform plugin".
 if sys.platform.startswith("linux"):
     os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
 

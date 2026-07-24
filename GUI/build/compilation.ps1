@@ -3,11 +3,28 @@
 #
 #     powershell -ExecutionPolicy Bypass -File GUI\build\compilation.ps1
 #
+# IMPORTANT: must be run inside a conda environment with pythonocc-core,
+# because OCC (the CAD/GEO tab) is only distributed on conda-forge, not PyPI.
+# One-time environment setup:
+#
+#     conda create -n cloudhpc-build python=3.11
+#     conda activate cloudhpc-build
+#     conda install -c conda-forge pythonocc-core
+#     pip install -r GUI\requirements.txt pyinstaller
+#
 # Builds each enabled app from its PyInstaller spec (GUI\build\SPEC\*.spec).
 # Output goes to .\dist\<appName>\ at the repository root — the same layout
 # the GitHub Actions workflow and GUI\build\InnoSetup_eseguibile_unico.iss
-# expect. Requires: pip install -r GUI\requirements.txt pyinstaller
+# expect.
 # ─────────────────────────────────────────────────────────────────────────────
+
+# Guard: refuse to build OCC-less apps by mistake
+python -c "import OCC.Core.STEPControl" 2>$null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: pythonocc-core not importable in this environment." -ForegroundColor Red
+    Write-Host "Activate the conda build env first (see header of this script)." -ForegroundColor Red
+    exit 1
+}
 
 $apps = @(
     # "HVACFlow",
