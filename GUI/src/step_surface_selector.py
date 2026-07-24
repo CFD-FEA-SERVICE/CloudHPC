@@ -46,7 +46,6 @@ from OCC.Core.TopAbs import TopAbs_SOLID
 from OCC.Core.BRep import BRep_Tool
 from OCC.Core.V3d import V3d_DirectionalLight
 import math
-import subprocess
 import random
 import struct
 from OCC.Display.backend import load_backend
@@ -67,27 +66,6 @@ from PySide6.QtCore import Qt, QSize, QRect, QPoint, QTimer, Signal
 from PySide6.QtWidgets import QRubberBand
 from PySide6.QtGui import QAction, QColor, QIcon, QFont, QPainter, QPen, QBrush, QPolygon
 
-
-# Pointer file: a tiny text file next to the scripts that holds the path
-# to the current stl_bridge.json. Since the STEP tool and XML GUI run as
-# separate processes, env vars don't cross — the pointer file does.
-_BRIDGE_PTR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            'stl_bridge.ptr')
-
-def _write_stl_bridge(out_dir: str, stl_paths: list, vtk_path: str | None = None):
-    """Write stl_bridge.json into out_dir and record its path in stl_bridge.ptr."""
-    bridge_path = os.path.join(out_dir, 'stl_bridge.json')
-    payload = {'stl_files': stl_paths}
-    if vtk_path:
-        payload['vtk_files'] = [vtk_path]
-    try:
-        with open(bridge_path, 'w', encoding='utf-8') as _f:
-            json.dump(payload, _f, indent=2)
-        # Write pointer so the XML GUI subprocess can locate the bridge
-        with open(_BRIDGE_PTR, 'w', encoding='utf-8') as _pf:
-            _pf.write(bridge_path)
-    except Exception as _e:
-        print(f'Bridge write failed: {_e}')
 
 
 # ctypes helper used for OCC view unprojection
@@ -1667,8 +1645,6 @@ class SurfaceSelectorWidget(QWidget):
                 vtk_msg = f"\nProbe VTK export failed: {e}"
                 exported_vtk = None
 
-        # Write bridge file (same folder as STLs)
-        _write_stl_bridge(out_dir, exported, exported_vtk)
         self._last_export_paths = exported
 
         if errors:
@@ -1680,31 +1656,17 @@ class SurfaceSelectorWidget(QWidget):
                                 "No STL files were produced. Check your groups.")
             return
 
-        # ── Notify / launch XML GUI ───────────────────────────────────
-        self.exported.emit(exported)
-        if self._is_embedded:
-            # Embedded: signal is enough — XML GUI is already open
-            QMessageBox.information(self, 'Exported',
-                f'Exported {len(exported)} group(s) to:\n{out_dir}\n\n'
-                'File fields in other tabs have been updated.')
-        else:
-            _launch_xml_gui()
-            self.window().close()
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# XML GUI launcher
-# ─────────────────────────────────────────────────────────────────────────────
-
-def _launch_xml_gui():
-    """Spawn xmlreader.py as a subprocess. The bridge pointer file tells it
-    where to find the exported files, which are auto-loaded on startup."""
-    script = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                          'xmlreader.py')
-    env = os.environ.copy()
-    # Pass the bridge pointer path so xmlreader finds the right bridge file
-    env['BRIDGE_PTR_FILE'] = _BRIDGE_PTR
-    subprocess.Popen([sys.executable, script], env=env)
+        # ── Notify the XML GUI (same process) ─────────────────────────
+        # The signal carries every exported file, probe VTK included: the
+        # in-process signal replaced the old stl_bridge.json/.ptr files,
+        # which existed only for the two-process (main.py) era.
+        _all_exported = list(exported)
+        if exported_vtk:
+            _all_exported.append(exported_vtk)
+        self.exported.emit(_all_exported)
+        QMessageBox.information(self, 'Exported',
+            f'Exported {len(exported)} group(s) to:\n{out_dir}\n\n'
+            'File fields in other tabs have been updated.')
 
 
 # ─────────────────────────────────────────────────────────────────────────────

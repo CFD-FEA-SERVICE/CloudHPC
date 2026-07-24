@@ -30,9 +30,11 @@ environment variable → `GUIsetup.xml` next to the script → file picker.
 python step_surface_selector.py [model.step]
 ```
 
-At runtime the CAD tool writes `stl_bridge.json` / `stl_bridge.ptr` next to the
-sources to advertise the files it exported; they are recreated at every launch
-and can be deleted safely.
+When files are exported from the CAD tab, the paths are handed to the rest of
+the interface through an in-process Qt signal — no files are written next to
+the sources. (`stl_bridge.json` / `stl_bridge.ptr`, used by the old
+two-process architecture, are gone; if you find them in an old working copy
+they can be deleted safely.)
 
 ---
 

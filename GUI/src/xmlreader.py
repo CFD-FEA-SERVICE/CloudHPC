@@ -46,19 +46,6 @@ XML_representation = []
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Bridge files (written by step_surface_selector.py's "Export to CAE", read by
-# the CADgroups-dropdown / file-type widgets). Default to the script folder.
-os.environ.setdefault("STL_BRIDGE_FILE", os.path.join(_SCRIPT_DIR, "stl_bridge.json"))
-os.environ.setdefault("BRIDGE_PTR_FILE", os.path.join(_SCRIPT_DIR, "stl_bridge.ptr"))
-
-# Clear any stale bridge pointer left over from a previous run, so we never
-# accidentally pick up file lists that no longer correspond to anything.
-try:
-    os.remove(os.environ["BRIDGE_PTR_FILE"])
-except FileNotFoundError:
-    pass
-
-
 def _resolve_guisetup_path() -> str:
     """Determine which GUIsetup XML file to load, in priority order:
     1. A CLI argument (python xmlreader.py path/to/file.xml)

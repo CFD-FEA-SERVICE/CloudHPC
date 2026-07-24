@@ -33,51 +33,6 @@ except ImportError:
 data_instance = DataSingleton.get_instance()
 
 # ── STL bridge ────────────────────────────────────────────────────────────────
-_BRIDGE_PTR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'stl_bridge.ptr')
-
-def _read_stl_bridge() -> dict:
-    """Return {'stl_files': [...], 'vtk_files': [...]} from the bridge JSON.
-    Location is read from stl_bridge.ptr (written by the STEP tool).
-    Falls back to stl_bridge.json next to this file if the pointer is absent.
-    """
-    bridge = None
-    try:
-        with open(_BRIDGE_PTR, 'r', encoding='utf-8') as f:
-            bridge = f.read().strip()
-    except Exception:
-        pass
-    if not bridge or not os.path.isfile(bridge):
-        bridge = os.environ.get(
-            'STL_BRIDGE_FILE',
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), 'stl_bridge.json')
-        )
-    try:
-        with open(bridge, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        return {'stl_files': data.get('stl_files', []), 'vtk_files': data.get('vtk_files', [])}
-    except Exception:
-        return {'stl_files': [], 'vtk_files': []}
-
-# ── _FrameProxy ───────────────────────────────────────────────────────────────
-class _FrameProxy(QWidget):
-    """QWidget with .frame_name and a QGridLayout helper."""
-    def __init__(self, frame_name, parent=None):
-        super().__init__(parent)
-        self.frame_name = frame_name
-        self._gl = QGridLayout(self)
-        self._gl.setAlignment(Qt.AlignTop | Qt.AlignLeft)
-        self._row = 0
-
-    def grid_layout(self):
-        return self._gl
-
-    def next_row(self):
-        r = self._row; self._row += 1; return r
-
-    def set_row(self, r):
-        self._row = max(self._row, r + 1)
-
-
 # ── _notify_attachment_dropdowns (stub — kept for compatibility) ──────────────
 _attachment_refresh_callbacks = []
 
@@ -286,10 +241,11 @@ def handle_cad_type(frame, tab_widget, element, mandatory_groups=None):
         widget = StepEmbedWidget()
         widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        # When STL files are exported, auto-import them into every file field
+        # When files are exported (STL groups + probe VTK), auto-import them
+        # into every file field. The signal payload carries the full list —
+        # no bridge file involved (single-process architecture).
         def _on_exported(paths):
-            bd = _read_stl_bridge()
-            all_p = bd["stl_files"] + bd["vtk_files"]
+            all_p = list(paths)
             for frame_val in data_instance.all_data.values():
                 for field_val in frame_val.get("data", {}).values():
                     if isinstance(field_val, dict):
@@ -377,13 +333,6 @@ def handle_file_type(root, XML_representation, qt_string_map, frame, sub_frame,
     # Helper: always returns the live dict
     def _files():
         return data_instance.all_data[fframe]["data"][fname]
-
-    # Auto-load from bridge
-    _bridge = _read_stl_bridge()
-    for _p in _bridge["stl_files"] + _bridge["vtk_files"]:
-        if os.path.splitext(_p)[1].lstrip('.').lower() in [e.lower() for e in extensions]:
-            if _p not in _files():
-                _files()[_p] = None
 
     options = []
     j = index + 1

@@ -9,7 +9,7 @@
 ; #######################################################
 
 #define MyAppName "CFS_cloudHPC_tools"
-#define MyAppVersion "0.1"
+#define MyAppVersion "1.0"
 #define MyAppPublisher "CFD FEA SERVICE SRL"
 #define MyAppURL "https://cloudhpc.cloud"
 ;#define MyAppExeName MyAppName + ".exe"
