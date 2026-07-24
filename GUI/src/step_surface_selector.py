@@ -489,8 +489,13 @@ class SurfaceSelectorWidget(QWidget):
             self._display = self.canvas._display
             self.canvas.mouseReleaseEvent = self._on_canvas_click
             self._apply_display_mode_to_all()
-        except Exception as e:
-            print(f'OCC InitDriver failed: {e}')
+            self._occ_init_error = None
+        except Exception:
+            import traceback
+            # Keep the full traceback: in the frozen (windowed) app stdout is
+            # invisible, so this text is what the error dialog shows the user.
+            self._occ_init_error = traceback.format_exc()
+            print(f'OCC InitDriver failed:\n{self._occ_init_error}')
 
     def closeEvent(self, event=None):
         """Tear down the OCC context/view before Qt destroys the native window.
@@ -565,8 +570,11 @@ class SurfaceSelectorWidget(QWidget):
         if not hasattr(self, '_display') or self._display is None:
             self._init_occ_driver_now()
         if self._display is None:
-            QMessageBox.critical(self, "Error",
-                                 "Failed to initialise the 3D viewer.")
+            detail = getattr(self, '_occ_init_error', None) or 'unknown error'
+            QMessageBox.critical(
+                self, "Error",
+                "Failed to initialise the 3D viewer.\n\n"
+                "Technical detail (please report this):\n" + detail)
             return
         self.canvas.mouseReleaseEvent = self._on_canvas_click
 
