@@ -52,10 +52,18 @@ jobs:
 
       - name: Install dependencies (conda + pip)
         run: |
-          conda install -y -c conda-forge pythonocc-core
+          # PySide6 arriva da conda-forge INSIEME a pythonocc-core, così l'intero
+          # runtime Qt proviene da un'unica fonte (Library\bin) ed è coerente.
+          # Mischiare il wheel pip di PySide6 (che porta un SUO Qt dentro
+          # site-packages) con l'ambiente conda produce due Qt diversi nel
+          # bundle e l'errore all'avvio:
+          #   "DLL load failed while importing QtWidgets: procedura non trovata"
+          # pip resta solo per i pacchetti senza Qt.
+          conda install -y -c conda-forge pythonocc-core pyside6
           python -m pip install --upgrade pip
-          pip install -r GUI/requirements.txt pyinstaller
-          python -c "import OCC.Core.STEPControl; print('pythonocc-core OK')"
+          pip install pyvista pyvistaqt requests pyinstaller
+          conda list | Select-String -Pattern "pyside6|shiboken|qt-main|qt6-main|pythonocc|occt"
+          python -c "import PySide6, OCC.Core.STEPControl; print('PySide6', PySide6.__version__, '+ OCC OK')"
 
       - name: Build applications (PyInstaller)
         run: |
@@ -70,17 +78,52 @@ jobs:
             if ($LASTEXITCODE -ne 0) { exit 1 }
           }
 
+      - name: Diagnose bundled libraries
+        run: |
+          # Se persiste "DLL load failed while importing QtWidgets" serve sapere
+          # quali librerie sono finite nel bundle e da dove.
+          $ps6 = python -c "import PySide6,os;print(os.path.dirname(PySide6.__file__))"
+          Write-Host "PySide6 dir: $ps6"
+          python -c "import PySide6;print('PySide6', PySide6.__version__)"
+          python -c "import shiboken6;print('shiboken6', shiboken6.__version__)"
+
+          Write-Host "`n--- Qt6*.dll nel bundle ---"
+          Get-ChildItem "dist\bcSnappy" -Recurse -Filter "Qt6*.dll" |
+            Select-Object Name, @{n='FileVersion';e={$_.VersionInfo.FileVersion}} |
+            Format-Table -AutoSize | Out-String -Width 200 | Write-Host
+
+          # Ogni libreria del bundle che esiste anche in PySide6 deve essere
+          # IDENTICA a quella di PySide6: se differisce, e' la causa del crash.
+          Write-Host "--- collisioni residue con PySide6 ---"
+          $ps6libs = @{}
+          Get-ChildItem $ps6 -Recurse -Include *.dll,*.pyd | ForEach-Object {
+            $ps6libs[$_.Name.ToLower()] = $_
+          }
+          $mismatch = 0
+          Get-ChildItem "dist\bcSnappy" -Recurse -Include *.dll,*.pyd | ForEach-Object {
+            $ref = $ps6libs[$_.Name.ToLower()]
+            if ($ref -and $ref.Length -ne $_.Length) {
+              Write-Host ("MISMATCH {0}: bundle {1} B, PySide6 {2} B" -f $_.Name, $_.Length, $ref.Length)
+              $mismatch++
+            }
+          }
+          Write-Host "collisioni residue: $mismatch"
+
+          Write-Host "`n--- runtime MSVC nel bundle ---"
+          Get-ChildItem "dist\bcSnappy" -Recurse -Include vcruntime*.dll,msvcp*.dll |
+            Select-Object Name, @{n='FileVersion';e={$_.VersionInfo.FileVersion}} |
+            Format-Table -AutoSize | Out-String -Width 200 | Write-Host
+
       - name: List bundled Qt libraries (diagnostic)
         run: |
-          # In caso di "DLL load failed while importing QtWidgets" serve sapere
-          # quali Qt sono finite nel bundle e con che versione.
+          # Tutte le Qt6*.dll nel bundle devono avere la STESSA FileVersion
+          # (fonte unica conda-forge). Versioni diverse = conflitto residuo.
           Get-ChildItem -Path "dist\bcSnappy" -Recurse -Filter "Qt6*.dll" |
             Select-Object Name, @{n='MB';e={[math]::Round($_.Length/1MB,1)}},
                           @{n='FileVersion';e={$_.VersionInfo.FileVersion}} |
             Format-Table -AutoSize | Out-String -Width 200 | Write-Host
-          $shib = Get-ChildItem -Path "dist\bcSnappy" -Recurse -Filter "shiboken6*" |
-                  Select-Object -First 1
-          if ($shib) { Write-Host "shiboken6: $($shib.Name)" }
+          Get-ChildItem -Path "dist\bcSnappy" -Recurse -Filter "shiboken6*" |
+            ForEach-Object { Write-Host "shiboken6: $($_.FullName)" }
 
       - name: Verify OCC libraries were frozen in
         run: |

@@ -27,32 +27,54 @@ a = Analysis(['../../src/xmlreader.py'],
              cipher=block_cipher,
              noarchive=False)
 
-# ── Qt de-duplication ─────────────────────────────────────────────────────
-# The conda build environment (pythonocc-core and its dependencies) can ship
-# its own Qt runtime under Library\bin and Library\plugins. If those DLLs end
-# up in the bundle they get loaded instead of the ones PySide6 was compiled
-# against, and QtWidgets then fails at import with
-#   "DLL load failed while importing QtWidgets: procedure not found"
-# Keep only the Qt runtime that ships inside PySide6 itself.
+
+# ── Qt / shared-library de-duplication ────────────────────────────────────
+# "DLL load failed while importing QtWidgets: procedure not found" (Windows
+# error 127) does not mean a missing DLL: it means the WRONG one was loaded.
+# The conda build environment (pythonocc-core -> occt and its dependencies)
+# ships its own copies of libraries that PySide6 also bundles — not only
+# Qt6*.dll but also freetype, zlib, pcre2, harfbuzz, icu, zstd, brotli, ...
+# PyInstaller flattens everything into one folder, so whichever copy wins the
+# name collision is the one Qt gets. If it is the conda build, the exported
+# symbols do not match and QtWidgets fails to import.
+#
+# Rule: for every file name that PySide6 provides, keep ONLY the PySide6 copy.
 import os as _os
 
+try:
+    import PySide6 as _ps6
+    _ps6_dir = _os.path.dirname(_ps6.__file__)
+    _ps6_libs = set()
+    for _root, _dirs, _files in _os.walk(_ps6_dir):
+        for _f in _files:
+            if _f.lower().endswith(('.dll', '.pyd')):
+                _ps6_libs.add(_f.lower())
+except Exception as _e:      # PySide6 missing: nothing to de-duplicate
+    _ps6_libs = set()
+    print('[spec] WARNING: PySide6 not importable (%s)' % _e)
 
-def _foreign_qt(entry):
-    dest = (entry[0] or '').lower()
-    src = (entry[1] or '').lower()
-    name = _os.path.basename(dest)
-    if (name.startswith('qt6') or name.startswith('qt5')) and 'pyside6' not in src:
+
+def _foreign_copy(entry):
+    """True if this binary shadows a library PySide6 ships, but comes from
+    somewhere else (typically the conda env)."""
+    dest = (entry[0] or '')
+    src = (entry[1] or '')
+    name = _os.path.basename(dest).lower()
+    if name in _ps6_libs and 'pyside6' not in src.lower():
         return True
-    if '\\library\\plugins\\' in src or '/library/plugins/' in src:
+    # conda keeps its Qt plugins under Library\plugins
+    low = src.lower()
+    if '\\library\\plugins\\' in low or '/library/plugins/' in low:
         return True
     return False
 
 
-_dropped = [b for b in a.binaries if _foreign_qt(b)]
+_dropped = [b for b in a.binaries if _foreign_copy(b)]
 for _b in _dropped:
-    print('[spec] dropping non-PySide6 Qt binary: %s  <-  %s' % (_b[0], _b[1]))
-print('[spec] dropped %d non-PySide6 Qt binaries' % len(_dropped))
-a.binaries = [b for b in a.binaries if not _foreign_qt(b)]
+    print('[spec] dropping shadowing copy: %s  <-  %s' % (_b[0], _b[1]))
+print('[spec] PySide6 provides %d libraries; dropped %d shadowing copies'
+      % (len(_ps6_libs), len(_dropped)))
+a.binaries = [b for b in a.binaries if not _foreign_copy(b)]
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
