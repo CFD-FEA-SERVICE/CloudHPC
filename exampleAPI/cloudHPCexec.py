@@ -167,7 +167,6 @@ if ( apikey.get() != "" ):
 
    #BOTTONE
    def select(APIKEY, DOTENV_FILE, cpu, ram, script, path):
-       print(APIKEY)
        print(cpu)
        print(ram)
        print(script)
