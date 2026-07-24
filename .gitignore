@@ -1,1 +1,6 @@
 readthedocs/site
+__pycache__/
+*.pyc
+dist/
+GUI/build/Output/
+GUI/src/GUIsetup.xml

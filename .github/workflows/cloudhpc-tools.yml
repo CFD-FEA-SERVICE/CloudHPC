@@ -1,0 +1,82 @@
+name: APP generation
+
+# Builds the Windows executables of the XML-GUI tools with PyInstaller,
+# packs them into a single Inno Setup installer, and publishes it on the
+# v0.1-alpha release — replacing any previous installer asset.
+#
+# Repository layout expected:
+#   GUI/src/            python sources (xmlreader.py entry point)
+#   GUI/xml/            GUIsetup-<app>.xml configuration files
+#   GUI/build/SPEC/     one PyInstaller .spec per app
+#   GUI/build/          InnoSetup_eseguibile_unico.iss, icon.ico
+#   GUI/LOGO.png        logo installed next to each app
+#   GUI/requirements.txt
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths:
+      - 'GUI/**'
+
+permissions:
+  contents: write   # required to delete/upload release assets
+
+env:
+  RELEASE_TAG: v0.1-alpha
+  INSTALLER_NAME: CFS_cloudHPC_tools-installer-0.1.exe
+
+jobs:
+  windows-installer:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r GUI/requirements.txt pyinstaller
+
+      - name: Build applications (PyInstaller)
+        shell: pwsh
+        run: |
+          $apps = @("bcSnappy", "carParks", "turboApp", "envyFlow", "fea")
+          foreach ($app in $apps) {
+            Write-Host "=== Building $app ==="
+            python -m PyInstaller --noconfirm "GUI\build\SPEC\$app.spec"
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+          }
+
+      - name: Build installer (Inno Setup)
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.7
+        with:
+          path: GUI/build/InnoSetup_eseguibile_unico.iss
+          options: /dMyAppName=CFS_cloudHPC_tools
+
+      - name: Publish installer to release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Remove any previous installer asset(s), then upload the new one.
+          $assets = gh release view "$env:RELEASE_TAG" --json assets --jq '.assets[].name'
+          foreach ($a in $assets) {
+            if ($a -like "*installer-*.exe") {
+              Write-Host "Deleting previous asset: $a"
+              gh release delete-asset "$env:RELEASE_TAG" "$a" --yes
+            }
+          }
+          gh release upload "$env:RELEASE_TAG" "GUI/build/Output/$env:INSTALLER_NAME"
+
+      - name: Keep installer as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CFS_cloudHPC_tools-installer
+          path: GUI/build/Output/${{ env.INSTALLER_NAME }}
