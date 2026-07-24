@@ -57,9 +57,43 @@ class CloudHPCApp:
         self.button_exit = ttk.Button(self.master, text='Exit', command=self.master.destroy).grid(row=1, column=1, padx=5, pady=5)
 
     def prepare_api_key_file(self):
-        os.makedirs(os.path.dirname(self.dotenv_file), exist_ok=True)
-        if not os.path.exists(self.dotenv_file):
-            with open(self.dotenv_file, 'w'): pass
+        """Create the API-key directory and file with owner-only permissions.
+
+        The API key grants full access to the cloudHPC account (submit jobs,
+        download results, incur billing), so it must never be readable by
+        other users of the machine — a real concern on shared workstations
+        and HPC login nodes. os.makedirs()/open() honour the umask, which on
+        the common default (022) would leave the key world-readable, hence
+        the explicit chmod. On Windows POSIX modes are not enforced and
+        chmod is effectively a no-op.
+        """
+        key_dir = os.path.dirname(self.dotenv_file)
+        os.makedirs(key_dir, exist_ok=True)
+        try:
+            os.chmod(key_dir, 0o700)
+        except OSError:
+            pass
+
+        if os.path.exists(self.dotenv_file):
+            try:
+                os.chmod(self.dotenv_file, 0o600)
+            except OSError:
+                pass
+        else:
+            # created directly with the right mode: no window during which
+            # the file exists with permissive rights
+            os.close(os.open(self.dotenv_file, os.O_CREAT | os.O_WRONLY, 0o600))
+
+    def _write_api_key(self):
+        """Write the API key, keeping the file readable by its owner only."""
+        fd = os.open(self.dotenv_file,
+                     os.O_CREAT | os.O_WRONLY | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, 'w') as file:
+            file.write(self.apikey.get())
+        try:
+            os.chmod(self.dotenv_file, 0o600)   # in case it already existed
+        except OSError:
+            pass
 
     def read_api_key(self):
         with open(self.dotenv_file, 'r') as file:
@@ -68,8 +102,7 @@ class CloudHPCApp:
             self.apikey.set(apikey_file)
 
     def save_api_key(self):
-        with open(self.dotenv_file, 'w') as file:
-            file.write(self.apikey.get())
+        self._write_api_key()
 
     def change_api_key(self):
         self.read_api_key()
@@ -166,8 +199,7 @@ class CloudHPCApp:
         tk.messagebox.showerror( title="Execution impossible", message="No input file - check your data!" )
 
     def save_api_key_to_file(self):
-        with open(self.dotenv_file, 'w') as file:
-            file.write(self.apikey.get())
+        self._write_api_key()
 
     def compress_folder(self):
         folder_path = self.exported_folder_path
@@ -323,9 +355,33 @@ class CloudHPCDownload:
         self.button_exit = ttk.Button(self.master, text='Exit', command=self.master.destroy).grid(row=1, column=1, padx=5, pady=5)
 
     def prepare_api_key_file(self):
-        os.makedirs(os.path.dirname(self.dotenv_file), exist_ok=True)
-        if not os.path.exists(self.dotenv_file):
-            with open(self.dotenv_file, 'w'): pass
+        """Create the API-key directory and file with owner-only permissions.
+        See CloudHPCApp.prepare_api_key_file for the rationale."""
+        key_dir = os.path.dirname(self.dotenv_file)
+        os.makedirs(key_dir, exist_ok=True)
+        try:
+            os.chmod(key_dir, 0o700)
+        except OSError:
+            pass
+
+        if os.path.exists(self.dotenv_file):
+            try:
+                os.chmod(self.dotenv_file, 0o600)
+            except OSError:
+                pass
+        else:
+            os.close(os.open(self.dotenv_file, os.O_CREAT | os.O_WRONLY, 0o600))
+
+    def _write_api_key(self):
+        """Write the API key, keeping the file readable by its owner only."""
+        fd = os.open(self.dotenv_file,
+                     os.O_CREAT | os.O_WRONLY | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, 'w') as file:
+            file.write(self.apikey.get())
+        try:
+            os.chmod(self.dotenv_file, 0o600)
+        except OSError:
+            pass
 
     def read_api_key(self):
         with open(self.dotenv_file, 'r') as file:
@@ -334,8 +390,7 @@ class CloudHPCDownload:
             self.apikey.set(apikey_file)
 
     def save_api_key(self):
-        with open(self.dotenv_file, 'w') as file:
-            file.write(self.apikey.get())
+        self._write_api_key()
 
     def validate_api_key(self):
         # Make a request to validate the API key
@@ -388,8 +443,7 @@ class CloudHPCDownload:
         self.download_compress_file()
 
     def save_api_key_to_file(self):
-        with open(self.dotenv_file, 'w') as file:
-            file.write(self.apikey.get())
+        self._write_api_key()
 
     def download_compress_file(self):
         folder_path = self.exported_folder_path

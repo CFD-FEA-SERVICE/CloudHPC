@@ -169,8 +169,8 @@ then
    apikey=$(head -n 1 $HOME/.cfscloudhpc/apikey) #TODO da cancellare
 else
    read -e -p "Insert APIKEY: " apikey
-   mkdir -p $HOME/.cfscloudhpc
-   echo "$apikey" > $HOME/.cfscloudhpc/apikey
+   mkdir -p -m 700 "$HOME/.cfscloudhpc"
+   umask 077; echo "$apikey" > "$HOME/.cfscloudhpc/apikey"
    echo "New APIKEY saved. Re-execute cloudHPCexec to run analysis using this new APIKEY."
    exit
 fi

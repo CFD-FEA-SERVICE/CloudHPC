@@ -11,14 +11,52 @@ import os, json
 #os.system("pip install touch requests")
 import touch, requests, shutil
 
-try:
-    os.makedirs( os.path.join( str( Path.home() ) , '.cfscloudhpc') )
-except FileExistsError:
-    pass
+APIKEY_DIR  = os.path.join( str( Path.home() ) , '.cfscloudhpc' )
+DOTENV_FILE = os.path.join( APIKEY_DIR, 'apikey' )
 
-DOTENV_FILE = os.path.join( str( Path.home() ) , '.cfscloudhpc', 'apikey' )
-file = open( DOTENV_FILE,'a+')
-file.close()
+
+def secure_apikey_storage():
+    """Create the API-key directory and file with owner-only permissions.
+
+    The API key grants full access to the cloudHPC account (submit jobs,
+    download results, incur billing), so it must never be readable by other
+    users of the machine — a real concern on shared workstations and HPC
+    login nodes. os.makedirs()/open() honour the umask, which on the common
+    default (022) would leave the key world-readable, hence the explicit
+    chmod. On Windows POSIX modes are not enforced and chmod is a no-op.
+    """
+    try:
+        os.makedirs( APIKEY_DIR )
+    except FileExistsError:
+        pass
+    try:
+        os.chmod( APIKEY_DIR, 0o700 )
+    except OSError:
+        pass
+
+    if os.path.exists( DOTENV_FILE ):
+        try:
+            os.chmod( DOTENV_FILE, 0o600 )
+        except OSError:
+            pass
+    else:
+        # created directly with the right mode: no window during which the
+        # file exists with permissive rights
+        os.close( os.open( DOTENV_FILE, os.O_CREAT | os.O_WRONLY, 0o600 ) )
+
+
+def write_apikey(apikey):
+    """Store the API key, keeping the file readable by its owner only."""
+    fd = os.open( DOTENV_FILE, os.O_CREAT | os.O_WRONLY | os.O_TRUNC, 0o600 )
+    with os.fdopen( fd, 'w' ) as env_file:
+        env_file.write( apikey )
+    try:
+        os.chmod( DOTENV_FILE, 0o600 )   # in case the file already existed
+    except OSError:
+        pass
+
+
+secure_apikey_storage()
 
 # window definition
 root = tk.Tk()
@@ -136,9 +174,7 @@ if ( apikey.get() != "" ):
        print(path)
 
        #Saving APIKEY
-       env_file = open( DOTENV_FILE , 'w')
-       env_file.write( APIKEY )
-       env_file.close()
+       write_apikey( APIKEY )
 
        #Compress folder
        shutil.make_archive( os.path.join( os.path.join( path, os.pardir ) , "simulation" ), 'zip', path )
@@ -187,9 +223,7 @@ if ( apikey.get() != "" ):
 else:
    def saveapikey(APIKEY):
        #Saving APIKEY
-       env_file = open( DOTENV_FILE , 'w')
-       env_file.write( APIKEY )
-       env_file.close()
+       write_apikey( APIKEY )
 
    ButtonOK   = ttk.Button(root, text='Save', command=lambda: saveapikey( apikey.get().rstrip("\n") ) ).place( x=window_width-160, y=window_height-30 )
    ButtonEXIT = ttk.Button(root, text='Exit', command=root.destroy).place( x=window_width-80, y=window_height-30 )
