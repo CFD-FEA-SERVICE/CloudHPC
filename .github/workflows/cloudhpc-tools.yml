@@ -27,7 +27,6 @@ permissions:
 
 env:
   RELEASE_TAG: v0.1-alpha
-  INSTALLER_NAME: CFS_cloudHPC_tools-installer-1.0.exe
 
 jobs:
   windows-installer:
@@ -92,9 +91,19 @@ jobs:
           & $iscc /Q /DMyAppName=CFS_cloudHPC_tools "GUI\build\InnoSetup_eseguibile_unico.iss"
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE" }
 
+          # The file name comes from OutputBaseFilename in the .iss (it embeds
+          # MyAppVersion), so it is discovered here rather than hardcoded: a
+          # version bump in the .iss must not break the workflow.
+          $exe = Get-ChildItem "GUI\build\Output\*.exe" |
+                 Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $exe) { throw "Inno Setup produced no .exe in GUI\build\Output" }
+          "INSTALLER_PATH=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "INSTALLER_NAME=$($exe.Name)"     | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "Installer produced: $($exe.Name)"
+
       - name: Check installer size
         run: |
-          $exe = Get-Item "GUI\build\Output\$env:INSTALLER_NAME"
+          $exe = Get-Item "$env:INSTALLER_PATH"
           $mb  = [math]::Round($exe.Length / 1MB, 1)
           Write-Host "Installer: $($exe.FullName) — $mb MB"
           # GitHub refuses release assets larger than 2 GB.
@@ -114,10 +123,10 @@ jobs:
               gh release delete-asset "$env:RELEASE_TAG" "$a" --yes
             }
           }
-          gh release upload "$env:RELEASE_TAG" "GUI/build/Output/$env:INSTALLER_NAME"
+          gh release upload "$env:RELEASE_TAG" "$env:INSTALLER_PATH"
 
       - name: Keep installer as workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: CFS_cloudHPC_tools-installer
-          path: GUI/build/Output/${{ env.INSTALLER_NAME }}
+          path: ${{ env.INSTALLER_PATH }}
