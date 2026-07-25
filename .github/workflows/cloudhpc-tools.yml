@@ -125,6 +125,15 @@ jobs:
           Get-ChildItem -Path "dist\bcSnappy" -Recurse -Filter "shiboken6*" |
             ForEach-Object { Write-Host "shiboken6: $($_.FullName)" }
 
+      - name: Verify no opengl32.dll stub was bundled
+        run: |
+          $stub = Get-ChildItem -Path "dist\bcSnappy" -Recurse -Filter "opengl32.dll"
+          if ($stub) {
+            Write-Host "ERROR: opengl32.dll stub still present:" $stub[0].FullName -ForegroundColor Red
+            exit 1
+          }
+          Write-Host "OK: no bundled opengl32.dll (system driver will be used)"
+
       - name: Verify OCC libraries were frozen in
         run: |
           # A working OCC bundle must contain the OpenCASCADE TKernel DLL.

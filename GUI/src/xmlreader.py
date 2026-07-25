@@ -24,6 +24,18 @@ if sys.platform.startswith("linux"):
     os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
 
 from PySide6.QtWidgets import QApplication, QFileDialog
+from PySide6.QtCore import Qt, QCoreApplication
+
+# Force the REAL desktop OpenGL driver (the machine's GPU ICD), not Qt's
+# software rasteriser or ANGLE. In a frozen app Qt may otherwise pick a
+# bundled software/ANGLE GL, which exposes no pixel format compatible with
+# what OpenCASCADE requests -> "SetPixelFormat failed. Error code: 0" when
+# the 3D viewer initialises. Must be set before any QApplication is created.
+QCoreApplication.setAttribute(Qt.AA_UseDesktopOpenGL, True)
+try:
+    QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts, True)
+except Exception:
+    pass
 
 from IO_service import create_xml_datastructure
 from GUI_drawer import (

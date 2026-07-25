@@ -76,6 +76,32 @@ print('[spec] PySide6 provides %d libraries; dropped %d shadowing copies'
       % (len(_ps6_libs), len(_dropped)))
 a.binaries = [b for b in a.binaries if not _foreign_copy(b)]
 
+
+# ── Remove bundled software / ANGLE OpenGL ────────────────────────────────
+# A frozen PySide6 app ships opengl32sw.dll (Mesa software GL) and the ANGLE
+# trio (libEGL/libGLESv2/d3dcompiler_47). If loaded, OpenCASCADE queries THAT
+# GL instead of the machine's real GPU driver and finds no usable pixel
+# format -> "SetPixelFormat failed. Error code: 0". Dropping them forces the
+# system's real opengl32.dll (the vendor ICD) to be used.
+import os as _os
+# opengl32.dll bundled by PyInstaller is a ~40 KB stub/loader shim, NOT
+# the real driver: because the app dir is searched before System32, it
+# shadows the genuine C:\\Windows\\System32\\opengl32.dll and OCC ends up
+# with no usable pixel format. Removing it lets the real GL load.
+_gl_block = {"opengl32.dll", "opengl32sw.dll", "libegl.dll",
+             "libglesv2.dll", "d3dcompiler_47.dll"}
+
+
+def _is_soft_gl(entry):
+    return _os.path.basename((entry[0] or "").lower()) in _gl_block
+
+
+_dropped_gl = [b for b in a.binaries if _is_soft_gl(b)]
+for _b in _dropped_gl:
+    print("[spec] dropping software/ANGLE GL: %s" % _b[0])
+print("[spec] dropped %d software/ANGLE GL binaries" % len(_dropped_gl))
+a.binaries = [b for b in a.binaries if not _is_soft_gl(b)]
+
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
