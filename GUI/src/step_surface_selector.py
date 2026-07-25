@@ -329,6 +329,7 @@ class SurfaceSelectorWidget(QWidget):
         lay.setContentsMargins(0, 0, 0, 0)
         lay.addWidget(splitter, stretch=1)
 
+        self._canvas_splitter = splitter   # kept for canvas recreation on retry
         self.canvas = qtViewer3d(self)
         self.canvas.setMinimumWidth(200)
         self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -478,24 +479,71 @@ class SurfaceSelectorWidget(QWidget):
             return
         self._init_occ_driver_now()
 
+    def _recreate_canvas(self):
+        """Replace the viewport widget with a brand-new one (fresh HWND).
+
+        On Windows, SetPixelFormat can only be called ONCE per window handle:
+        if a previous InitDriver() attempt set the pixel format and then
+        failed later (context creation, GLEW, ...), any retry on the same
+        widget dies with 'SetPixelFormat failed. Error code: 0'. A retry is
+        only meaningful on a freshly created native window."""
+        idx = self._canvas_splitter.indexOf(self.canvas)
+        old_canvas = self.canvas
+        self.canvas = qtViewer3d(self)
+        self.canvas.setMinimumWidth(200)
+        self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._canvas_splitter.insertWidget(max(idx, 0), self.canvas)
+        old_canvas.setParent(None)
+        old_canvas.deleteLater()
+        QApplication.processEvents()
+
     def _init_occ_driver_now(self):
         """Actually initialise the OCC driver, synchronously. Safe to call
         any time the widget is already known to be visible/mapped (e.g. from
         a user-triggered action like opening a STEP file)."""
         if getattr(self, '_display', None) is not None:
             return
+        if getattr(self, '_occ_init_errors', None):
+            # A previous attempt already failed on this widget: its window
+            # handle may have a pixel format set, so retry on a fresh one.
+            self._recreate_canvas()
         try:
             self.canvas.InitDriver()
             self._display = self.canvas._display
             self.canvas.mouseReleaseEvent = self._on_canvas_click
             self._apply_display_mode_to_all()
-            self._occ_init_error = None
         except Exception:
             import traceback
-            # Keep the full traceback: in the frozen (windowed) app stdout is
-            # invisible, so this text is what the error dialog shows the user.
-            self._occ_init_error = traceback.format_exc()
-            print(f'OCC InitDriver failed:\n{self._occ_init_error}')
+            if not hasattr(self, '_occ_init_errors'):
+                self._occ_init_errors = []
+            self._occ_init_errors.append(traceback.format_exc())
+            self._log_occ_error()
+
+    def _log_occ_error(self):
+        """Print every attempt's traceback and append it to a log file in a
+        user-writable location (stdout is invisible in the windowed app)."""
+        text = ('\n' + '=' * 70 + '\n').join(
+            f'--- OCC init attempt {i + 1} ---\n{t}'
+            for i, t in enumerate(self._occ_init_errors))
+        print(f'OCC InitDriver failed:\n{text}')
+        try:
+            base = os.environ.get('LOCALAPPDATA') or os.path.expanduser('~')
+            log_dir = os.path.join(base, 'cloudHPC')
+            os.makedirs(log_dir, exist_ok=True)
+            with open(os.path.join(log_dir, 'occ_init.log'), 'w',
+                      encoding='utf-8') as f:
+                f.write(text)
+        except OSError:
+            pass
+
+    @property
+    def _occ_init_error(self):
+        """Full history of init failures (all attempts), for the dialog."""
+        errs = getattr(self, '_occ_init_errors', None)
+        if not errs:
+            return None
+        return ('\n' + '=' * 70 + '\n').join(
+            f'--- attempt {i + 1} ---\n{t}' for i, t in enumerate(errs))
 
     def closeEvent(self, event=None):
         """Tear down the OCC context/view before Qt destroys the native window.
