@@ -33,6 +33,26 @@ except ImportError:
 data_instance = DataSingleton.get_instance()
 
 # ── STL bridge ────────────────────────────────────────────────────────────────
+# ── _FrameProxy ───────────────────────────────────────────────────────────────
+class _FrameProxy(QWidget):
+    """QWidget with .frame_name and a QGridLayout helper."""
+    def __init__(self, frame_name, parent=None):
+        super().__init__(parent)
+        self.frame_name = frame_name
+        self._gl = QGridLayout(self)
+        self._gl.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        self._row = 0
+
+    def grid_layout(self):
+        return self._gl
+
+    def next_row(self):
+        r = self._row; self._row += 1; return r
+
+    def set_row(self, r):
+        self._row = max(self._row, r + 1)
+
+
 # ── _notify_attachment_dropdowns (stub — kept for compatibility) ──────────────
 _attachment_refresh_callbacks = []
 
