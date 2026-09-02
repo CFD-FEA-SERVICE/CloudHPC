@@ -222,13 +222,18 @@ def _export_cad_fields(folder_path: str):
 
     # Export STL files for every group (these stay as real files — only the
     # session/group metadata gets embedded into the XML, not the geometry).
+    # Honour the user's "Output STL refinement" settings; fall back to the
+    # function defaults only if they aren't present on the widget.
+    import math as _math
     from step_surface_selector import shapes_to_stl
+    _lin = getattr(step_widget, '_stl_linear_deflection', 0.1)
+    _ang = _math.radians(getattr(step_widget, '_stl_angular_deflection_deg', 10.0))
     for group_name, indices in step_widget.groups.items():
         shapes = [step_widget.faces[i] for i in indices]
         safe = ''.join(c if c.isalnum() or c in '-_' else '_' for c in group_name)
         stl_path = os.path.join(att_dir, f'{safe}.stl')
         try:
-            shapes_to_stl(shapes, stl_path)
+            shapes_to_stl(shapes, stl_path, _lin, _ang)
         except Exception as e:
             print(f'STL export failed for {group_name}: {e}')
 
@@ -245,6 +250,9 @@ def _export_cad_fields(folder_path: str):
         'group_transparency': step_widget._group_transparency,
         'groups': step_widget.groups,
         'hidden_indices': sorted(step_widget.hidden_indices),
+        # Length-unit handling applied at import time
+        'unit_source': getattr(step_widget, '_unit_source', 'unknown'),
+        'unit_factor_applied': getattr(step_widget, '_unit_factor_applied', 1.0),
     }
 
     # Base64-encode the JSON so it's always XML-safe (no quotes, angle
@@ -559,7 +567,11 @@ def _restore_cad_fields():
     step_path = session.get('step_path')
     if step_path and step_path != step_widget.step_path:
         if os.path.isfile(step_path):
-            step_widget._open_file(step_path)
+            # Re-apply the unit factor the user chose originally, without
+            # prompting again.
+            step_widget._open_file(
+                step_path,
+                forced_unit_factor=session.get('unit_factor_applied', 1.0))
         else:
             print(f"Saved STEP path not found, cannot auto-restore: {step_path}")
             return

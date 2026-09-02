@@ -25,6 +25,7 @@ from collections import defaultdict
 
 # ── OCC imports ───────────────────────────────────────────────────────────────
 from OCC.Core.STEPControl import STEPControl_Reader
+from OCC.Core.Interface import Interface_Static
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.BRepClass3d import BRepClass3d_SolidClassifier
 from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
@@ -78,28 +79,140 @@ def ctypes_float(v=0.0):
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
+# OCC's STEP reader converts the model INTO the unit named by
+# "xstep.cascade.unit" (default "MM") regardless of the file's own unit. That
+# silent conversion is what made a metre-declared file come in 1000x too big.
+# Mapping the detected file unit to the matching OCC target unit makes the read
+# a no-op scale, so the in-memory coordinates equal the file's own numbers and
+# the interactive rescale below behaves predictably. Units OCC understands here:
+# M, MM, CM, KM, INCH (others fall back to metres — see load_step).
+_OCC_CASCADE_UNIT = {
+    'm': 'M', 'mm': 'MM', 'cm': 'CM', 'km': 'KM',
+    'inch': 'INCH', 'inches': 'INCH',
+}
+
+
 def load_step(path: str):
+    # Read the model in its OWN declared unit (no hidden scaling). If the unit
+    # is one OCC can target directly, keep it native; otherwise let OCC convert
+    # to metres, which is a sensible default for an unrecognised unit.
+    label, _factor = detect_step_length_unit(path)
+    Interface_Static.SetCVal("xstep.cascade.unit",
+                             _OCC_CASCADE_UNIT.get(label, "M"))
+
     reader = STEPControl_Reader()
     status = reader.ReadFile(path)
     if status != 1:
         raise RuntimeError(f"Cannot read STEP file: {path}")
     reader.TransferRoots()
     root = reader.OneShape()
-    faces = []
-    explorer = TopExp_Explorer(root, TopAbs_FACE)
-    while explorer.More():
-        faces.append(explorer.Current())
-        explorer.Next()
+    faces = _faces_of(root)
     return root, faces
 
 
-def shapes_to_stl(shapes, output_path: str, linear_deflection=0.1, angular_deflection=0.5):
+def _faces_of(shape):
+    """Return the list of TopoDS_Face of a shape."""
+    faces = []
+    explorer = TopExp_Explorer(shape, TopAbs_FACE)
+    while explorer.More():
+        faces.append(explorer.Current())
+        explorer.Next()
+    return faces
+
+
+# ── STEP length-unit detection ────────────────────────────────────────────────
+# Metric SI prefixes -> factor to convert that unit into METRES.
+_SI_PREFIX_TO_M = {
+    '.MILLI.': 1e-3, '.CENTI.': 1e-2, '.DECI.': 1e-1,
+    '.DECA.': 1e1,  '.HECTO.': 1e2, '.KILO.': 1e3,
+    '.MICRO.': 1e-6, '.NANO.': 1e-9,
+    None: 1.0,      # bare .METRE. with no prefix
+}
+# Common non-SI length units (declared via CONVERSION_BASED_UNIT) -> factor to m.
+_NAMED_UNIT_TO_M = {
+    'INCH': 0.0254, 'INCHES': 0.0254, "'": 0.3048, 'FOOT': 0.3048,
+    'FEET': 0.3048, 'FT': 0.3048, 'MIL': 2.54e-5,
+    'MILLIMETRE': 1e-3, 'MILLIMETER': 1e-3, 'CENTIMETRE': 1e-2,
+    'CENTIMETER': 1e-2, 'METRE': 1.0, 'METER': 1.0,
+}
+
+
+def detect_step_length_unit(path: str):
+    """Parse the STEP header and return (unit_label, factor_to_metres).
+
+    factor_to_metres is the number you multiply the model's coordinates by to
+    obtain metres (e.g. mm -> 0.001, already-metres -> 1.0). Returns
+    ('unknown', None) if the unit cannot be determined, so the caller can
+    choose not to auto-rescale rather than guess.
+    """
+    import re
+    try:
+        with open(path, 'r', errors='ignore') as f:
+            head = f.read(300000)   # units are declared very early in the file
+    except OSError:
+        return ('unknown', None)
+
+    # 1. SI length unit: LENGTH_UNIT ( ) ... SI_UNIT ( <prefix|$> , .METRE. )
+    #    STEP allows arbitrary whitespace around every token, so tolerate it.
+    m = re.search(
+        r'LENGTH_UNIT\s*\(\s*\)[^;]*?SI_UNIT\s*\(\s*(\.[A-Z]+\.|\$)\s*,'
+        r'\s*\.METRE\.\s*\)',
+        head)
+    if m:
+        prefix = m.group(1)
+        prefix = None if prefix == '$' else prefix
+        factor = _SI_PREFIX_TO_M.get(prefix)
+        if factor is not None:
+            label = 'm' if prefix is None else prefix.strip('.').lower() + 'metre'
+            # nicer common labels
+            label = {'millimetre': 'mm', 'centimetre': 'cm',
+                     'kilometre': 'km', 'm': 'm'}.get(label, label)
+            return (label, factor)
+
+    # 2. Non-SI length unit declared by name via CONVERSION_BASED_UNIT
+    for name in re.findall(r"CONVERSION_BASED_UNIT\s*\(\s*'([^']+)'", head):
+        key = name.strip().upper()
+        if key in _NAMED_UNIT_TO_M:
+            return (name.strip().lower(), _NAMED_UNIT_TO_M[key])
+
+    return ('unknown', None)
+
+
+def rescale_shape(shape, factor):
+    """Return a uniformly scaled copy of shape about the origin."""
+    trsf = gp_Trsf()
+    trsf.SetScale(gp_Pnt(0.0, 0.0, 0.0), factor)
+    return BRepBuilderAPI_Transform(shape, trsf, True).Shape()
+
+
+def _shape_max_dim(shape):
+    """Largest side of the shape's axis-aligned bounding box (model units)."""
+    try:
+        box = Bnd_Box()
+        brepbndlib.Add(shape, box)
+        xmin, ymin, zmin, xmax, ymax, zmax = box.Get()
+        return max(xmax - xmin, ymax - ymin, zmax - zmin)
+    except Exception:
+        return float('nan')
+
+
+def shapes_to_stl(shapes, output_path: str, linear_deflection=0.01,
+                  angular_deflection=0.5):
+    """Tessellate shapes to a binary STL.
+
+    linear_deflection is RELATIVE: it's a fraction of each edge's size rather
+    than an absolute distance, so the same value gives an equivalent mesh
+    quality regardless of the model's units or overall size (0.01 = 1%).
+    angular_deflection is in radians.
+    """
     builder = BRep_Builder()
     compound = TopoDS_Compound()
     builder.MakeCompound(compound)
     for s in shapes:
         builder.Add(compound, s)
-    mesh = BRepMesh_IncrementalMesh(compound, linear_deflection, False, angular_deflection)
+    # 3rd arg True => linear deflection is relative to edge length.
+    mesh = BRepMesh_IncrementalMesh(compound, linear_deflection, True,
+                                    angular_deflection)
     mesh.Perform()
     writer = StlAPI_Writer()
     writer.ASCIIMode = False
@@ -194,7 +307,7 @@ class SurfaceSelectorWidget(QWidget):
         # triangles, better curvature following). angular_deflection: max
         # angle (degrees) between adjacent triangle normals (smaller = finer
         # on curved regions specifically).
-        self._stl_linear_deflection = 0.1
+        self._stl_linear_deflection = 0.01
         self._stl_angular_deflection_deg = 10.0
         # GEO-tab requirements (optional, declared in GUIsetup.xml).
         # Both default to "no requirement" so setups that don't mention
@@ -592,7 +705,74 @@ class SurfaceSelectorWidget(QWidget):
         if path:
             self._open_file(path)
 
-    def _open_file(self, path: str):
+    def _ask_scale_factor(self, unit_label, default_factor, size_now):
+        """Ask the user for the factor that converts the model into metres.
+
+        The factor box is pre-filled with the detected value when the unit is
+        recognised, else 1.0. A live preview shows the resulting largest
+        dimension. Returns the chosen factor, or None if the user cancels
+        (meaning: leave coordinates unchanged).
+        """
+        dlg = QDialog(self)
+        dlg.setWindowTitle("Scale to metres")
+        lay = QVBoxLayout(dlg)
+
+        if unit_label and unit_label != 'unknown':
+            intro = (f"The file appears to be in <b>{unit_label}</b>. "
+                     f"The factor below converts it to metres — edit it if "
+                     f"the file's declared unit is wrong.")
+        else:
+            intro = ("The file's unit could not be detected. Enter the factor "
+                     "that converts its coordinates to metres "
+                     "(1 = already metres, 0.001 = millimetres).")
+        lbl = QLabel(intro)
+        lbl.setWordWrap(True)
+        lay.addWidget(lbl)
+
+        from PySide6.QtWidgets import QFormLayout
+        form = QFormLayout()
+        spin = QDoubleSpinBox()
+        spin.setDecimals(6)
+        spin.setRange(1e-6, 1e6)
+        spin.setValue(default_factor)
+        spin.setToolTip("Multiplier applied to every coordinate. "
+                        "mm→m = 0.001, cm→m = 0.01, inch→m = 0.0254.")
+        form.addRow("Scale factor (→ m):", spin)
+        lay.addLayout(form)
+
+        import math as _m
+        preview = QLabel()
+        preview.setWordWrap(True)
+        def _update_preview(v):
+            if size_now is None or (isinstance(size_now, float) and _m.isnan(size_now)):
+                preview.setText("")
+                return
+            preview.setText(
+                f"Largest dimension as read: <b>{size_now:.4g}</b><br>"
+                f"After scaling: <b>{size_now * v:.4g} m</b>")
+        spin.valueChanged.connect(_update_preview)
+        _update_preview(spin.value())
+        lay.addWidget(preview)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.button(QDialogButtonBox.Ok).setText("Apply")
+        buttons.button(QDialogButtonBox.Cancel).setText("Leave unchanged")
+        buttons.accepted.connect(dlg.accept)
+        buttons.rejected.connect(dlg.reject)
+        lay.addWidget(buttons)
+
+        if dlg.exec_() == QDialog.Accepted:
+            return spin.value()
+        return None   # leave coordinates unchanged
+
+    def _open_file(self, path: str, forced_unit_factor=None):
+        """Open a STEP file.
+
+        forced_unit_factor: if given (from a restored session), the geometry
+        is scaled by exactly this factor with NO user prompt — so reopening a
+        saved XML reproduces the same units the user chose originally. When
+        None, the normal interactive unit check runs.
+        """
         self.status.showMessage(f"Loading {path} …")
         QApplication.processEvents()
         try:
@@ -601,6 +781,39 @@ class SurfaceSelectorWidget(QWidget):
             QMessageBox.critical(self, "Error", str(e))
             self.status.showMessage("Load failed.")
             return
+
+        # ── Length-unit / scale factor ────────────────────────────────────
+        # The simulation pipeline works in metres. Always ask the user for the
+        # factor that converts the file's coordinates into metres. If the unit
+        # is recognised from the STEP header, that factor is pre-filled (e.g.
+        # 0.001 for mm); otherwise it defaults to 1.0 for the user to edit.
+        self._unit_source = 'unknown'
+        self._unit_factor_applied = 1.0
+        unit_label, factor = detect_step_length_unit(path)
+        self._unit_source = unit_label
+        default_factor = factor if factor is not None else 1.0
+
+        if forced_unit_factor is not None:
+            # Restoring a saved session: apply the remembered factor silently.
+            applied = forced_unit_factor
+        else:
+            applied = self._ask_scale_factor(unit_label, default_factor,
+                                             _shape_max_dim(root))
+
+        if applied is not None and abs(applied - 1.0) > 1e-12:
+            try:
+                root = rescale_shape(root, applied)
+                faces = _faces_of(root)
+                self._unit_factor_applied = applied
+                self.status.showMessage(
+                    f"Scaled by factor {applied:g} (→ metres).")
+            except Exception as e:
+                QMessageBox.warning(
+                    self, "Rescale failed",
+                    f"Could not rescale the geometry, using original "
+                    f"coordinates.\n\n{e}")
+        else:
+            self._unit_factor_applied = 1.0
 
         self.step_path = path
         self.root_shape = root
@@ -1620,7 +1833,9 @@ class SurfaceSelectorWidget(QWidget):
         lay.addWidget(QLabel(
             "<b>STL export mesh refinement</b><br>"
             "Smaller values produce smaller triangles that follow the "
-            "surface curvature more closely, at the cost of larger files."
+            "surface curvature more closely, at the cost of larger files. "
+            "The linear value is <i>relative</i> (a fraction of each edge), "
+            "so it behaves the same whatever the model's size or units."
         ))
 
         from PySide6.QtWidgets import QFormLayout
@@ -1628,13 +1843,15 @@ class SurfaceSelectorWidget(QWidget):
 
         spin_lin = QDoubleSpinBox()
         spin_lin.setDecimals(4)
-        spin_lin.setRange(0.0001, 10.0)
+        spin_lin.setRange(0.0001, 1.0)
+        spin_lin.setSingleStep(0.005)
         spin_lin.setValue(self._stl_linear_deflection)
         spin_lin.setToolTip(
-            "Linear deflection: maximum distance between the mesh chord\n"
-            "and the true surface, in model units. Smaller = finer mesh."
+            "Relative linear deflection: max chord error as a fraction of\n"
+            "each edge's length (0.01 = 1%). Smaller = finer mesh.\n"
+            "Typical range 0.001 (very fine) to 0.05 (coarse)."
         )
-        form.addRow("Linear deflection:", spin_lin)
+        form.addRow("Linear deflection (relative):", spin_lin)
 
         spin_ang = QDoubleSpinBox()
         spin_ang.setDecimals(2)
