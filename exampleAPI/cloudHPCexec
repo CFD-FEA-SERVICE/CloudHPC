@@ -390,7 +390,7 @@ then
    #Removing IP_ADDRESS: it may be already present in previous connection
    ssh-keygen -f "$HOME/.ssh/known_hosts" -R $ip_address
 
-   ssh -X -o "StrictHostKeyChecking no" cloudhpc@$ip_address
+   ssh -X -o "StrictHostKeyChecking no" -p 2222 cloudhpc@$ip_address
 
    exit
 fi
