@@ -148,7 +148,7 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="api_v1_introduction">API V1 INTRODUCTION<a class="headerlink" href="#api_v1_introduction" title="Permanent link">#</a></h1>
-<p>Current API version is “1”. This number has to be replaced to every call in the API that follows. As example the following API:</p>
+<p>The current API version is “1”. Replace the version placeholder with this number in every call below. For example, the following API:</p>
 <div class="highlight"><pre><span></span><code><span class="w"> </span>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/simulation<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;api-key: {api_key}&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
@@ -160,10 +160,10 @@
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Accept: application/json&#39;</span>
 </code></pre></div>
-<p>Furthermore, every API requires an <em>{api_key}</em> that has to be provided by the user. Api_key is available in the user account page as described in the following image:</p>
+<p>In addition, every API requires your <em>{api_key}</em>. The api_key is available on the user account page, as shown in the following image:</p>
 <p><img alt="" src="../images/APIKEY.jpg" /></p>
-<p>The cloud HPC system also provide a lincense file - a JSON with username and apikey - which can be used to avoid mistakes by the user when copying and pasting its apikey.</p>
-<p>Every API has the possibility to pass the API_KEY both via the URL address or via the HEADER of a CURL call as follows:</p>
+<p>cloudHPC also provides a license file, a JSON file with your username and apikey, which avoids mistakes when copying and pasting the apikey.</p>
+<p>Every API accepts the API_KEY either in the URL or in the HEADER of the call, as follows:</p>
 <table>
 <thead>
 <tr>
@@ -182,15 +182,15 @@
 </tr>
 </tbody>
 </table>
-<p>In general it is recommendable to pass the API_KEY via the file HEADER. Please take this into consideration when using the API. Beside this guide, more details can be found at the <a href="https://cloud.cfdfeaservice.it/api/v1/explorer">following link</a>.</p>
+<p>We recommend passing the API_KEY in the HEADER. Besides this guide, more details are available at the <a href="https://cloud.cfdfeaservice.it/api/v1/explorer">following link</a>. A complete client using the API is available in the <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleAPI">exampleAPI folder</a> of our repository.</p>
 <h2 id="simulation_list">SIMULATION LIST<a class="headerlink" href="#simulation_list" title="Permanent link">#</a></h2>
-<p>Using this API call you can get a full list of all simulations launched by the user. </p>
+<p>This API call returns the full list of the simulations launched by the user.</p>
 <div class="highlight"><pre><span></span><code><span class="w">  </span>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/simulation<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;api-key: {api_key}&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Accept: application/json&#39;</span>
 </code></pre></div>
-<p>The data returned in JSON format are here described:</p>
+<p>The JSON data returned are described below:</p>
 <table>
 <thead>
 <tr>
@@ -335,14 +335,14 @@
 </tbody>
 </table>
 <h3 id="data_of_a_single_simulation">DATA OF A SINGLE SIMULATION<a class="headerlink" href="#data_of_a_single_simulation" title="Permanent link">#</a></h3>
-<p>It is obviously possible to get info about one single simulation using the ID of the simulation. Obviously return data are similar to the ones defined above.</p>
+<p>You can also get the details of a single simulation using its ID. The data returned are the same as described above.</p>
 <div class="highlight"><pre><span></span><code><span class="w">  </span>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span><span class="s1">&#39;https://cloud.cfdfeaservice.it/api/v{version}/simulation/{id} \</span>
 <span class="s1">-H &#39;</span>api-key:<span class="w"> </span><span class="o">{</span>api_key<span class="o">}</span><span class="s1">&#39; \</span>
 <span class="s1">-H &#39;</span>Accept:<span class="w"> </span>application/json<span class="err">&#39;</span><span class="w"> </span>
 </code></pre></div>
-<p>The data returned follows what expressed previously.</p>
+<p>The data returned are the same as described in the previous section.</p>
 <h2 id="post_new_simulation">POST NEW SIMULATION<a class="headerlink" href="#post_new_simulation" title="Permanent link">#</a></h2>
-<p>In order to launch a simulation you can do as follows:</p>
+<p>To launch a simulation:</p>
 <div class="highlight"><pre><span></span><code><span class="w">  </span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/simulation<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;api-key: {api_key}&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
@@ -356,9 +356,9 @@
 <span class="s1">        } </span>
 <span class="s1">}&#39;</span>
 </code></pre></div>
-<p>The response body of every call of this API is the ID of the simulation launched.</p>
+<p>The response body of this API is the ID of the launched simulation.</p>
 <h3 id="arguments_vcpu_ram_scripts">Arguments vCPU, RAM, SCRIPTs<a class="headerlink" href="#arguments_vcpu_ram_scripts" title="Permanent link">#</a></h3>
-<p>In order to retrieve the values of vCPU/RAM/SCRIPTs available to execute a simulation, it is possible to use the following API:</p>
+<p>To retrieve the vCPU/RAM/SCRIPT values available to run a simulation, use the following APIs:</p>
 <div class="highlight"><pre><span></span><code><span class="w">  </span>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/simulation/cpu<span class="w"> </span><span class="se">\</span>
 <span class="w">                         </span>-H<span class="w"> </span><span class="s2">&quot;api-key: {api_key}&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">                   </span>--header<span class="w"> </span><span class="s1">&#39;Accept: application/json&#39;</span>
@@ -371,15 +371,15 @@
 <span class="w">                         </span>-H<span class="w"> </span><span class="s2">&quot;api-key: {api_key}&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">                   </span>--header<span class="w"> </span><span class="s1">&#39;Accept: application/json&#39;</span>
 </code></pre></div>
-<p>The latest argument is the FOLDER where we want to execute the simulation. This argument can be obtained from the <a href="https://cfdfeaservice.it/wiki/cloud-hpc/#!API-v1.md#NAVIGATION">NAVIGATION IN THE STORAGE</a>, once we have uploaded at least one folder.</p>
+<p>The last argument is the FOLDER where the simulation runs. You can get it with the <a href="#navigation">storage navigation</a> API, once at least one folder has been uploaded.</p>
 <h3 id="reg_and_spot_instances">REG and SPOT instances<a class="headerlink" href="#reg_and_spot_instances" title="Permanent link">#</a></h3>
-<p>For the users which have enabled the REG/SPOT selection it is possible to determin which instance type they are using by adding the appropriate property <em><strong>nopre</strong></em> in the "data" section of the json input.</p>
+<p>Users with the REG/SPOT selection enabled can choose the instance type by adding the <em><strong>nopre</strong></em> property to the "data" section of the JSON input.</p>
 <p>The possible selections are:</p>
 <ul>
 <li><em>"nopre": 0</em> -&gt; uses SPOT instance type</li>
 <li><em>"nopre": 1</em> -&gt; uses REGULAR instance type</li>
 </ul>
-<p>In order to execute a simulation on SPOT instance just type the following command:</p>
+<p>To run a simulation on a SPOT instance, use the following command:</p>
 <div class="highlight"><pre><span></span><code><span class="w">  </span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/simulation<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;api-key: {api_key}&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
@@ -395,9 +395,9 @@
 <span class="s1">}&#39;</span>
 </code></pre></div>
 <h2 id="runtime_control">RUNTIME CONTROL<a class="headerlink" href="#runtime_control" title="Permanent link">#</a></h2>
-<p>At any time it is possible to execute some runtime commands which gives control of the process. The runtime options are:</p>
+<p>At any time you can send runtime commands to control the process. The runtime options are:</p>
 <ul>
-<li>HARD STOP: kills the simulation without saving anyting on the storage. In order to call it:</li>
+<li>HARD STOP: kills the simulation without saving anything to the storage. To call it:</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="w">  </span>curl<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/simulation/<span class="o">{</span>id<span class="o">}</span>/stop<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Accept: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
@@ -409,7 +409,7 @@
 <span class="s1">}&#39;</span>
 </code></pre></div>
 <ul>
-<li>SOFT STOP: stops simulation at current iteration and save results. In order to call it:</li>
+<li>SOFT STOP: stops the simulation at the current iteration and saves the results. To call it:</li>
 </ul>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/simulation/<span class="o">{</span>id<span class="o">}</span>/stop<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Accept: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
@@ -420,9 +420,9 @@
 <span class="s1">        }</span>
 <span class="s1">}&#39;</span>
 </code></pre></div>
-<p>Note that SOFT STOP can take several minutes before everything is completed as it involves, among other tasks, stopping the executable, saving the current iterations and uploading everything into the storage.</p>
+<p>Note that a SOFT STOP can take several minutes to complete, since it involves stopping the executable, saving the current iteration and uploading everything to the storage, among other tasks.</p>
 <ul>
-<li>SYNC: saves current results on the storage and proceeds the simulation. In order to call it:</li>
+<li>SYNC: saves the current results to the storage and continues the simulation. To call it:</li>
 </ul>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/simulation/<span class="o">{</span>id<span class="o">}</span>/sync<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Accept: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
@@ -434,7 +434,7 @@
 <span class="s1">}&#39;</span>
 </code></pre></div>
 <h2 id="upload_of_file">UPLOAD OF FILE<a class="headerlink" href="#upload_of_file" title="Permanent link">#</a></h2>
-<p>In order to upload and download any file from the cloud storage the process consists of two phases: the first one is a request of a URL where we can upload/download a file, while the second phase regards the process of download/uploading the file itself. In order to make an URL request to upload the file:</p>
+<p>Uploading or downloading a file to or from the cloud storage takes two steps: first you request a URL to upload/download the file, then you upload/download the file itself. To request an upload URL:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/storage/upload/url<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;api-key: {api_key}&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
@@ -447,12 +447,12 @@
 <span class="s1">        }</span>
 <span class="s1">}&#39;</span>
 </code></pre></div>
-<p>In the call dirname is the directory where we want to store the file, while basename represents the file name once uploaded on the server. The reply of the previous API is an URL we have to use in the following call in order to upload the file:</p>
+<p>In this call, dirname is the directory where the file will be stored, and basename is the file name on the server. The API returns a URL, to be used in the following call to upload the file:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span>-H<span class="w"> </span><span class="s1">&#39;Content-Type: application/octet-stream&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-T<span class="w"> </span><span class="o">{</span>path_to_filename<span class="o">}</span><span class="w"> </span><span class="o">{</span>upload_url<span class="o">}</span>
 </code></pre></div>
 <h3 id="direct_upload_of_single_file">DIRECT UPLOAD OF SINGLE FILE<a class="headerlink" href="#direct_upload_of_single_file" title="Permanent link">#</a></h3>
-<p>In case we have to upload a single file, it is possible to speed up the process using the following single call:</p>
+<p>To upload a single file, you can speed up the process with this single call:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/storage<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;api-key: {api_key}&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Content-Type: multipart/form-data&#39;</span><span class="w"> </span><span class="se">\</span>
@@ -460,48 +460,48 @@
 <span class="w">  </span>-F<span class="w"> </span><span class="nv">dirname</span><span class="o">={</span>dirname<span class="o">}</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="nv">basename</span><span class="o">=</span>@<span class="o">{</span>path_to_filename<span class="o">}</span>
 </code></pre></div>
-<p>This function replies with a JSON file which summarizes the information of the file which has just been uploaded.</p>
-<p><strong>N.B.: this upload works only for file of size lower than 2 Mb</strong></p>
+<p>It returns a JSON summarising the information of the uploaded file.</p>
+<p><strong>N.B.: this upload only works for files smaller than 2 MB</strong></p>
 <h2 id="navigation">NAVIGATION<a class="headerlink" href="#navigation" title="Permanent link">#</a></h2>
-<p>In order to navigate through the storage you need to use the following method:</p>
+<p>To navigate the storage, use the following method:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/storage/<span class="o">{</span>id<span class="o">}</span>/list<span class="w"> </span><span class="se">\</span>
 -H<span class="w"> </span><span class="s1">&#39;api-key:{api_key}&#39;</span><span class="w"> </span><span class="se">\</span>
 --header<span class="w"> </span><span class="s1">&#39;Accept: application/json&#39;</span><span class="w"> </span>
 </code></pre></div>
-<p><em>{id}</em> is the id of each single directory and its subfolders. If <em>{id}</em> = 0 you will be returned the content of the root folder. Alternatively, it is possible to interrogate a single file/folder using its own name and location as follows.</p>
+<p><em>{id}</em> is the id of a directory: the call returns its content. With <em>{id}</em> = 0 you get the content of the root folder. Alternatively, you can query a single file/folder by its name and location, as follows.</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/storage/view<span class="w"> </span><span class="se">\</span>
 -H<span class="w"> </span><span class="s1">&#39;api-key: {api_key}&#39;</span><span class="w"> </span><span class="se">\</span>
 -H<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
 -H<span class="w"> </span><span class="s1">&#39;Accept: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
 -d<span class="w"> </span><span class="s1">&#39;{ &quot;data&quot;: { &quot;path&quot;: &quot;{path}&quot; } }&#39;</span>
 </code></pre></div>
-<p>Using this last method, it is possible to use the folder name, exactly as returned by the <a href="https://cfdfeaservice.it/wiki/cloud-hpc/#!API-v1.md#SIMULATION_LIST">simulation info</a> API call to get idea of the files contained in the case folder.</p>
+<p>With this last method, you can pass the folder name exactly as returned by the <a href="#simulation_list">simulation list</a> API call, to see the files contained in the case folder.</p>
 <h2 id="all_files_and_folders_info">ALL FILES AND FOLDERS INFO<a class="headerlink" href="#all_files_and_folders_info" title="Permanent link">#</a></h2>
-<p>In order to retrieve the info of ALL the files available in the storage, it’s possible to use the following command:</p>
+<p>To retrieve the information of ALL the files in the storage, use the following command:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/storage<span class="w"> </span><span class="se">\</span>
 -H<span class="w"> </span><span class="s1">&#39;api-key:{api_key}&#39;</span><span class="w"> </span><span class="se">\</span>
 --header<span class="w"> </span><span class="s1">&#39;Accept: application/json&#39;</span>
 </code></pre></div>
-<p>The resulting JSON file might be big, so use it carefully!</p>
+<p>The resulting JSON may be large, so use it with care!</p>
 <h2 id="single_file_info">SINGLE FILE INFO<a class="headerlink" href="#single_file_info" title="Permanent link">#</a></h2>
-<p>It is also possible to get all the information of a single file with the following:</p>
+<p>You can also get all the information of a single file with:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/storage/<span class="o">{</span>id<span class="o">}</span><span class="w"> </span><span class="se">\</span>
 -H<span class="w"> </span><span class="s1">&#39;api-key:{api_key}&#39;</span><span class="w"> </span><span class="se">\</span>
 --header<span class="w"> </span><span class="s1">&#39;Accept: application/json&#39;</span><span class="w"> </span>
 </code></pre></div>
 <p>where, as before, <em>{id}</em> is the file ID.</p>
 <h2 id="download">DOWNLOAD<a class="headerlink" href="#download" title="Permanent link">#</a></h2>
-<p>Exactly like uploading files, in order to download one file we have to make a double call: the first one gives a URL from which we can download the file. In order to identify the file we want to download, we can use the ID of the file:</p>
+<p>As for uploads, downloading a file takes two calls: the first one returns a URL from which the file can be downloaded. The file is identified by its ID:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/storage/<span class="o">{</span>id<span class="o">}</span>/download/url<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;api-key: {api_key}&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Accept: application/json&#39;</span>
 </code></pre></div>
-<p>This call returns an URL we can use to download the file with the following:</p>
+<p>This call returns a URL, which you can use to download the file with:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span><span class="o">{</span>download_url<span class="o">}</span><span class="w"> </span>-L<span class="w"> </span>-o<span class="w"> </span><span class="o">{</span>path_to_filename<span class="o">}</span>
 </code></pre></div>
 <h3 id="direct_download_of_file">DIRECT DOWNLOAD OF FILE<a class="headerlink" href="#direct_download_of_file" title="Permanent link">#</a></h3>
-<p>In order to speed up the process, it’s also possible to download file using a unique API call - a method which is basically the sum of the two mentioned earlier, as follows:</p>
+<p>To speed up the process, you can also download a file with a single API call, which combines the two above:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/storage/<span class="o">{</span>id<span class="o">}</span>/download/file<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;api-key: {api_key}&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
@@ -509,12 +509,12 @@
 </code></pre></div>
 <p>Once again, <em>{id}</em> is the ID of the file.</p>
 <h2 id="delete_file_or_folder">DELETE FILE OR FOLDER<a class="headerlink" href="#delete_file_or_folder" title="Permanent link">#</a></h2>
-<p>To delete a single file [or folder] present in the storage we have to retrieve its ID using the abovementioned functionalities and then use the following API:</p>
+<p>To delete a single file [or folder] from the storage, retrieve its ID with the calls described above and then use the following API:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>https://cloud.cfdfeaservice.it/api/v<span class="o">{</span>version<span class="o">}</span>/storage/<span class="o">{</span>id<span class="o">}</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;api-key: {api_key}&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Accept: application/json&#39;</span>
 </code></pre></div>
-<p>Obviously we have to detect the file [or folder] <em>{id}</em> using the storage navigation methods.</p>
+<p>The file [or folder] <em>{id}</em> can be found with the storage navigation methods.</p>
               
             </div>
           </div><footer>

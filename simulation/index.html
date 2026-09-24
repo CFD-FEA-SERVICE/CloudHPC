@@ -54,11 +54,15 @@
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href="#">SIMULATIONS</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#execute_a_simulation">Execute a simulation</a>
+    <li class="toctree-l2"><a class="reference internal" href="#templates_and_examples">Templates and examples</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#execute_a_custom-script">Execute a custom-script</a>
+    <li class="toctree-l2"><a class="reference internal" href="#run_a_simulation">Run a simulation</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#execute_a_static_instance">Execute a static instance</a>
+    <li class="toctree-l2"><a class="reference internal" href="#openfoam_specific_settings">OpenFOAM specific settings</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#run_a_custom-script">Run a custom-script</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#run_a_static_instance">Run a static instance</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#soft_and_hard_stop">Soft and Hard stop</a>
     </li>
@@ -139,81 +143,203 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="simulations">Simulations<a class="headerlink" href="#simulations" title="Permanent link">#</a></h1>
-<p>Once the input file is uploaded in the STORAGE list, it is possible to start the simulation. The analyses can be initiated in the menu LIST SIMULATIONS.</p>
-<p>In the Simulation menu you can:</p>
+<p>Once the input files have been uploaded to the STORAGE, you can start the simulation from the SIMULATIONS menu.</p>
+<p>From the Simulations menu you can:</p>
 <ul>
 <li>
-<p>execute the analysis</p>
+<p>run an analysis</p>
 </li>
 <li>
-<p>monitor the analysis</p>
+<p>monitor an analysis</p>
 </li>
 <li>
-<p>interrupt the analysis</p>
+<p>stop an analysis</p>
 </li>
 <li>
-<p>restart the analysis</p>
+<p>restart an analysis</p>
 </li>
 </ul>
-<p>Here are also suggested hints for setting the computational capacity tailored for your simulation and how to estimate the simulation time.</p>
-<h2 id="execute_a_simulation">Execute a simulation<a class="headerlink" href="#execute_a_simulation" title="Permanent link">#</a></h2>
-<p>In order to run the simulation, start by Add one as shown in the following picture.</p>
+<p>This page also gives some hints on choosing the computing resources for your simulation.</p>
+<h2 id="templates_and_examples">Templates and examples<a class="headerlink" href="#templates_and_examples" title="Permanent link">#</a></h2>
+<p>Before your first run, have a look at the material we provide in the <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC">CloudHPC GitHub repository</a>.</p>
+<h3 id="templates">Templates<a class="headerlink" href="#templates" title="Permanent link">#</a></h3>
+<p>The <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template">templates</a> are recommended, cloudHPC-ready input files for the most common solvers. Copy them into your case and adapt them to your model to make sure your settings work on the platform (parallel decomposition, restart, runtime monitoring, ...).</p>
+<table>
+<thead>
+<tr>
+<th>Template</th>
+<th>Solver</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/OpenFOAM/system">OpenFOAM/system</a></td>
+<td>OpenFOAM</td>
+<td><code>controlDict</code> and <code>decomposeParDict</code> with restart, runtime monitors and <a href="#custom_controldict_entries">cloudHPC custom entries</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/OpenFOAM-custom">OpenFOAM-custom</a></td>
+<td>OpenFOAM v2412</td>
+<td>complete case with a <a href="#custom_openfoam_code">custom solver and boundary condition</a> compiled before the run</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/code-aster">code-aster</a></td>
+<td>code_aster</td>
+<td><code>export</code>, MPI-ready <code>input.comm</code> and restart database folder</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/FDS">FDS</a></td>
+<td>FDS</td>
+<td>multi-mesh <code>template.fds</code> with <code>MPI_PROCESS</code>, restart dump and devices</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/custom-script">custom-script</a></td>
+<td>custom-script</td>
+<td>bash <code>run.sh</code> skeleton</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/python-script">python-script</a></td>
+<td>custom-script</td>
+<td>parallel Python job with <code>requirements.txt</code>, runtime monitor and checkpoint/restart</td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">#</a></h3>
+<p>The <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC">examples</a> are complete cases that you can upload and run as they are, e.g. to test a new account. Each one has its own README with the exact settings to use in the web app and the expected results.</p>
+<table>
+<thead>
+<tr>
+<th>Example</th>
+<th>Script</th>
+<th>vCPU</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/pitzDaily-of13">pitzDaily-of13</a></td>
+<td><code>openFoam-of13</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/damBreak-v2412">damBreak-v2412</a></td>
+<td><code>openFoam-v2412</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/motorBike-of12">motorBike-of12</a></td>
+<td><code>openFoam-of12</code></td>
+<td>8</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/naca0012-su2830">naca0012-su2830</a></td>
+<td><code>SU2_CFD8.3.0</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/SU2_8.3_Turbulent_ONERAM6">SU2_8.3_Turbulent_ONERAM6</a></td>
+<td><code>SU2_CFD8.3.0</code></td>
+<td>16</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/roomFire-fds691">roomFire-fds691</a></td>
+<td><code>fds6.9.1</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/fds-6.7.5">fds-6.7.5</a></td>
+<td><code>fds6.7.5</code></td>
+<td>1–8</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/beam-ccx221">beam-ccx221</a></td>
+<td><code>calculiX-2.21</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/flange-ca136">flange-ca136</a></td>
+<td><code>codeAster-17.0_mpi</code></td>
+<td>8</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/poisson-fenicsx060">poisson-fenicsx060</a></td>
+<td><code>FEniCSx-0.6.0-r1</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/silo-liggghts380">silo-liggghts380</a></td>
+<td><code>LIGGGHTS-3.8.0</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/office-ep2520">office-ep2520</a></td>
+<td><code>EnergyPlus-25.2.0</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/gpuBenchmark-cuda123">gpuBenchmark-cuda123</a></td>
+<td><code>custom-script-cuda12.3</code></td>
+<td>4 (<em>basegpu</em>)</td>
+</tr>
+<tr>
+<td><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/python3.12">python3.12</a></td>
+<td><code>custom-script-u24</code></td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<h2 id="run_a_simulation">Run a simulation<a class="headerlink" href="#run_a_simulation" title="Permanent link">#</a></h2>
+<p>To run a simulation, start by adding a new one, as shown in the following picture.</p>
 <p align="center">
    <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_11_sim.png">
 </p>
 
-<p>A new page will appear. This page is divided into two different parts:</p>
+<p>A new page opens. This page is divided into two parts:</p>
 <ul>
 <li>
-<p>The first part requires you to insert the information about the vCPU, RAM and instance type you want to use</p>
+<p>In the first part, you select the vCPU, RAM and instance type you want to use:</p>
 <ul>
 <li>
-<p>Each virtual CPU (vCPU) is implemented as a single hardware hyper-thread except for the highcore and the hypercore instances where the CPU is implemented as a physical vCORE. Not all the software available can benefit of the hyper-thread architecture.</p>
+<p>Each virtual CPU (vCPU) is a single hardware hyper-thread, except for the <em>highcore</em> and <em>hypercore</em> instances, where each vCPU is a physical core. Not all the available software can benefit from hyper-threading.</p>
 </li>
 <li>
-<p>RAM represents the RAM memory allocated and made available for the simulation. The selected RAM is allocated per each vCPU defined before. For <em>highcore</em> and the <em>hypercore</em> selections a <em>multi-core instance</em> without hyper-thread is allocated - usefull to take full advantage for some specific software where hyper-thread is not implemented. For <em>basegpu</em> selection NVIDIA TESTLA T4 GPUs are allocated proportionally to the vCPU selected. A summary of all choices is reported here:</p>
+<p>RAM is the memory made available to the simulation, and it is allocated per vCPU. The <em>highcore</em> and <em>hypercore</em> selections allocate a <em>multi-core instance</em> without hyper-threading, useful to get the most out of software that does not benefit from hyper-threading. The <em>basegpu</em> selection allocates NVIDIA TESLA T4 GPUs in proportion to the vCPU selected. Here is a summary of all the options:</p>
 <ul>
-<li><em>standard</em>: this selection allocates a hyper-thread instance with 4GB of RAM for each vCPU selected</li>
-<li><em>highmem</em>: this selection allocates a hyper-thread instance with 8GB of RAM for each vCPU selected</li>
-<li><em>highcpu</em>: this selection allocates a hyper-thread instance with 1GB of RAM for each vCPU selected</li>
-<li><em>highcore</em>: this selection allocates a multi-core only instance with 2GB of RAM for each vCPU (core) selected</li>
-<li><em>hypercpu</em>: this selection allocates a hyper-thread instance with 1GB of RAM for each premium vCPU selected</li>
-<li><em>hypercore</em>: this selection allocates a multi-core only instance with 2GB of RAM for each premium vCPU (core) selected</li>
-<li><em>basegpu</em>: this selection allocates a hyper-thread instance with 8GB of RAM per each vCPU selected and 1 NVIDIA TESLA T4 every 2 vCPU selected</li>
+<li><em>standard</em>: hyper-threaded instance with 4 GB of RAM per vCPU</li>
+<li><em>highmem</em>: hyper-threaded instance with 8 GB of RAM per vCPU</li>
+<li><em>highcpu</em>: hyper-threaded instance with 1 GB of RAM per vCPU</li>
+<li><em>highcore</em>: multi-core only instance with 2 GB of RAM per vCPU (core)</li>
+<li><em>hypercpu</em>: hyper-threaded instance with 1 GB of RAM per premium vCPU</li>
+<li><em>hypercore</em>: multi-core only instance with 2 GB of RAM per premium vCPU (core)</li>
+<li><em>basegpu</em>: hyper-threaded instance with 8 GB of RAM per vCPU and 1 NVIDIA TESLA T4 every 2 vCPU</li>
 </ul>
 </li>
 <li>
-<p>REG/SPOT are the two types of machines available to run the analysis. They consist of the same machine types, but while REG are exclusively used for the analysis, SPOT machines can be restarted at any time during the calculation. After the machine reboots, the simulation restart from the last saved restart file. The SPOT machine restart probability is generally affected by:</p>
-<ol>
-<li>The number of SPOT simulations launched: about 30% of simulations are affected by at least one restart</li>
-<li>The total time spent with SPOT machines on the platform: usually a restart occurs every 10 or more hours of use of this type of machines</li>
-<li>The solver and the number of vCPU allocated to each SPOT machine can modify the above frequencies and probabilities</li>
-</ol>
+<p>REG/SPOT are the two types of machines available to run the analysis. They use the same hardware, but REG machines are dedicated to your analysis until it ends, while SPOT machines can be rebooted at any time during the calculation. After a reboot, the simulation restarts from the last saved restart file. See <a href="#spot_instance_correct_setup">SPOT instance correct setup</a> for how often this happens and how to prepare your case.</p>
 </li>
 </ul>
 </li>
 </ul>
-<p>The above info are indicative and different users can experience different behaviours.</p>
 <p align="center">
    <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_12_CPU_RAM_SETTING.png">
 </p>
 
 <ul>
-<li>The second part requires you to insert the <em>folder</em> where you want to operate and the <a href="https://cloudhpc.cloud/#softwareavail">software</a> you want to use. In particular you have:<ul>
-<li>Folder represents a list of folders available in the storage among which you have to pick the one where you want to operate</li>
-<li>Mesh is a list of folders available in the storage. It is an optional argument that can help users with specific software as explained below:<ul>
-<li><em>OpenFOAM</em>: copy of the polyMesh and triSurface folder from the Mesh storage folder into the Folder selected where the solver is going to operate.</li>
+<li>In the second part, you select the <em>folder</em> to work on and the <a href="https://cloudhpc.cloud/#softwareavail">software</a> to use:<ul>
+<li>Folder: the list of storage folders, from which you pick the one containing your case</li>
+<li>Mesh: the list of storage folders. It is optional and is only used by specific software, as explained below:<ul>
+<li><em>OpenFOAM</em>: the polyMesh and triSurface folders are copied from the Mesh folder into the selected Folder, where the solver runs.</li>
 </ul>
 </li>
-<li>Script is a list of available solvers you can run on the Folder you selected</li>
+<li>Script: the list of solvers you can run on the selected Folder</li>
 </ul>
 </li>
 </ul>
-<p>The commands can be classified into two types: the first classification regards the mandatory/non mandatory commands, the second regards the advanced parameters and the basic ones. Some parameters may not appear in your account because they must be enabled by administrator. For these parameters Default values are going to be used authomatically by the cloudHPC platform. You can ask our administrator to enable you the advanced parameters by emailing us at <a href="mailto:info@cfdfeaservice.it">info@cfdfeaservice.it</a>.</p>
+<p>The parameters can be classified in two ways: mandatory or optional, and basic or advanced. Some advanced parameters may not appear in your account, because they must be enabled by an administrator: in that case, cloudHPC automatically uses their default values. To have the advanced parameters enabled, email us at <a href="mailto:info@cfdfeaservice.it">info@cfdfeaservice.it</a>.</p>
 <table>
 <thead>
 <tr>
-<th>Command</th>
+<th>Parameter</th>
 <th style="text-align: center;">Mandatory</th>
 <th style="text-align: center;">Advanced</th>
 <th style="text-align: center;">Default</th>
@@ -259,88 +385,175 @@
 </tbody>
 </table>
 <h3 id="instance_hard_disk">Instance hard disk<a class="headerlink" href="#instance_hard_disk" title="Permanent link">#</a></h3>
-<p>Every time you execute a simulation, a specific hard disk is allocated to actually compute the simulation. Currently most of the times this hard disk size is 400 GB. There are few exceptions though:</p>
+<p>Every simulation is given a dedicated hard disk to run the calculation. In most cases its size is 400 GB, with a few exceptions:</p>
 <ol>
-<li>4 vCPU machines (every type of RAM) are provided an hard disk of 200 GB</li>
-<li>highmem/REG  machines with at least 16 vCPU are provided an hard disk of 2000 GB</li>
-<li>highmem/SPOT machines with at least 16 vCPU are provided an hard disk of 600 GB</li>
+<li>4 vCPU machines (any RAM type) get a 200 GB hard disk</li>
+<li>highmem/REG machines with at least 16 vCPU get a 2000 GB hard disk</li>
+<li>highmem/SPOT machines with at least 16 vCPU get a 600 GB hard disk</li>
 </ol>
-<p>The actual Hard Disk allocation can be verified on the output window as highligted by the following sketch.</p>
+<p>You can check the actual hard disk size in the output window, as highlighted below.</p>
 <p align="center">
    <img width="500" src="https://docs.cloudhpc.cloud/images/StorageVerification.png">
 </p>
 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>For specific needs you can get in touch with the support team that will assist with storage description and expansion</p>
+<p>For specific needs, contact our support team, who will help you with the disk size and any expansion.</p>
 </div>
 <h3 id="spot_instance_correct_setup">SPOT instance correct setup<a class="headerlink" href="#spot_instance_correct_setup" title="Permanent link">#</a></h3>
-<p>Since SPOT instance my be subjected to restart at any time during the simulation, it's important the user correctly set-up the case in order to avoid losing computing power. Every software requires a peculiar set-up which is demanded to the user.
-If is importanto to keep in mind the restart is just a probability which mostly depends on the following parameters:</p>
+<p>Since SPOT instances may be rebooted at any time during the simulation, you must set up your case correctly to avoid losing computing time. Each software package needs its own set-up, which is up to the user.
+Keep in mind that a reboot is only a probability, which mostly depends on:</p>
 <ol>
-<li>The number of SPOT simulations launched: about 30% of simulations are affected by at least one restart</li>
-<li>The total time spent with SPOT machines on the platform: usually a restart occurs every 10 or more hours of use of this type of machines</li>
-<li>The solver and the number of vCPU allocated to each SPOT machine can modify the above frequencies and probabilities</li>
+<li>the number of SPOT simulations launched: about 30% of simulations are affected by at least one reboot</li>
+<li>the total time spent on SPOT machines: a reboot usually occurs every 10 or more hours of use</li>
+<li>the solver and the number of vCPU of each SPOT machine, which can change the above frequencies and probabilities</li>
 </ol>
-<p>More info on this topic can also be found on this webinar:</p>
+<p>These figures are indicative, and different users may experience different behaviours. More information on this topic is available in this webinar:</p>
 <p align="center">
    <a href="https://www.youtube.com/watch?v=oYfvGqfBqqI"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
 </p>
 
-<p>By default, new account do not have SPOT instances enabled. The reason for this is prevention of misuse of this type of instance. In order to enable SPOT instances on your account fill <a href="https://forms.gle/GGYdZxo5TyGcsvKF7">this form</a>.</p>
+<p>By default, SPOT instances are not enabled on new accounts, to prevent their misuse. To enable SPOT instances on your account, fill in <a href="https://forms.gle/GGYdZxo5TyGcsvKF7">this form</a>.</p>
 <h4 id="fds">FDS<a class="headerlink" href="#fds" title="Permanent link">#</a></h4>
-<p>In order to save restart file with a certain frequency, FDS requires the user to set the DT_RESTART parameter under the DUMP command:</p>
+<p>To save restart files at regular intervals, FDS requires the DT_RESTART parameter of the DUMP namelist:</p>
 <pre><code>&amp;DUMP DT_RESTART=300.0/
 </code></pre>
-<p>This tells the solver to save a restart file every 300.0 s of simulated time. If in a SPOT instance a reboot occurs, the system automatically looks for restart file produced by FDS and, if present, restart the simulation from those.</p>
+<p>This tells the solver to save a restart file every 300.0 s of simulated time. If a SPOT instance reboots, the system automatically looks for the restart files written by FDS and, if found, restarts the simulation from them. The <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/FDS/template.fds">FDS template</a> already contains this setting.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Our team is in contact with the NIST - FDS developer. We strongly recommed to use the most recent installed FDS versions to make sure your simulation won't encounter issues or bugs which may alter or affect the results of your simulations.</p>
+<p>Our team is in contact with NIST, the FDS developer. We strongly recommend using the most recent FDS version installed, to make sure your simulation does not run into issues or bugs that may affect its results.</p>
 </div>
-<p>The user goal is to set-up a DT_RESTART time which allows saving a restart file every 2 to 5 hours. With this frequency it's unluckily your simulation is going to suffer of any slow down due to the restart file writing and, at the same time, in case of restart the amount of simulated time lost is reduced to a minimum. </p>
+<p>Aim for a DT_RESTART that saves a restart file every 2 to 5 hours of run time. With this frequency, writing the restart files is unlikely to slow down your simulation and, if a reboot occurs, the simulated time lost is kept to a minimum.</p>
 <h4 id="openfoam">OpenFOAM<a class="headerlink" href="#openfoam" title="Permanent link">#</a></h4>
-<p>When running OpenFOAM simulations the restart options are to be configured in the system/controDict file. In particular the following options allow the user to get full control:</p>
-<pre><code>startFrom       latestTime; //in case of restart, restart from last saved time step
-writeControl    timeStep;   //control timing of writing results
-writeInterval   100;        //writing results frequency
-purgeWrite      5;      //keeps only the 5 most recent results and cancels older
+<p>For OpenFOAM simulations, the restart options are set in the system/controlDict file. The following entries give you full control:</p>
+<pre><code>startFrom       latestTime; //on restart, start from the last saved time
+writeControl    timeStep;   //how the write frequency is measured
+writeInterval   100;        //how often results are written
+purgeWrite      5;      //keep only the 5 most recent saved times and delete older ones
 </code></pre>
-<p>When using SPOT instances, the user has to impose startFrom latestTime, so that in case of instance reboot, the simulation restarts from the last saved time step. Then it's possible to set the frequency of the saved results by setting the writeInterval option.</p>
+<p>On SPOT instances you must set <code>startFrom latestTime</code>, so that after a reboot the simulation restarts from the last saved time. The writeInterval option then sets how often results, and therefore restart points, are saved. See the <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/OpenFOAM/system/controlDict">controlDict template</a>.</p>
 <h4 id="other_software_and_custom-script">Other software and custom-script<a class="headerlink" href="#other_software_and_custom-script" title="Permanent link">#</a></h4>
-<p>Other software and custom-script are not tested to work properly with SPOT instances and a reboot of your simulation means losing all computed time up to that moment. For this reason, SPOT instances are not made available to all users by default.</p>
-<h2 id="execute_a_custom-script">Execute a custom-script<a class="headerlink" href="#execute_a_custom-script" title="Permanent link">#</a></h2>
-<p>Among other software, it is also possible to execute a custom script in <em>bash</em> or <em>python</em>. In order to do you can use the <em>custom-script</em> command available in the dropdown script selection as in the following image:</p>
+<p>Other software and custom scripts are not tested with SPOT instances: a reboot means losing all the time computed up to that moment. For this reason, SPOT instances are not enabled for all users by default. If you use a custom script, you can save checkpoints yourself, as done in the <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/python-script">python-script template</a>.</p>
+<h2 id="openfoam_specific_settings">OpenFOAM specific settings<a class="headerlink" href="#openfoam_specific_settings" title="Permanent link">#</a></h2>
+<h3 id="custom_controldict_entries">Custom controlDict entries<a class="headerlink" href="#custom_controldict_entries" title="Permanent link">#</a></h3>
+<p>cloudHPC reads a few extra entries from <code>system/controlDict</code> to switch on optional steps of the run. OpenFOAM ignores them, so they can stay in the file when you run the case elsewhere. They are listed, commented out, in the <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/OpenFOAM/system/controlDict">controlDict template</a>: uncomment the ones you need. Boolean switches must be written exactly as <code>true</code> (<code>yes</code>/<code>on</code> are not recognised).</p>
+<p>Mesh stage: these entries only apply when the mesh is generated during the run (no <code>constant/polyMesh</code> uploaded, or a meshing script selected). They are applied after snappyHexMesh/cfMesh/blockMesh, in the order of the table:</p>
+<table>
+<thead>
+<tr>
+<th>Entry</th>
+<th>Values</th>
+<th>Effect</th>
+<th>Extra files required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>splitMesh</code></td>
+<td><code>true</code></td>
+<td>splits the mesh into one region per cellZone (every cell must belong to a cellZone), e.g. for CHT cases</td>
+<td>—</td>
+</tr>
+<tr>
+<td></td>
+<td><code>largest</code></td>
+<td>keeps only the largest connected region, removing mesh generated on the wrong side of the STL surfaces</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>nExtrusion</code></td>
+<td><code>N</code></td>
+<td>performs N mesh extrusions from boundary patches, in sequence</td>
+<td><code>system/extrudeMeshDict.0</code> … <code>system/extrudeMeshDict.&lt;N-1&gt;</code></td>
+</tr>
+<tr>
+<td><code>scaleFactor</code></td>
+<td>number</td>
+<td>scales the final mesh uniformly, e.g. <code>0.001</code> for a geometry drawn in mm</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Solver stage:</p>
+<table>
+<thead>
+<tr>
+<th>Entry</th>
+<th>Values</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>potentialFoam</code></td>
+<td><code>true</code></td>
+<td>runs potentialFoam before the solver to initialise the U and p fields</td>
+</tr>
+</tbody>
+</table>
+<h3 id="custom_openfoam_code">Custom OpenFOAM code<a class="headerlink" href="#custom_openfoam_code" title="Permanent link">#</a></h3>
+<p>You can run your own OpenFOAM solvers and libraries (e.g. boundary conditions): upload the source code <strong>inside the case folder</strong>, next to <code>0</code>, <code>constant</code> and <code>system</code>. Before the run, cloudHPC compiles it on the instance with the OpenFOAM version selected in the Script field. The <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/OpenFOAM-custom">OpenFOAM-custom template</a> is a complete, working case (tested on v2412) with a custom solver and a custom boundary condition library.</p>
+<p>The compilation works as follows:</p>
+<ol>
+<li>The environment of the selected OpenFOAM version is loaded.</li>
+<li>If an <code>Allwmake</code> script is present in the case root, it is run first. Use it when the build order matters, e.g. a solver linking a library of the same case.</li>
+<li>Every subfolder of the case root is then visited: its own <code>Allwmake</code> is run if present, otherwise <code>wmake</code> is run on it. The output is saved to <code>&lt;folder&gt;_compilation.log</code> (<code>Allwmake.log</code> for the root script).</li>
+<li>The solver set in the <code>application</code> entry of <code>controlDict</code> is run as usual.</li>
+</ol>
+<p>Keep in mind:</p>
+<ul>
+<li>Each source folder must sit directly in the case root and contain the standard <code>Make/files</code> and <code>Make/options</code>. Target <code>$(FOAM_USER_APPBIN)</code> for applications and <code>$(FOAM_USER_LIBBIN)</code> for libraries.</li>
+<li>Select the custom solver with <code>application &lt;solverName&gt;;</code> and load custom libraries with <code>libs ("lib&lt;name&gt;.so");</code> in <code>system/controlDict</code>.</li>
+<li>Do not upload binaries compiled on your workstation (<code>.so</code> files, executables, <code>Make/linux64*</code>, <code>lnInclude</code>): the code is always compiled from scratch on the cloud.</li>
+<li>Code written for openfoam.com usually does not compile on openfoam.org, and vice versa.</li>
+<li>If the run stops right after starting, check the <code>*_compilation.log</code> files for compiler errors.</li>
+</ul>
+<p>More details in the blog post <a href="https://cloudhpc.cloud/2026/07/24/how-to-compile-and-execute-custom-openfoam-code-on-cloudhpc-cloud/">How to compile and execute custom OpenFOAM code on cloudHPC</a>.</p>
+<h2 id="run_a_custom-script">Run a custom-script<a class="headerlink" href="#run_a_custom-script" title="Permanent link">#</a></h2>
+<p>Besides the available software, you can also run your own <em>bash</em> or <em>python</em> scripts. To do so, select the <em>custom-script</em> command in the Script drop-down menu, as shown in the following image:</p>
 <p align="center">
    <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/CustomScript.png">
 </p>
 
-<p>This script will authomatically execute any bash script (.sh) or python script (.py) file present in the folder. So you just have to upload the script you want to execute together with the other files required by your study inside a specific folder in your storage.</p>
-<p>In order to know more about this feature, please contact our support service via chat.</p>
-<h2 id="execute_a_static_instance">Execute a static instance<a class="headerlink" href="#execute_a_static_instance" title="Permanent link">#</a></h2>
-<p>Beyond simple script, it is possible to execute <em>static instances</em>. These instances are different compared to others because they do not execute any particular software, but they are simply hardware resources made available to the user via remote-desktop or SSH connection.</p>
-<p>These particular instances are designed to help the user in two different phases:</p>
+<p>This command automatically runs every bash (.sh) and python (.py) script found in the selected folder, in this order:</p>
 <ol>
-<li>Debugging the set-up of a case before launching the solver. </li>
-<li>Run specific UI installed on cloudHPC via the <a href="https://cfdfeaservice.it/wiki/cloud-hpc/#!monitor.md#Remote_desktop">remote desktop</a></li>
-<li>Post-Processing the results once the simulation has been completed.</li>
+<li>every bash (<code>.sh</code>) script is made executable and run, and its output is saved to a <code>.log</code> file;</li>
+<li>every python (<code>.py</code>) script is run with <code>python3</code> inside a virtual environment (<code>py-cloudhpc</code>), after installing the packages listed in <code>requirements.txt</code>; its output is saved to a <code>.log</code> file.</li>
 </ol>
-<p>It's important to mention that these instances are static, so no particular script is executed on that.</p>
+<p>Upload the scripts you want to run to a folder in your storage, together with all the files they need. Keep in that folder only the scripts to be run: helper modules imported by your script should go in a subfolder. Any CSV file written during the run is plotted at runtime on the simulation page.</p>
+<p>Templates and examples:</p>
+<ul>
+<li><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/custom-script">custom-script template</a>: bash script skeleton</li>
+<li><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/python-script">python-script template</a>: parallel Python job with dependencies, runtime monitor and checkpoint/restart</li>
+<li><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/python3.12">python3.12 example</a>: the minimal custom-script job</li>
+<li><a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC/gpuBenchmark-cuda123">gpuBenchmark-cuda123 example</a>: GPU job on a <em>basegpu</em> instance</li>
+</ul>
+<p>To learn more about this feature, contact our support team via chat.</p>
+<h2 id="run_a_static_instance">Run a static instance<a class="headerlink" href="#run_a_static_instance" title="Permanent link">#</a></h2>
+<p>Besides scripts, you can also run <em>static instances</em>. These instances do not run any particular software: they are simply hardware resources made available to you through a remote desktop or SSH connection.</p>
+<p>These instances are designed to help you:</p>
+<ol>
+<li>debug the set-up of a case before launching the solver;</li>
+<li>run the user interfaces installed on cloudHPC via the <a href="../monitor/#remote_desktop">remote desktop</a>;</li>
+<li>post-process the results once the simulation has completed.</li>
+</ol>
+<p>Since these instances are static, no script is run on them.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>It's a user duty controlling and stopping them when his activities are completed.</p>
+<p>It is up to you to monitor static instances and stop them once your work is done.</p>
 </div>
-<p>These instances can in fact be stopped using the usual SOFT/HARD stop functionalities. The execution of a static instance works exactly like any other software. You just have to pick any of the scripts with the "-static" suffix in the list.</p>
+<p>You can stop them with the usual SOFT/HARD stop functions. A static instance is launched exactly like any other software: just pick one of the scripts with the "-static" suffix in the list.</p>
 <p align="center">
    <img width="500" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/StaticInstance.png">
 </p>
 
 <h3 id="specific_ui_installed">Specific UI installed<a class="headerlink" href="#specific_ui_installed" title="Permanent link">#</a></h3>
-<p>In order to access one of the software with UI (User Interface) installed on cloudHPC via remote desktop you can follow the tutorial in the following video where a general methodology is highlighted.</p>
+<p>To access one of the software packages with a UI (user interface) installed on cloudHPC via remote desktop, follow the general procedure shown in the video below.</p>
 <p align="center">
    <a href="https://youtu.be/Jk8YpJRFOkQ"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
 </p>
 
-<p>The following table instead shows you the most common UI available on the platform and the static instance you have to run in order to access them. For some of the UI the table reports the terminal command to be executed to actually access the UI.</p>
+<p>The following table lists the most common UIs available on the platform and the static instance to run to access them. For some of them, the table also gives the terminal command that starts the UI.</p>
 <table>
 <thead>
 <tr>
@@ -408,48 +621,48 @@ purgeWrite      5;      //keeps only the 5 most recent results and cancels older
 </tbody>
 </table>
 <h3 id="more_info_and_details">More info and details<a class="headerlink" href="#more_info_and_details" title="Permanent link">#</a></h3>
-<p>To get more info and details it's possible to see the following youtube video about the official release of the remote desktop where a static instance use has been described.</p>
+<p>For more details, watch the following YouTube video about the official release of the remote desktop, which shows how to use a static instance.</p>
 <p align="center">
    <a href="https://www.youtube.com/watch?v=uNq3D9jShEk"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
 </p>
 
-<p>In order to know more about this feature, please contact our support service via chat.</p>
+<p>To learn more about this feature, contact our support team via chat.</p>
 <h2 id="soft_and_hard_stop">Soft and Hard stop<a class="headerlink" href="#soft_and_hard_stop" title="Permanent link">#</a></h2>
-<p>The simulation can be stopped in the SIMULATION list as shown below.</p>
+<p>You can stop a simulation from the SIMULATIONS list, as shown below.</p>
 <p align="center">
    <img width="500" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_18_stop_sim.png">
 </p>
 
-<p>There are two ways to stop the simulation:</p>
+<p>There are two ways to stop a simulation:</p>
 <h3 id="soft_stop">Soft Stop<a class="headerlink" href="#soft_stop" title="Permanent link">#</a></h3>
-<p>The soft stop can interrupt the simulation and save the results obtained until that moment. This is suggested when you don’t want to continue the simulation forward because you reached already the needed results or if you want to stop your simulation with the idea of continuing it later.</p>
+<p>The soft stop interrupts the simulation and saves the results computed up to that moment. Use it when you already have the results you need, or when you want to stop the simulation and continue it later.</p>
 <h3 id="hard_stop">Hard Stop<a class="headerlink" href="#hard_stop" title="Permanent link">#</a></h3>
-<p>The hard stop kills your simulation without saving any results.</p>
+<p>The hard stop kills the simulation without saving any results.</p>
 <p align="center">
    <img width="500" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_19STOP.png">
 </p>
 
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
-<p>After a hard stop, the system deletes the results computed by your simulation without any possibility of restoring them.</p>
+<p>After a hard stop, the system deletes the results computed by your simulation, with no possibility of restoring them.</p>
 </div>
 <h2 id="restart">Restart<a class="headerlink" href="#restart" title="Permanent link">#</a></h2>
-<p>In general to restart a simulation once this has been terminated or stopped with a Soft stop, you just have to enter your 'Simulations' page of the cloudHPC portal and add a new simulation where <em>vCPU</em>, <em>RAM</em>, <em>folder</em> and <em>script</em> <strong>exactly match those</strong> of the analysis you want to restart. There are some specific differences depending on the software you are currently using for which the following extra hints are to keep into consideration.</p>
-<h3 id="fire_dynamic_simulator">Fire Dynamic Simulator<a class="headerlink" href="#fire_dynamic_simulator" title="Permanent link">#</a></h3>
-<p>For FDS simulations it is possible to restart the simulation automatically if your T_END parameter has not been reached yet - in case, just <a href="https://cfdfeaservice.it/wiki/cloud-hpc/#!storage.md#Edit_an_existing_file">edit the .fds file</a> and increase this parameter. The platform detects the presence of a <em>.restart</em> file produced by a precursor simulation and, in case, restarts the simulation. It's important to monitor the frequency FDS saves restart files using the appropriate parameter in your <code>.fds</code> file:</p>
+<p>To restart a simulation that has completed or has been stopped with a soft stop, open the 'Simulations' page of the cloudHPC portal and add a new simulation whose <em>vCPU</em>, <em>RAM</em>, <em>folder</em> and <em>script</em> <strong>exactly match those</strong> of the analysis you want to restart. Each software package also needs some specific changes, described below.</p>
+<h3 id="fire_dynamics_simulator">Fire Dynamics Simulator<a class="headerlink" href="#fire_dynamics_simulator" title="Permanent link">#</a></h3>
+<p>FDS simulations restart automatically if T_END has not been reached yet: if needed, <a href="../storage/#edit_an_existing_file">edit the .fds file</a> and increase this parameter. The platform detects the <em>.restart</em> files written by the previous run and, if found, restarts the simulation from them. Make sure you set how often FDS writes restart files with the appropriate parameter in your <code>.fds</code> file:</p>
 <pre><code>&amp;DUMP DT_RESTART=300.0 /
 </code></pre>
 <h3 id="openfoam_1">OpenFOAM<a class="headerlink" href="#openfoam_1" title="Permanent link">#</a></h3>
-<p>The file to modify and substitute is the file <em>controlDict</em> located in the <em>system</em> Folder. This is the one collecting the information for restart. Modify this dictionary so that matches the following parameters:</p>
-<pre><code>startTime      latestTime;
+<p>The file to modify is <em>controlDict</em>, in the <em>system</em> folder, which holds the restart settings. Edit it so that it contains the following entries:</p>
+<pre><code>startFrom      latestTime;
 endTime        XXX;
 </code></pre>
-<p>where endTime must be greater that the time the simulation is restarting from. This string means that the simulation would restart from the results in the last time folder saved. Note that, if you leave this option as a default in your controlDict file, it allows you to start from 0 or restart from the latest time depending just on the time steps saved for openFoam.</p>
-<h3 id="code_aster">Code ASTER<a class="headerlink" href="#code_aster" title="Permanent link">#</a></h3>
-<p>The script to modify in local and substitute in the web-app's STORAGE folder is the file .comm. To restart the file you need to add the string:</p>
+<p>where endTime must be greater than the time the simulation restarts from. With this setting, the simulation restarts from the last saved time folder. If you always keep <code>startFrom latestTime;</code> in your controlDict, the same file starts from 0 on the first run and restarts from the latest saved time afterwards.</p>
+<h3 id="code_aster">code_aster<a class="headerlink" href="#code_aster" title="Permanent link">#</a></h3>
+<p>The file to modify locally and replace in the web app STORAGE folder is the .comm file. To restart the analysis, replace <code>DEBUT()</code> with:</p>
 <pre><code>POURSUITE()
 </code></pre>
-<p>You can find a detailed procedure in this <a href="https://cloudhpc.cloud/2022/09/14/resume-your-code_aster-analysis/">blog post</a></p>
+<p>The database of the previous run must be saved and read back: the <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/code-aster">code_aster template</a> saves it to the <code>base-stage1/</code> folder. You can find a detailed procedure in this <a href="https://cloudhpc.cloud/2022/09/14/resume-your-code_aster-analysis/">blog post</a>.</p>
               
             </div>
           </div><footer>

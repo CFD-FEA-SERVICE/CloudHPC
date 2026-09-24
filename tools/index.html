@@ -127,16 +127,16 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="tools_for_windows_and_linux">Tools for Windows and Linux<a class="headerlink" href="#tools_for_windows_and_linux" title="Permanent link">#</a></h1>
-<p>CFD FEA SERVICE srl provides a number of tools to make it easier the interaction with the cloudHPC platform to the users. These tools often requires the use of the <a href="../APIKEY/">APIKEY</a> which is available in your profile page.
-You can have a look at the tools available, download and install them at <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/releases">this link</a>.</p>
+<p>CFD FEA SERVICE srl provides several tools that make it easier to work with the cloudHPC platform. Most of them require your <a href="../APIKEY/">APIKEY</a>, available on your profile page.
+You can browse, download and install the available tools from <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/releases">this link</a>.</p>
 <h2 id="cloudhpcexec">cloudHPCexec<a class="headerlink" href="#cloudhpcexec" title="Permanent link">#</a></h2>
-<p>This tool allows you to execute your simulations directly from your terminal or using a python executable. It is available in two separate versions:</p>
+<p>This tool lets you run your simulations directly from a terminal or through a Python executable. It is available in two versions:</p>
 <ul>
 <li>
-<p>Linux DEBIAN package. DEB package installable on DEBIAN/UBUNTU linux versions, provides your terminal with the <em>cloudHPCexec</em> command. This command allows you to manage your analysis on the cloudHPC platform without using the website. The operations you can do involves executing the analysis, downloading the results, SSH connection to running analysis, stopping your analysis and much more.</p>
+<p>Linux DEBIAN package: a DEB package for Debian/Ubuntu Linux that adds the <em>cloudHPCexec</em> command to your terminal. With this command you can manage your analyses on cloudHPC without using the website: run analyses, download results, connect via SSH to running analyses, stop them and much more.</p>
 </li>
 <li>
-<p>Windows executable. WIN executable to launch your simulations directly from your desktop without opening the web site. An example on how setting up the executable and launch a new analysis is available in <a href="https://cloudhpc.cloud/2022/12/30/execute-codeaster-windows/">this post</a>.</p>
+<p>Windows executable: launches your simulations directly from your desktop, without opening the website. An example of how to set up the executable and launch a new analysis is available in <a href="https://cloudhpc.cloud/2022/12/30/execute-codeaster-windows/">this post</a>.</p>
 </li>
 </ul>
 <h3 id="debianubuntu_package">DEBIAN/UBUNTU package<a class="headerlink" href="#debianubuntu_package" title="Permanent link">#</a></h3>
@@ -144,16 +144,25 @@ You can have a look at the tools available, download and install them at <a href
 <li>Installation</li>
 </ol>
 <p>Download the cloudHPCexec.Ubuntu.deb package from <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/releases">this page</a>.
-Run on a terminal the command:</p>
+Then run the following commands in a terminal:</p>
 <pre><code>cd &lt;path-to-folder-with-downloaded-deb-package&gt;
-dpkg -i cloudHPCexec.Ubuntu.deb
+sudo dpkg -i cloudHPCexec.Ubuntu.deb
 </code></pre>
 <p align="center">
    <a href="https://www.youtube.com/watch?v=pcALSbaXIvw"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
 </p>
 
+<ol>
+<li>Usage</li>
+</ol>
+<p>On first use, cloudHPCexec asks for your API key and saves it. Then move into your case folder and run it:</p>
+<pre><code>cd &lt;case-folder&gt;
+cloudHPCexec                                             # interactive: menus for vCPU, RAM and solver
+cloudHPCexec -batch 4 standard openFoam-of13 pitzDaily-of13   # non-interactive: vCPU, RAM, script, storage folder
+</code></pre>
+<p>Run <code>cloudHPCexec -help</code> for the full list of options. Every <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC">ready-to-run example</a> includes the exact cloudHPCexec command to launch it, and the source code of the tool is available in the <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleAPI">exampleAPI folder</a>.</p>
 <h2 id="cloudhpcstorage">cloudHPCstorage<a class="headerlink" href="#cloudhpcstorage" title="Permanent link">#</a></h2>
-<p>This tool allows you to mount the cloudHPC storage on your local PC, like any other hard drive or USB drive. In this way you can upload new analysis or download results by using the copy and paste or drag and drop features. This tool is just available for Windows and requires you to get a configuration file from our support by <a href="mailto:info@cloudhpc.cloud">sending them an email</a>.</p>
+<p>This tool lets you mount the cloudHPC storage on your local PC, like any other hard drive or USB drive. You can then upload new analyses or download results with copy and paste or drag and drop. This tool is only available for Windows and requires a configuration file, which you can request from our support team by <a href="mailto:info@cloudhpc.cloud">sending an email</a>.</p>
               
             </div>
           </div><footer>

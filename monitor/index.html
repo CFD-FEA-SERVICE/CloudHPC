@@ -146,7 +146,7 @@
               
                 <h1 id="monitor">Monitor<a class="headerlink" href="#monitor" title="Permanent link">#</a></h1>
 <h2 id="simulation_time">Simulation time<a class="headerlink" href="#simulation_time" title="Permanent link">#</a></h2>
-<p>cloudHPC provides an estimate - ETA - of the total simulation's duration. This is provided after the simulation has been executed and it is available in your Output as highlited by the image below. The ETA estimate is available only for the following software:</p>
+<p>cloudHPC provides an estimate (ETA) of the total duration of the simulation. It is shown in the Output once the simulation has started, as highlighted in the image below. The ETA is only available for the following software:</p>
 <ul>
 <li>FDS [all versions]</li>
 </ul>
@@ -156,44 +156,47 @@
 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The provided duration should be considered a preliminary estimate and does not constitute a contractual element or a binding quote. Consequently, the final cost will be determined based on the actual consumption measured at the end of the activity.</p>
+<p>The duration provided is a preliminary estimate and is not a contractual element or a binding quote. The final cost is based on the actual consumption measured at the end of the run.</p>
 </div>
 <h3 id="manual_estimate">Manual estimate<a class="headerlink" href="#manual_estimate" title="Permanent link">#</a></h3>
-<p>To manually evaluate the simulation’s duration, you can check how many iterations are pursued and in how much time. This estimation can be done after at least 2 hours of simulation.
-You can then evaluate how many seconds of simulation are pursued in real-time. Hence, for instance, how many seconds of simulation are calculated in 2 hours. If you want to pursue a simulation of 600 seconds and you valuate that a simulation time of 120 seconds is calculated in 2 hours analysis. Then you would know that your simulation would take approximately 60 seconds of simulation time each hour. Consequently, it would take 10 hours to complete a simulation time of 600 seconds. </p>
+<p>To estimate the duration of a simulation yourself, check how much simulated time is computed in a given amount of real time. Do this after at least 2 hours of run time.
+For example, suppose you want to simulate 600 seconds and, after 2 hours, 120 seconds have been computed. The simulation advances by about 60 seconds of simulated time per hour, so it will take about 10 hours to reach 600 seconds.</p>
 <p align="center">
 120s : 2h = 60s/h
 
-600s : 6s/h = 10 h
+600s : 60s/h = 10 h
 </p>
 
 <h2 id="runtime_monitor">Runtime monitor<a class="headerlink" href="#runtime_monitor" title="Permanent link">#</a></h2>
-<p>The cloud HPC system, offers you the possibility to monitor your analysis in runtime during the simulation and, at the same time, to check the usage of the hardware resources in terms of vCPU and RAM, during the analysis. In order to access the monitor you need to enter the simulation details by clicking the "View" button of the analysis you want to monitor.</p>
+<p>cloudHPC lets you monitor your analysis while it runs and, at the same time, check how the hardware resources (vCPU and RAM) are being used. To open the monitor, click the "View" button of the analysis you want to follow.</p>
 <p align="center">
    <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_13_VIEW_SIM.png">
 </p>
 
-<p>Once you enter the simulation view page, the cloudHPC provides you with a number of information and controls of the running analysis that are briefly expained by the following paragraphs.</p>
+<p>The simulation view page shows information about the running analysis and lets you control it. Its sections are briefly explained below.</p>
 <h2 id="simulation_output">Simulation output<a class="headerlink" href="#simulation_output" title="Permanent link">#</a></h2>
-<p>The most fundamental communication window is represented by the simulation output. This is a real-time log of any information produced by cloudHPC while your simulation is actually running. In these info you can find:</p>
+<p>The most important window is the simulation output: a real-time log of all the information produced by cloudHPC while your simulation is running. Here you can find:</p>
 <ol>
 <li><a href="../errors/">Errors and warnings</a> produced by the cloudHPC</li>
-<li>A basic plot of the runtime log of your executable</li>
-<li>Execution information of the cloudHPC at all phases of your analysis</li>
+<li>A basic plot of the runtime log of your solver</li>
+<li>Information from cloudHPC about each phase of your analysis</li>
 </ol>
-<p>The output is the main window available under the simulation view page as displayed by the following image.</p>
+<p>The output is the main window of the simulation view page, as shown in the following image.</p>
 <p align="center">
    <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/ErrorOutput.png">
 </p>
 
 <h2 id="runtime_plots">Runtime plots<a class="headerlink" href="#runtime_plots" title="Permanent link">#</a></h2>
-<p>As your solver runs, cloudHPC tries to plot the most important output into graphs for users to easily read them. Every CSV file generated will be automatically plot into graph. Beyond that, some software have the capability to produce more advanced outputs such as:</p>
+<p>While your solver runs, cloudHPC plots its most important outputs into charts that are easy to read. Every CSV file generated during the run is automatically plotted. In addition, some software packages produce more advanced outputs:</p>
 <ul>
 <li>
-<p><strong>OPENFOAM</strong>: the cloud HPC authomatically generates a chart for each runtime post-processing activated in <em>controlDict</em>. It is important that you set it before launching the analysis with the post-processing you want to detect: residuals, max pressure/velocity, temperatures, flow calculations, etc. In order to have a template of the controlDict file you can check <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/OpenFOAM/system/controlDict">here</a>.</p>
+<p><strong>OPENFOAM</strong>: cloudHPC automatically generates a chart for each runtime post-processing function enabled in <em>controlDict</em>. Set up the functions you want to monitor before launching the analysis: residuals, maximum pressure/velocity, temperatures, flow rates, etc. The <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/OpenFOAM/system/controlDict">controlDict template</a> already contains residuals, maximum values and yPlus.</p>
 </li>
 <li>
-<p><strong>FDS</strong>: they system authomatically convertes into chart every CSV file generated by FDS during the runtime. In order to see the results you need to set up &amp;DEV (devices) and properly assign them variables to monitor.</p>
+<p><strong>FDS</strong>: the system automatically plots every CSV file written by FDS during the run. To see the results, define &amp;DEVC (devices) and assign them the quantities to monitor, as done in the <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/blob/master/template/FDS/template.fds">FDS template</a>.</p>
+</li>
+<li>
+<p><strong>Custom scripts</strong>: write your own CSV file during the run to get live charts, as done in the <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template/python-script">python-script template</a>.</p>
 </li>
 </ul>
 <p align="center">
@@ -201,23 +204,23 @@ You can then evaluate how many seconds of simulation are pursued in real-time. H
 </p>
 
 <h2 id="runtime_logs">Runtime logs<a class="headerlink" href="#runtime_logs" title="Permanent link">#</a></h2>
-<p>Every simulation software produces a log file which is displayed directly at runtime in the proper section of the web app. It is possible for you to check these logs in two ways:</p>
+<p>Every simulation software writes a log file, which is displayed at runtime in the web app. You can check these logs in two ways:</p>
 <ol>
-<li>Through the <strong>Output</strong> section where you can see a brief summary of the simulation status</li>
-<li>In the Logs section where every log file produced is reported and made accessible. The access remains also when the simulation is terminated as a reference </li>
+<li>In the <strong>Output</strong> section, which shows a brief summary of the simulation status</li>
+<li>In the <strong>Logs</strong> section, which lists every log file produced. The logs remain available after the simulation has ended, for reference</li>
 </ol>
 <p align="center">
    <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/LogFiles.jpg">
 </p>
 
 <h2 id="remote_desktop">Remote desktop<a class="headerlink" href="#remote_desktop" title="Permanent link">#</a></h2>
-<p>For enabled accounts, it is possible to access the virtal machine where the simulation is actually performed via remote desktop. This feature is available under the "view" page of each simulation and gives you access to all hardware resources of the instance where simulation is performed. With that you can:</p>
+<p>On enabled accounts, you can access the virtual machine running your simulation via remote desktop. This feature is available on the "view" page of each simulation and gives you access to all the hardware resources of the instance. With it you can:</p>
 <ul>
-<li>monitor your running process</li>
-<li>check status of the hardware resources</li>
+<li>monitor the running process</li>
+<li>check the status of the hardware resources</li>
 <li>run your preferred post-processing software such as ParaView, SALOME or Smokeview</li>
 </ul>
-<p>The remote desktop is made available for all simulations where status is RUNNING. To access it just enter the "view" page of the simulation and scroll down at the bottom of the page.</p>
+<p>The remote desktop is available for all simulations with status RUNNING. To access it, open the "view" page of the simulation and scroll to the bottom of the page.</p>
 <p align="center">
    <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/RemoteDesktop.jpg">
 </p>
@@ -227,37 +230,37 @@ You can then evaluate how many seconds of simulation are pursued in real-time. H
 </p>
 
 <h2 id="hardware_monitor">Hardware monitor<a class="headerlink" href="#hardware_monitor" title="Permanent link">#</a></h2>
-<p>Beyond results extracted by the solver, at any time it is possible to monitor the usage of vCPU and RAM are. These graphs are important in order to understand if the computational capacity chosen for your simulation is enough or overestimated.</p>
-<p>As a general rule, you can try to always have at least 1000 Mb available in the <em>Free line</em> (red).</p>
+<p>Besides the solver results, you can monitor vCPU and RAM usage at any time. These charts help you understand whether the computing capacity you selected is sufficient or oversized.</p>
+<p>As a general rule, try to always keep at least 1000 MB available on the <em>Free</em> line (red).</p>
 <p align="center">
    <img width="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_16_CPU_good.png">
    <img width="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_17_RAM_good.png">
 </p>
 
 <h2 id="ssh_connection">SSH Connection<a class="headerlink" href="#ssh_connection" title="Permanent link">#</a></h2>
-<p>Advanced users can also connect via SSH to the instances where the simulation is running. This allows you to enter the instance and get full control of the running analysis. You are also given the possibility, for example, to create/edit/cancel files.</p>
+<p>Advanced users can also connect via SSH to the instance running the simulation. This gives you full control of the running analysis: for example, you can create, edit or delete files.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>CFD FEA SERVICE SRL can't take resposibility for the user actions taken when he enters the instance. In particular if you stop the simulation or delete all the results produced by the simulation, it's impossible to us to retrieve these information.</p>
+<p>CFD FEA SERVICE SRL cannot take responsibility for any action performed by users on the instance. In particular, if you stop the simulation or delete the results it produced, we cannot recover them.</p>
 </div>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h3>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
-<p>For security reasons, SSH port 22 is closed to all accounts. In order to open that port for your specific IP address, contact our suppor team.</p>
+<p>For security reasons, SSH port 22 is closed for all accounts. To open it for your IP address, contact our support team.</p>
 </div>
-<p>In order to get SSH access to the running simulations make sure you have correctly saved your public key into your profile such as described in the following image:</p>
+<p>To access running simulations via SSH, make sure you have saved your public key in your profile, as shown in the following image:</p>
 <p align="center">
    <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/SSHkey.jpg">
 </p>
 
-<p>In order to retrieve your public key on Linux based systems, you can just run the following command on a terminal:</p>
+<p>To display your public key on Linux-based systems, run the following command in a terminal:</p>
 <pre><code>cat .ssh/id_rsa.pub
 </code></pre>
 <h3 id="connect_via_ssh">Connect via SSH<a class="headerlink" href="#connect_via_ssh" title="Permanent link">#</a></h3>
-<p>Once you have saved your public key to access via SSH to a running instance type the following command:</p>
+<p>Once your public key has been saved, connect to a running instance with the following command:</p>
 <pre><code>ssh -X -o "StrictHostKeyChecking no" cloudhpc@SIMULATION_IP_ADDRESS
 </code></pre>
-<p>where SIMULATION_IP_ADDRESS is reported in the "view" page of the running analysis. The same result can also be achieved using the script <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/releases">cloudHPCexec</a> by typing:</p>
+<p>where SIMULATION_IP_ADDRESS is shown on the "view" page of the running analysis. You can do the same with the <a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/releases">cloudHPCexec</a> tool by typing:</p>
 <pre><code>cloudHPCexec -ssh SIMULATION_ID
 </code></pre>
               

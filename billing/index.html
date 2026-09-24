@@ -139,7 +139,7 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="billing_information">Billing Information<a class="headerlink" href="#billing_information" title="Permanent link">#</a></h1>
-<p>To set your billing information, you can access your "<em>Account</em>" and enter your profile page on the <a href="https://cloud.cfdfeaservice.it">cloudHPC platform</a>.</p>
+<p>To set your billing information, open the "<em>Account</em>" menu and go to your profile page on the <a href="https://cloud.cfdfeaservice.it">cloudHPC platform</a>.</p>
 <p align="center">
    <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/Account.png">
 </p>
@@ -187,11 +187,11 @@
 </tr>
 <tr>
 <td><em>Fiscal Code or NIN</em></td>
-<td>Italian fiscal code if available.</td>
+<td>Italian fiscal code, if available.</td>
 </tr>
 <tr>
 <td><em>SDI or PEC</em></td>
-<td>Italian SDI or PEC if available.</td>
+<td>Italian SDI code or PEC address, if available.</td>
 </tr>
 <tr>
 <td><em>Email</em></td>
@@ -200,46 +200,46 @@
 </tbody>
 </table>
 <h2 id="payment_methods">Payment Methods<a class="headerlink" href="#payment_methods" title="Permanent link">#</a></h2>
-<p>At the bottom of the billing information, you can enter the "Payment Methods" section to add your preferred payment methods. Currently, the system accepts the following:</p>
+<p>At the bottom of the billing information, open the "Payment Methods" section to add your preferred payment methods. The system currently accepts:</p>
 <ul>
 <li>Credit/Debit cards</li>
 <li>SEPA Direct Debit (available for EU clients only)</li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Once your account is activated, it is mandatory to have at least one payment method available at all times. If you wish to modify your payment method, add a new one first and then remove the old one.</p>
+<p>Once your account is activated, at least one payment method must be available at all times. To change your payment method, add the new one first and then remove the old one.</p>
 </div>
 <p align="center">
    <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/PaymentMethod.png">
 </p>
 
 <h2 id="pricing">Pricing<a class="headerlink" href="#pricing" title="Permanent link">#</a></h2>
-<p>The cloudHPC pricing is intended to be as simple as possible for users. The basic unit of pricing is the vCPU Hour, representing one vCPU used for one hour. The base cost of a vCPU Hour is listed on the dedicated page of <a href="https://cloudhpc.cloud/#pricing">our portal</a>. There are no additional costs beyond this; if you do not execute any analyses in a specific month, you will not incur any charges.</p>
-<p>The system operates on a post-paid basis: you can run your analyses throughout the month, and at the end of the month, you will receive an email summarizing the total vCPU Hours used. The transaction is then processed within 3 to 7 days using the selected <a href="./#payment_methods">payment method</a>.</p>
+<p>cloudHPC pricing is designed to be as simple as possible. The basic pricing unit is the vCPU Hour: one vCPU used for one hour. The base cost of a vCPU Hour is listed on the pricing section of <a href="https://cloudhpc.cloud/#pricing">our website</a>. There are no other costs: if you do not run any analysis in a given month, you are not charged anything.</p>
+<p>The service is post-paid: you run your analyses during the month and, at the end of the month, you receive an email summarising the total vCPU Hours used. The payment is then processed within 3 to 7 days using the selected <a href="./#payment_methods">payment method</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Each time you execute a new simulation, the hourly cost is provided to you via a notification at the bottom of the page. This represents the hourly cost based on the settings you have selected in terms of vCPU and RAM.</p>
+<p>Each time you launch a new simulation, a notification at the bottom of the page shows its hourly cost, based on the vCPU and RAM you selected.</p>
 </div>
 <p align="center">
    <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/HourlyCost.png">
 </p>
 
 <h2 id="monitor_monthly_usage">Monitor Monthly Usage<a class="headerlink" href="#monitor_monthly_usage" title="Permanent link">#</a></h2>
-<p>The DASHBOARD menu allows you to monitor your completed monthly vCPU hour usage. The hours of simulations consumed are collected for different types of RAM used, multiplied by the number of vCPUs used. Data is collected on a monthly and yearly basis. This table also reports the cloudHPC cost for each month; for past months, this cost is the final balance, while for the current month, it is an estimation. After the invoice has been generated, you can download the invoice file using the <em>Download</em> button.</p>
+<p>The DASHBOARD menu shows your monthly vCPU Hour usage. The simulation hours are grouped by RAM type and multiplied by the number of vCPU used, and the data are collected on a monthly and yearly basis. The table also reports the cloudHPC cost of each month: for past months this is the final balance, while for the current month it is an estimate. Once the invoice has been issued, you can download it with the <em>Download</em> button.</p>
 <p align="center">
    <img width="800" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_21_DASHBORAD.png">
 </p>
 
-<p>Each month contains only the vCPU hours used within that specific month. Therefore, if one of your simulations runs across two different months, the total cost is split between the two months.</p>
+<p>Each month only includes the vCPU Hours used within that month: if a simulation runs across two months, its cost is split between them.</p>
 <h2 id="email_notification_of_consumption">Email Notification of Consumption<a class="headerlink" href="#email_notification_of_consumption" title="Permanent link">#</a></h2>
-<p>CloudHPC sends automatic consumption notifications whenever an assigned threshold (or its multiple) is reached. The default threshold for all accounts is €250, leading to notifications at €250, €500, €750, etc.</p>
+<p>cloudHPC automatically sends a consumption notification every time your usage reaches a set threshold or one of its multiples. The default threshold for all accounts is €250, so notifications are sent at €250, €500, €750, and so on.</p>
 <p align="center">
    <img width="400" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/NotificationConsumption.jpg">
 </p>
 
-<p>It's important to keep in mind that these notifications provide only a quick calculation and may underestimate (or overestimate) the actual consumption of your account. They do not account for, for example, the progressive discount applied by default at the end of each month.</p>
+<p>Keep in mind that these notifications are based on a quick calculation and may under- or overestimate the actual consumption of your account. For example, they do not include the progressive discount applied by default at the end of each month.</p>
 <h2 id="report_of_performed_simulations">Report of Performed Simulations<a class="headerlink" href="#report_of_performed_simulations" title="Permanent link">#</a></h2>
-<p>From your simulations page, you can download a complete report of the performed analyses in CSV file format. The report contains all the fields available on the simulation page, such as <em>Folder</em>, <em>vCPU/Hrs</em>, and <em>Cost</em>. Excel can open this file extension, allowing for post-treatment of the available information.</p>
+<p>From the simulations page you can download a complete report of your analyses in CSV format. The report contains all the fields shown on the simulations page, such as <em>Folder</em>, <em>vCPU/Hrs</em> and <em>Cost</em>, and can be opened in Excel for further processing.</p>
 <p align="center">
    <a href="https://www.youtube.com/watch?v=Xiapfw2D_J4&t=18s"><img width="460" height="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/YoutubeVideo.png"></a>
 </p>
