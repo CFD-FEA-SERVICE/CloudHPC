@@ -2,7 +2,7 @@ P actions make_etude
 P memjob 20504576
 P memory_limit 20024.0
 P mode interactif
-P mpi_nbcpu 1
+P mpi_nbcpu 4
 P mpi_nbnoeud 1
 P ncpus 8
 P nomjob RunCase_1_fem
@@ -14,11 +14,8 @@ P tpsjob 76
 P version stable
 A args --max_base 10000000
 A memjeveux 2503.0
-A tpmax 4500.0
-A args -max_base 250000
 F comm input.comm D  1
 F libr mesh.med D  2
 F libr results.rmed R  3
 F mess message.dat R  6
 R base base-stage1 RC 0
-R base base-stage1 D 0

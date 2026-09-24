@@ -1,6 +1,58 @@
-#Setting domain decomposition in AFFE_MODELE
-# this option takes also the number of subdomain which is going to be used to set the number of MPI process
-model = AFFE_MODELE(  ..., DISTRIBUTION=_F(METHODE='SOUS_DOMAINE', NB_SOUS_DOMAINE=4,), ... )
+# code_aster command file - cloudHPC template
+#
+# Skeleton of a linear static analysis prepared for the OpenMPI/OpenMP
+# versions of code_aster (suffix _mpi). Group names (FIXED, LOAD, ALL),
+# material and loads are placeholders: replace them with your own model.
+#
+# Units must match the export file:
+#   UNITE 2 -> mesh.med      (F libr mesh.med D 2)
+#   UNITE 3 -> results.rmed  (F libr results.rmed R 3)
 
-#Setting MPI solver in STAT_NON_LINE
-stat1 = STAT_NON_LINE( ..., SOLVEUR=_F( METHODE='MUMPS', MATR_DISTRIBUEE='OUI' ), ... )
+DEBUT(LANG='EN')
+#POURSUITE()    # use instead of DEBUT() to continue from base-stage1
+
+# Number of MPI processes: MUST match "P mpi_nbcpu" in the export file.
+# Any extra vCPU selected on cloudHPC is used as OpenMP threads.
+nCORE = 4
+
+# Mesh partitioning for MPI execution
+mesh = LIRE_MAILLAGE(FORMAT='MED', UNITE=2, PARTITIONNEUR='PTSCOTCH')
+
+# Domain decomposition: number of subdomains = number of MPI processes
+model = AFFE_MODELE(
+    MAILLAGE=mesh,
+    AFFE=_F(TOUT='OUI', PHENOMENE='MECANIQUE', MODELISATION='3D'),
+    DISTRIBUTION=_F(METHODE='SOUS_DOMAINE', NB_SOUS_DOMAINE=nCORE),
+)
+
+steel = DEFI_MATERIAU(ELAS=_F(E=210000.0e6, NU=0.3, RHO=7850.0))
+
+mater = AFFE_MATERIAU(MAILLAGE=mesh, AFFE=_F(TOUT='OUI', MATER=steel))
+
+bcs = AFFE_CHAR_MECA(
+    MODELE=model,
+    DDL_IMPO=_F(GROUP_MA='FIXED', DX=0.0, DY=0.0, DZ=0.0),
+    PRES_REP=_F(GROUP_MA='LOAD', PRES=1.0e6),
+)
+
+# Distributed solvers for MPI execution (MATR_DISTRIBUEE='OUI'):
+#   MECA_STATIQUE  -> METHODE='MUMPS' or 'PETSC'
+#   STAT_NON_LINE  -> METHODE='MUMPS' or 'PETSC'
+#   stat = STAT_NON_LINE( ..., SOLVEUR=_F(METHODE='MUMPS', MATR_DISTRIBUEE='OUI'), ... )
+resu = MECA_STATIQUE(
+    MODELE=model,
+    CHAM_MATER=mater,
+    EXCIT=_F(CHARGE=bcs),
+    SOLVEUR=_F(METHODE='MUMPS', MATR_DISTRIBUEE='OUI'),
+)
+
+resu = CALC_CHAMP(
+    reuse=resu,
+    RESULTAT=resu,
+    CONTRAINTE=('SIGM_NOEU',),
+    CRITERES=('SIEQ_NOEU',),
+)
+
+IMPR_RESULTAT(FORMAT='MED', UNITE=3, RESU=_F(RESULTAT=resu))
+
+FIN()

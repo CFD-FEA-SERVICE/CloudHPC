@@ -1,0 +1,24 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | cloudHPC template - custom code compilation
+    \\  /    A nd           | openfoam.com v2412
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      transportProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Diffusivity of T
+DT              DT [0 2 -1 0 0 0 0] 1e-4;
+
+// First-order decay rate of T used by the custom solver
+decayRate       decayRate [0 0 -1 0 0 0 0] 0.5;
+
+// ************************************************************************* //

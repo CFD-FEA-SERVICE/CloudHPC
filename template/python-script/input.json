@@ -1,0 +1,5 @@
+{
+    "iterations": 50,
+    "samples_per_core": 2000000,
+    "seed": 1234
+}
