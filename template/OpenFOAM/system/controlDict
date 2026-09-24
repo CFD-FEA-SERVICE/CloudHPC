@@ -1,8 +1,8 @@
 /*--------------------------------*- C++ -*----------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Version:  7
+   \\    /   O peration     | cloudHPC template - works with openfoam.org
+    \\  /    A nd           | and openfoam.com versions
      \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
@@ -15,6 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+// Solver to execute: cloudHPC reads it from this entry
 application   simpleFoam;
 //application   pimpleFoam;
 //application   buoyantSimpleFoam;
@@ -22,16 +23,25 @@ application   simpleFoam;
 //application   porousSimpleFoam;
 //application   interFoam;
 
+// openfoam.org v11 and newer: modular solvers run through foamRun
+//application   foamRun;
+//solver        incompressibleFluid;
+
+// Required by cloudHPC: restart from the last saved time on SPOT reboot,
+// soft stop + restart. The system forces it if a different value is set
 startFrom   latestTime;
 startTime   0;
 stopAt   endTime;
 endTime   3000;
-deltaT   1.0000000000000000;
+deltaT   1;
 
 writeControl   timeStep;
-//writeControl  adjustableRunTime;
+//writeControl  adjustableRunTime;   // transient solvers
 
+// On SPOT instances this is also the restart frequency
 writeInterval   100;
+
+// 0 keeps all saved times; e.g. 5 keeps only the 5 most recent ones
 purgeWrite   0;
 
 //custom CFD FEA SERVICE [only keep multiple Intervals]
@@ -44,53 +54,89 @@ timeFormat   general;
 timePrecision   6;
 runTimeModifiable   true;
 
+// Transient solvers only (ignored by steady solvers)
 adjustTimeStep yes;
-maxCo       1000.0;
+maxCo       1.0;
 maxAlphaCo  1.0;
 maxDeltaT   1.0;
 
+// cloudHPC custom entries -------------------------------------------------
+// Read by the cloudHPC OpenFOAM script only, ignored by the solver.
+// Uncomment the ones you need. Boolean switches must be written exactly
+// as "true": yes/on are not recognised.
+//
+// Mesh stage: applied only when the mesh is generated during the run
+// (no constant/polyMesh uploaded, or a meshing script selected), in the
+// order listed below, after snappyHexMesh/cfMesh/blockMesh.
+//
+//   true    -> split the mesh into one region per cellZone (every cell
+//              must belong to a cellZone), e.g. for CHT cases
+//   largest -> keep only the largest connected region: removes the mesh
+//              generated on the wrong side of the STL surfaces
+//splitMesh           true;
+//
+// Number of mesh extrusions to perform from boundary patches. Requires
+// system/extrudeMeshDict.0 ... system/extrudeMeshDict.<N-1>, executed in
+// sequence
+//nExtrusion          1;
+//
+// Uniform scale factor applied to the final mesh, e.g. 0.001 for a
+// geometry drawn in mm
+//scaleFactor         0.001;
+//
+// Solver stage
+//
+// Run potentialFoam before the solver to initialise U and p
+//potentialFoam       true;
+// --------------------------------------------------------------------------
+
+// Every function object below writes into postProcessing/ and is converted
+// into a runtime chart by cloudHPC
 functions
 {
-        cellMax
-        {
-              type            volFieldValue;
-              libs            ("libfieldFunctionObjects.so");
-              writeControl    timeStep;
-              writeInterval   1;
-              writeFields     false;
-              log             false;
-              operation       max;
-              fields (U p T);
-        }
+    cellMax
+    {
+        type            volFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   1;
+        writeFields     false;
+        log             false;
+        operation       max;
+        fields          (U p);      // add T for heat transfer cases
+    }
 
-        yPlus
-        {
-              type            yPlus;
-              libs            ("libfieldFunctionObjects.so");
-	      writeControl    writeTime;
-        }
+    yPlus
+    {
+        type            yPlus;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+    }
 
-	residuals
-	{
-		type   residuals;
-		functionObjectLibs   ("libutilityFunctionObjects.so");
-		enabled   true;
-		writeControl   timeStep;
-		writeInterval   1;
-		fields   (p p_rgh U h e k epsilon omega);
-	}
+    // openfoam.com v1906 and newer: use "type solverInfo;" instead
+    residuals
+    {
+        type            residuals;
+        libs            ("libutilityFunctionObjects.so");
+        enabled         true;
+        writeControl    timeStep;
+        writeInterval   1;
+        fields          (p p_rgh U h e k epsilon omega);
+    }
 
-	//forces
-	//{  
-	//   type          forces;
-	//   libs          ("libforces.so");
-	//   writeControl  timeStep;
-	//   timeInterval  1;
-        //   rho           rhoInf;  // Density -> only for incompressible
-        //   rhoInf        1.2;     // Density -> only for incompressible
-	//   log           yes;
-	//   patches       ( impeller impeller-out );
-	//   CofR          (0 0 0);
-	//   pitchAxis     (0 0 1);
-	//}
+    //forces
+    //{
+    //    type            forces;
+    //    libs            ("libforces.so");
+    //    writeControl    timeStep;
+    //    writeInterval   1;
+    //    rho             rhoInf;   // Density -> only for incompressible
+    //    rhoInf          1.2;      // Density -> only for incompressible
+    //    log             yes;
+    //    patches         ( impeller impeller-out );
+    //    CofR            (0 0 0);
+    //    pitchAxis       (0 0 1);
+    //}
 }
+
+// ************************************************************************* //

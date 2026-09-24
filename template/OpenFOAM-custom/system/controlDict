@@ -1,0 +1,60 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | cloudHPC template - custom code compilation
+    \\  /    A nd           | openfoam.com v2412
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Custom solver compiled by cloudHPC from ../myScalarTransportFoam
+application     myScalarTransportFoam;
+
+// Custom library compiled by cloudHPC from ../myCustomBC
+libs            ("libmyCustomBC.so");
+
+// Required by cloudHPC: restart from the last saved time
+startFrom       latestTime;
+startTime       0;
+stopAt          endTime;
+endTime         2;
+deltaT          0.005;
+
+writeControl    runTime;
+writeInterval   0.1;
+purgeWrite      0;
+
+writeFormat     ascii;
+writePrecision  6;
+writeCompression off;
+timeFormat      general;
+timePrecision   6;
+runTimeModifiable true;
+
+// Written into postProcessing/ and plotted at runtime by cloudHPC
+functions
+{
+    outletT
+    {
+        type            surfaceFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   1;
+        log             false;
+        writeFields     false;
+        regionType      patch;
+        name            outlet;
+        operation       areaAverage;
+        fields          (T);
+    }
+}
+
+// ************************************************************************* //

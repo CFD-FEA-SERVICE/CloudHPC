@@ -1,0 +1,85 @@
+&HEAD CHID='roomFire', TITLE='Compartment fire with a single doorway - FDS 6.9.1' /
+
+! ----------------------------------------------------------------------------
+! Computational domain
+!
+! A 3.6 x 2.4 x 2.4 m compartment discretised with 0.10 m cells and split into
+! two meshes along x, so the case runs on 2 MPI processes. Increase the number
+! of &MESH blocks (and vCPU requested on cloudHPC) to scale the case up.
+! ----------------------------------------------------------------------------
+&MESH ID='mesh-left',  IJK=18,24,24, XB=0.0,1.8,0.0,2.4,0.0,2.4, MPI_PROCESS=0 /
+&MESH ID='mesh-right', IJK=18,24,24, XB=1.8,3.6,0.0,2.4,0.0,2.4, MPI_PROCESS=1 /
+
+&TIME T_END=30.0 /
+
+! DT_RESTART lets the platform resume the run if a SPOT instance is rebooted
+&DUMP NFRAMES=60, DT_RESTART=300.0, DT_DEVC=1.0 /
+
+&MISC TMPA=20.0 /
+
+! ----------------------------------------------------------------------------
+! Combustion
+! ----------------------------------------------------------------------------
+&REAC ID          = 'PROPANE'
+      FUEL        = 'PROPANE'
+      SOOT_YIELD  = 0.01
+      CO_YIELD    = 0.005 /
+
+! ----------------------------------------------------------------------------
+! Materials and surfaces
+! ----------------------------------------------------------------------------
+&MATL ID                 = 'GYPSUM'
+      DENSITY            = 790.0
+      CONDUCTIVITY       = 0.17
+      SPECIFIC_HEAT      = 1.09 /
+
+&SURF ID             = 'WALL'
+      MATL_ID        = 'GYPSUM'
+      THICKNESS      = 0.013
+      COLOR          = 'BEIGE'
+      BACKING        = 'EXPOSED' /
+
+! 0.6 x 0.6 m burner at 1000 kW/m2 -> 360 kW peak, ramped over the first 10 s
+&SURF ID       = 'BURNER'
+      HRRPUA   = 1000.0
+      RAMP_Q   = 'fire ramp'
+      COLOR    = 'RED' /
+
+&RAMP ID='fire ramp', T= 0.0, F=0.0 /
+&RAMP ID='fire ramp', T=10.0, F=1.0 /
+&RAMP ID='fire ramp', T=30.0, F=1.0 /
+
+! ----------------------------------------------------------------------------
+! Geometry
+! ----------------------------------------------------------------------------
+! Compartment walls (the domain boundary is INERT by default, so the four
+! vertical walls and the ceiling are given the gypsum lining explicitly)
+&VENT MB='XMIN', SURF_ID='WALL' /
+&VENT MB='YMIN', SURF_ID='WALL' /
+&VENT MB='YMAX', SURF_ID='WALL' /
+&VENT MB='ZMAX', SURF_ID='WALL' /
+&VENT MB='XMAX', SURF_ID='WALL' /
+
+! Doorway: 0.9 m wide, 2.0 m high, open to the ambient
+&VENT XB=3.6,3.6, 0.75,1.65, 0.0,2.0, SURF_ID='OPEN', ID='doorway' /
+
+! Burner block
+&OBST XB=0.6,1.2, 0.9,1.5, 0.0,0.3, SURF_IDS='BURNER','INERT','INERT', ID='burner' /
+
+! ----------------------------------------------------------------------------
+! Output
+! ----------------------------------------------------------------------------
+&DEVC ID='TC 0.6m', QUANTITY='THERMOCOUPLE', XYZ=2.4,1.2,0.6 /
+&DEVC ID='TC 1.2m', QUANTITY='THERMOCOUPLE', XYZ=2.4,1.2,1.2 /
+&DEVC ID='TC 1.8m', QUANTITY='THERMOCOUPLE', XYZ=2.4,1.2,1.8 /
+&DEVC ID='TC 2.2m', QUANTITY='THERMOCOUPLE', XYZ=2.4,1.2,2.2 /
+&DEVC ID='door velocity', QUANTITY='U-VELOCITY', XYZ=3.55,1.2,1.8 /
+&DEVC ID='layer', QUANTITY='LAYER HEIGHT', XB=2.4,2.4,1.2,1.2,0.0,2.4 /
+
+&SLCF PBY=1.2, QUANTITY='TEMPERATURE', CELL_CENTERED=.TRUE. /
+&SLCF PBY=1.2, QUANTITY='VELOCITY', VECTOR=.TRUE. /
+&SLCF PBY=1.2, QUANTITY='HRRPUV', CELL_CENTERED=.TRUE. /
+
+&BNDF QUANTITY='WALL TEMPERATURE' /
+
+&TAIL /

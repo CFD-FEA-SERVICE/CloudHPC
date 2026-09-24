@@ -1,0 +1,21 @@
+#!/bin/sh
+#------------------------------------------------------------------------------
+# cloudHPC template - master build script (optional)
+#
+# If present in the case root, cloudHPC runs this script first, before
+# visiting the subfolders, and saves its output to Allwmake.log.
+# Use it to control the build order, e.g. a library needed by the solver.
+#
+# Make/files must target $(FOAM_USER_LIBBIN) / $(FOAM_USER_APPBIN): the
+# binary paths are not patched when an Allwmake is used.
+#------------------------------------------------------------------------------
+cd "${0%/*}" || exit 1                                 # Run from this directory
+. ${WM_PROJECT_DIR:?}/wmake/scripts/AllwmakeParseArguments  # -j, -q, ... options
+
+# 1. Custom boundary condition library -> libmyCustomBC.so
+wmake $targetType myCustomBC || exit 1
+
+# 2. Custom solver -> myScalarTransportFoam
+wmake $targetType myScalarTransportFoam || exit 1
+
+#------------------------------------------------------------------------------

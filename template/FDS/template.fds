@@ -1,0 +1,73 @@
+&HEAD CHID='template', TITLE='cloudHPC FDS template - compartment fire' /
+
+! ----------------------------------------------------------------------------
+! MESHES - scalability on cloudHPC
+!
+! * Use several &MESH lines: each one is computed by one MPI process.
+! * Keep at least 15,000-20,000 cells per &MESH and a similar number of
+!   cells in every &MESH (here 40 x 20 x 24 = 19,200 cells each).
+! * MPI_PROCESS groups meshes on one core: it MUST be in ascending order.
+! * vCPU to select on cloudHPC for this file (4 MPI processes):
+!     highcore / hypercore                   -> vCPU = 4
+!     highcpu / standard / highmem / hypercpu -> vCPU = 8
+! * Alternatively, a single &MESH with at least 40,000 cells and vCPU >= 4
+!   is automatically decomposed by cloudHPC.
+! ----------------------------------------------------------------------------
+&MESH ID='mesh-00', IJK=40,20,24, XB=0.0,4.0,0.0,2.0,0.0,2.4, MPI_PROCESS=0 /
+&MESH ID='mesh-01', IJK=40,20,24, XB=4.0,8.0,0.0,2.0,0.0,2.4, MPI_PROCESS=1 /
+&MESH ID='mesh-02', IJK=40,20,24, XB=0.0,4.0,2.0,4.0,0.0,2.4, MPI_PROCESS=2 /
+&MESH ID='mesh-03', IJK=40,20,24, XB=4.0,8.0,2.0,4.0,0.0,2.4, MPI_PROCESS=3 /
+
+&TIME T_END=600.0 /
+
+! ----------------------------------------------------------------------------
+! RESTART - DT_RESTART is simulated time between restart files. cloudHPC uses
+! them to resume after a SPOT reboot or a soft stop (increase T_END and run
+! again). Tune it to write a restart file every 2 to 5 hours of wall time.
+! DT_DEVC sets the output frequency of the device CSV plotted at runtime.
+! ----------------------------------------------------------------------------
+&DUMP DT_RESTART=300.0, DT_DEVC=1.0, NFRAMES=120 /
+
+! ----------------------------------------------------------------------------
+! MISC - MINIMUM_ZONE_VOLUME turns tiny pressure zones into solids, avoiding
+! the "high number of Pressure Zones" scalability warning.
+! NO_PRESSURE_ZONES=T is for debugging only.
+! ----------------------------------------------------------------------------
+&MISC TMPA=20.0, MINIMUM_ZONE_VOLUME=1.0 /
+
+! ----------------------------------------------------------------------------
+! Combustion
+! ----------------------------------------------------------------------------
+&REAC ID='PROPANE', FUEL='PROPANE', SOOT_YIELD=0.01, CO_YIELD=0.005 /
+
+&SURF ID='BURNER', HRRPUA=500.0, RAMP_Q='fire ramp', COLOR='RED' /
+&RAMP ID='fire ramp', T=  0.0, F=0.0 /
+&RAMP ID='fire ramp', T=120.0, F=1.0 /
+&RAMP ID='fire ramp', T=600.0, F=1.0 /
+
+! ----------------------------------------------------------------------------
+! Geometry
+! ----------------------------------------------------------------------------
+! 1.0 x 1.0 m burner (500 kW peak) placed across the four meshes
+&OBST ID='burner', XB=3.5,4.5,1.5,2.5,0.0,0.2, SURF_IDS='BURNER','INERT','INERT' /
+
+! Doorway on the x-max wall (domain boundaries are INERT by default)
+&VENT XB=8.0,8.0,1.5,2.5,0.0,2.0, SURF_ID='OPEN' /
+
+! ----------------------------------------------------------------------------
+! DEVICES - every CSV written by FDS (_devc.csv, _hrr.csv) is plotted at
+! runtime by cloudHPC. Note: VISIBILITY, RADIATIVE HEAT FLUX and
+! GAUGE HEAT FLUX GAS devices may slow down AMD processors: prefer
+! hypercore / hypercpu instances when using them.
+! ----------------------------------------------------------------------------
+&DEVC ID='TC-ceiling', QUANTITY='TEMPERATURE', XYZ=4.0,2.0,2.3 /
+&DEVC ID='TC-door',    QUANTITY='TEMPERATURE', XYZ=7.9,2.0,1.9 /
+&DEVC ID='TC-corner',  QUANTITY='TEMPERATURE', XYZ=0.5,0.5,2.3 /
+
+! ----------------------------------------------------------------------------
+! Slices for Smokeview (available on any static instance)
+! ----------------------------------------------------------------------------
+&SLCF PBY=2.0, QUANTITY='TEMPERATURE' /
+&SLCF PBY=2.0, QUANTITY='VELOCITY', VECTOR=T /
+
+&TAIL /

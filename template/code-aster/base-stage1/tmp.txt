@@ -1,1 +1,3 @@
-aa
+Placeholder: keeps the base-stage1 folder in the case.
+code_aster saves its database here (R base base-stage1 RC 0 in export)
+so the analysis can be continued later with POURSUITE().

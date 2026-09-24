@@ -1,8 +1,8 @@
 /*--------------------------------*- C++ -*----------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Version:  7
+   \\    /   O peration     | cloudHPC template - works with openfoam.org
+    \\  /    A nd           | and openfoam.com versions
      \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
@@ -11,10 +11,30 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "system";
-    object      controlDict;
+    object      decomposeParDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+// Automatically updated by cloudHPC to match the vCPU selected
+// (highcore/hypercore: 1 subdomain per vCPU, other instances: 1 per 2 vCPU)
 numberOfSubdomains 4;
 
+// Suggested method: scotch (no extra coefficients required)
 method   scotch;
+
+// Alternative: hierarchical. Also here the "n" coefficients are
+// automatically updated by cloudHPC to match the selected vCPU
+//method   hierarchical;
+//
+//coeffs
+//{
+//    n       (2 2 1);
+//}
+//
+//hierarchicalCoeffs
+//{
+//    n       (2 2 1);
+//    order   xyz;
+//}
+
+// ************************************************************************* //
