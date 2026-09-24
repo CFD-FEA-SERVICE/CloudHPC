@@ -4,3 +4,11 @@ __pycache__/
 dist/
 GUI/build/Output/
 GUI/src/GUIsetup.xml
+cloudhpc-mcp/__pycache__/
+cloudhpc-mcp/*.pyc
+cloudhpc-mcp/.venv/
+cloudhpc-mcp/.env
+cloudhpc-mcp/dist/
+cloudhpc-mcp/build/
+cloudhpc-mcp/*.egg-info/
+cloudhpc-mcp/.pytest_cache/

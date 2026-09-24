@@ -1,234 +1,305 @@
-#!/bin/python3
+#!/usr/bin/env python3
+###############################################################################
+#
+#   cloudHPCexec.py - launch a cloudHPC simulation from a local folder (GUI)
+#
+#   Script developed by CFD FEA SERVICE SRL
+#   License: GPLv3
+#
+#   Flow (same as the bash cloudHPCexec):
+#     1. read vCPU / RAM / solver options from the API
+#     2. zip the selected folder (files at the root of the archive)
+#     3. POST storage/upload-url  -> signed URL
+#     4. PUT the zip to the signed URL (raw body, same Content-Type)
+#     5. DELETE user/delete-cache (optional refresh of the storage listing)
+#     6. POST simulation/add      -> simulation ID
+#
+#   Dependencies: python3 with tkinter, requests  (pip install requests)
+#   Environment:  CLOUDHPC_BASEURL to use another server (e.g. staging)
+#
+###############################################################################
 
-#import PySimpleGUI as sg
-
-import tkinter as tk
-from tkinter import ttk, filedialog
+import os
+import shutil
+import sys
+import tempfile
+import threading
 from pathlib import Path
-import os, json
 
-# dependencies installation
-#os.system("pip install touch requests")
-import touch, requests, shutil
+try:
+    import requests
+except ImportError:
+    sys.exit("Missing dependency: pip install requests")
 
-APIKEY_DIR  = os.path.join( str( Path.home() ) , '.cfscloudhpc' )
-DOTENV_FILE = os.path.join( APIKEY_DIR, 'apikey' )
+BASEURL = os.environ.get("CLOUDHPC_BASEURL", "cloud.cfdfeaservice.it")
+API = f"https://{BASEURL}/api/v2"
+
+APIKEY_DIR = os.path.join(str(Path.home()), ".cfscloudhpc")
+APIKEY_FILE = os.path.join(APIKEY_DIR, "apikey")
+
+ARCHIVE_NAME = "simulation.zip"
+UPLOAD_CONTENT_TYPE = "application/octet-stream"
+TIMEOUT = 60            # seconds for API calls
+UPLOAD_TIMEOUT = 3600   # seconds for the file upload
 
 
-def secure_apikey_storage():
-    """Create the API-key directory and file with owner-only permissions.
+###############################################################################
+# API key storage (owner-only permissions)
+###############################################################################
 
-    The API key grants full access to the cloudHPC account (submit jobs,
-    download results, incur billing), so it must never be readable by other
-    users of the machine — a real concern on shared workstations and HPC
-    login nodes. os.makedirs()/open() honour the umask, which on the common
-    default (022) would leave the key world-readable, hence the explicit
-    chmod. On Windows POSIX modes are not enforced and chmod is a no-op.
-    """
+def read_apikey():
+    """Return the stored API key, or '' if none."""
     try:
-        os.makedirs( APIKEY_DIR )
-    except FileExistsError:
-        pass
-    try:
-        os.chmod( APIKEY_DIR, 0o700 )
+        with open(APIKEY_FILE, "r") as f:
+            return f.readline().strip()
     except OSError:
-        pass
-
-    if os.path.exists( DOTENV_FILE ):
-        try:
-            os.chmod( DOTENV_FILE, 0o600 )
-        except OSError:
-            pass
-    else:
-        # created directly with the right mode: no window during which the
-        # file exists with permissive rights
-        os.close( os.open( DOTENV_FILE, os.O_CREAT | os.O_WRONLY, 0o600 ) )
+        return ""
 
 
 def write_apikey(apikey):
-    """Store the API key, keeping the file readable by its owner only."""
-    fd = os.open( DOTENV_FILE, os.O_CREAT | os.O_WRONLY | os.O_TRUNC, 0o600 )
-    with os.fdopen( fd, 'w' ) as env_file:
-        env_file.write( apikey )
+    """Store the API key readable by its owner only (0600, dir 0700)."""
+    os.makedirs(APIKEY_DIR, exist_ok=True)
     try:
-        os.chmod( DOTENV_FILE, 0o600 )   # in case the file already existed
+        os.chmod(APIKEY_DIR, 0o700)
+    except OSError:
+        pass
+    fd = os.open(APIKEY_FILE, os.O_CREAT | os.O_WRONLY | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        f.write(apikey.strip())
+    try:
+        os.chmod(APIKEY_FILE, 0o600)   # in case the file already existed
     except OSError:
         pass
 
 
-secure_apikey_storage()
+def delete_apikey():
+    try:
+        os.remove(APIKEY_FILE)
+    except OSError:
+        pass
 
-# window definition
-root = tk.Tk()
 
-root.title( "Cloud HPC - Run" )
-root.grid_columnconfigure(0, weight=5)
-root.grid_columnconfigure(1, weight=5)
-root.grid_columnconfigure(2, weight=1)
+###############################################################################
+# API client
+###############################################################################
 
-window_width = 300
-window_height = 200
+class APIError(Exception):
+    pass
 
-# get the screen dimension
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
 
-# find the center point
-center_x = int(screen_width/2 - window_width / 2)
-center_y = int(screen_height/2 - window_height / 2)
+class CloudHPC:
+    def __init__(self, apikey, api=API):
+        self.api = api
+        self.session = requests.Session()
+        self.session.headers.update({
+            "X-API-Key": apikey.strip(),
+            "Accept": "application/json",
+        })
 
-root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
-root.resizable(False,False)
+    def _call(self, method, path, json=None):
+        try:
+            r = self.session.request(method, self.api + path, json=json, timeout=TIMEOUT)
+        except requests.RequestException as e:
+            raise APIError(f"Connection error: {e}") from e
 
-#SEMPRE IN PRIMO PIANO
-root.attributes('-topmost', 1)
+        try:
+            data = r.json()
+        except ValueError:
+            raise APIError(f"HTTP {r.status_code}: non-JSON reply from {path}")
 
-#ICONA DELLA FINESTRA
-#root.iconbitmap('./assets/pythontutorial.ico')
+        if isinstance(data, dict) and data.get("errors"):
+            raise APIError(f"HTTP {r.status_code}: {data['errors'][0]}")
+        if r.status_code >= 400:
+            raise APIError(f"HTTP {r.status_code} on {path}")
+        if not isinstance(data, dict) or "response" not in data:
+            raise APIError(f"Unexpected reply from {path}")
+        return data["response"]
 
-#APIKEY
-apikey = tk.StringVar()
+    # options -----------------------------------------------------------------
+    def cpu_options(self):
+        return self._call("GET", "/simulation/view-cpu")
 
-env_file = open( DOTENV_FILE, 'r' )
-apikey_file = env_file.readline()
-env_file.close()
+    def ram_options(self):
+        return self._call("GET", "/simulation/view-ram")
 
-apikey.set( apikey_file )
+    def script_options(self):
+        return self._call("GET", "/simulation/view-scripts")
 
-ttk.Label(root, text="APIKEY:").grid( row=3, column=0 )
-ttk.Entry(root, textvariable=apikey, width=30).grid( row=3, column=1, columnspan=2 )
-#apikey_entry.pack(fill='x', expand=True)
+    # storage -----------------------------------------------------------------
+    def upload_file(self, local_path, dirname, filename, progress=None):
+        """Upload local_path to STORAGE as dirname/filename via signed URL."""
+        reply = self._call("POST", "/storage/upload-url", json={
+            "dirname": dirname,
+            "filename": filename,
+            "contentType": UPLOAD_CONTENT_TYPE,
+        })
+        url = reply.get("url") if isinstance(reply, dict) else None
+        if not url:
+            raise APIError("storage/upload-url did not return an upload URL")
 
-if ( apikey.get() != "" ):
+        size = os.path.getsize(local_path)
+        if progress:
+            progress(f"Uploading {size / 1e6:.1f} MB ...")
 
-   #CPU DROP DOWN
-   headers = { "X-API-key" : apikey.get().rstrip("\n"), "accept" : "application/json", }
-   cpu_response = requests.get( 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-cpu', headers=headers)
+        # Raw body (NOT multipart): the storage object must be the zip itself.
+        # Content-Type must match the one used to sign the URL.
+        with open(local_path, "rb") as f:
+            try:
+                r = requests.put(url, data=f,
+                                 headers={"Content-Type": UPLOAD_CONTENT_TYPE,
+                                          "Content-Length": str(size)},
+                                 timeout=UPLOAD_TIMEOUT)
+            except requests.RequestException as e:
+                raise APIError(f"Upload failed: {e}") from e
+        if r.status_code >= 300:
+            raise APIError(f"Upload failed: HTTP {r.status_code} {r.text[:200]}")
 
-   if 'errors' in cpu_response.json():
-      print( "ERROR: " + cpu_response.json()['errors'][0] )
-      exit()
+        # Optional: refresh the storage listing so the new file is seen at once
+        try:
+            self._call("DELETE", "/user/delete-cache")
+        except APIError:
+            pass
 
-   cpu_dropdown = tk.StringVar()
+    # simulations -------------------------------------------------------------
+    def add_simulation(self, cpu, ram, script, folder, regular=False):
+        body = {"cpu": int(cpu), "ram": ram, "script": script, "folder": folder}
+        if regular:
+            body["nopre"] = 1
+        return self._call("POST", "/simulation/add", json=body)
 
-   #If APIKEY is incorrect we detect it here and remove the APIKEY file
-   try:
-      cpu_dropdown.set( cpu_response.json()['response'][0] )
-   except:
-      env_file.close()
-      os.remove( DOTENV_FILE )
 
-   ttk.Label(root, text="vCPU:").grid( row=4, column=0 )
-   cpumenu = tk.OptionMenu( root, cpu_dropdown, *cpu_response.json()['response'] )
-   cpumenu.grid( row=4, column=1, columnspan=2  )
-   cpumenu.config(width=25)
+###############################################################################
+# Launch procedure (no GUI code here)
+###############################################################################
 
-   #RAM DROP DOWN
-   headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json', }
-   ram_response = requests.get( 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-ram', headers=headers)
+def zip_folder(folder, workdir):
+    """Zip the CONTENT of folder (files at archive root) into workdir."""
+    base = os.path.join(workdir, os.path.splitext(ARCHIVE_NAME)[0])
+    return shutil.make_archive(base, "zip", root_dir=folder)
 
-   if 'errors' in ram_response.json():
-      print( "ERROR: " + ram_response.json()['errors'][0] )
-      exit()
 
-   ram_dropdown = tk.StringVar()
-   ram_dropdown.set( ram_response.json()['response'][0] )
+def launch(client, cpu, ram, script, folder, regular=False, progress=print):
+    folder = os.path.abspath(folder)
+    if not os.path.isdir(folder):
+        raise APIError(f"Folder not found: {folder}")
+    if not os.listdir(folder):
+        raise APIError(f"Folder is empty: {folder}")
 
-   ttk.Label(root, text="RAM:").grid( row=5, column=0 )
-   rammenu = tk.OptionMenu( root, ram_dropdown, *ram_response.json()['response'] )
-   rammenu.grid( row=5, column=1, columnspan=2 )
-   rammenu.config(width=25)
+    storage_folder = os.path.basename(folder.rstrip(os.sep))
 
-   #SCRIPT DROP DOWN
-   headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json', }
-   scripts_response = requests.get( 'https://cloud.cfdfeaservice.it/api/v2/simulation/view-scripts', headers=headers)
+    # temporary dir outside the case folder: nothing left behind on errors
+    with tempfile.TemporaryDirectory(prefix="cloudhpc-") as tmp:
+        progress(f"Compressing {storage_folder} ...")
+        archive = zip_folder(folder, tmp)
+        client.upload_file(archive, storage_folder, ARCHIVE_NAME, progress)
 
-   if 'errors' in scripts_response.json():
-      print( "ERROR: " + scripts_response.json()['errors'][0] )
-      exit()
+    progress(f"Launching {script} on {cpu} vCPU / {ram} ...")
+    sim_id = client.add_simulation(cpu, ram, script, storage_folder, regular)
+    return sim_id
 
-   scripts_dropdown = tk.StringVar()
-   scripts_dropdown.set( scripts_response.json()['response'][0] )
 
-   ttk.Label(root, text="SCRIPT:").grid( row=6, column=0 )
-   scriptmenu = tk.OptionMenu( root, scripts_dropdown, *scripts_response.json()['response'] )
-   scriptmenu.grid( row=6, column=1, columnspan=2 )
-   scriptmenu.config(width=25)
+###############################################################################
+# GUI
+###############################################################################
 
-   #FOLDER
-   def getFolderPath():
-       folder_selected = filedialog.askdirectory()
-       folderPath.set(folder_selected)
+def main():
+    import tkinter as tk
+    from tkinter import ttk, filedialog, messagebox
 
-   folderPath = tk.StringVar()
-   ttk.Label(root, text="FOLDER:").grid( row=7, column=0 )
-   ttk.Entry(root, textvariable=folderPath).grid( row=7, column=1 )
-   ttk.Button(root, text="Browse Folder",command=getFolderPath).grid( row=7, column=2)
+    root = tk.Tk()
+    root.title("Cloud HPC - Run")
+    root.resizable(False, False)
+    root.attributes("-topmost", 1)
 
-   #BOTTONE
-   def select(APIKEY, DOTENV_FILE, cpu, ram, script, path):
-       print(cpu)
-       print(ram)
-       print(script)
-       print(path)
+    frm = ttk.Frame(root, padding=10)
+    frm.grid(sticky="nsew")
 
-       #Saving APIKEY
-       write_apikey( APIKEY )
+    apikey = tk.StringVar(value=read_apikey())
+    cpu_var, ram_var, script_var = tk.StringVar(), tk.StringVar(), tk.StringVar()
+    folder_var = tk.StringVar()
+    regular_var = tk.BooleanVar(value=False)
+    status = tk.StringVar(value=f"Server: {BASEURL}")
 
-       #Compress folder
-       shutil.make_archive( os.path.join( os.path.join( path, os.pardir ) , "simulation" ), 'zip', path )
+    ttk.Label(frm, text="APIKEY:").grid(row=0, column=0, sticky="w")
+    ttk.Entry(frm, textvariable=apikey, width=40, show="*").grid(row=0, column=1, columnspan=2, sticky="we")
 
-       #URL upload
-       data = { "dirname": os.path.basename( path ), 
-                "filename": "simulation.zip",
-                "contentType": "application/gzip"
-               }
+    widgets = {}
 
-       headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json',  'Content-Type' : 'application/json',  }
-       url_upload_response = requests.post( 'https://cloud.cfdfeaservice.it/api/v2/storage/upload-url', headers=headers, json=data )
+    def load_options():
+        key = apikey.get().strip()
+        if not key:
+            status.set("Insert your APIKEY and press 'Load'")
+            return
+        client = CloudHPC(key)
+        try:
+            cpus = client.cpu_options()
+            rams = client.ram_options()
+            scripts = client.script_options()
+        except APIError as e:
+            status.set(f"ERROR: {e}")
+            messagebox.showerror("cloudHPC", f"{e}\n\nCheck your APIKEY.")
+            return
 
-       if 'errors' in url_upload_response.json():
-          print( "ERROR: " + url_upload_response.json()['errors'][0] )
-          return
+        write_apikey(key)
 
-       files = {'file': open( os.path.join( os.path.join( path, os.pardir ) , "simulation.zip" ) ,'rb')}
-       headers = { 'content-type' : 'application/gzip',  }
-       upload_file = requests.put( url_upload_response.json()['response']['url'], files=files, headers=headers )
+        for name, var, values, row in (("vCPU", cpu_var, cpus, 2),
+                                       ("RAM", ram_var, rams, 3),
+                                       ("SOLVER", script_var, scripts, 4)):
+            values = [str(v) for v in (values or [])]
+            if not values:
+                status.set(f"ERROR: no {name} options returned")
+                return
+            ttk.Label(frm, text=f"{name}:").grid(row=row, column=0, sticky="w")
+            cb = ttk.Combobox(frm, textvariable=var, values=values, state="readonly", width=37)
+            cb.grid(row=row, column=1, columnspan=2, sticky="we")
+            var.set(values[0])
+            widgets[name] = cb
 
-       #cache delete
-       headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json',  'Content-Type' : 'application/json',  }
-       requests.delete( 'https://cloud.cfdfeaservice.it/api/v2/user/delete-cache', headers=headers )
+        ttk.Label(frm, text="FOLDER:").grid(row=5, column=0, sticky="w")
+        ttk.Entry(frm, textvariable=folder_var, width=28).grid(row=5, column=1, sticky="we")
+        ttk.Button(frm, text="Browse",
+                   command=lambda: folder_var.set(filedialog.askdirectory() or folder_var.get())
+                   ).grid(row=5, column=2)
+        ttk.Checkbutton(frm, text="Regular instance (not preemptible)",
+                        variable=regular_var).grid(row=6, column=1, columnspan=2, sticky="w")
+        launch_btn.grid(row=8, column=1, sticky="e")
+        status.set("Select options and folder, then 'Launch'")
 
-       data = { "cpu": int( cpu),
-                "ram": ram,
-                "folder": os.path.basename( path ),
-                "script": script,
-              }
+    def do_launch():
+        if not folder_var.get():
+            messagebox.showwarning("cloudHPC", "Select the case folder")
+            return
+        launch_btn.state(["disabled"])
+        client = CloudHPC(apikey.get().strip())
 
-       headers = { 'X-API-key' : apikey.get().rstrip("\n"), 'accept' : 'application/json',  'Content-Type' : 'application/json',  }
-       simulation_exec = requests.post( 'https://cloud.cfdfeaservice.it/api/v2/simulation/add', headers=headers, json=data )
+        def worker():
+            try:
+                sim_id = launch(client, cpu_var.get(), ram_var.get(), script_var.get(),
+                                folder_var.get(), regular_var.get(),
+                                progress=lambda m: root.after(0, status.set, m))
+            except APIError as e:
+                root.after(0, lambda: (status.set(f"ERROR: {e}"),
+                                       messagebox.showerror("cloudHPC", str(e)),
+                                       launch_btn.state(["!disabled"])))
+                return
+            print(f"Simulation launched with ID = {sim_id}")
+            root.after(0, lambda: (status.set(f"Launched: ID {sim_id}"),
+                                   messagebox.showinfo("cloudHPC", f"Simulation launched\nID = {sim_id}"),
+                                   root.destroy()))
 
-       if 'errors' in simulation_exec.json():
-          print( "ERROR: " + simulation_exec.json()['errors'][0] )
-          return
+        threading.Thread(target=worker, daemon=True).start()
 
-       print( "Esecution ID: " + str( simulation_exec.json()['response'] ) )
+    ttk.Button(frm, text="Load", command=load_options).grid(row=1, column=2, sticky="e")
+    launch_btn = ttk.Button(frm, text="Launch", command=do_launch)
+    ttk.Button(frm, text="Cancel", command=root.destroy).grid(row=8, column=2, sticky="e")
+    ttk.Label(frm, textvariable=status, wraplength=380, foreground="gray").grid(
+        row=9, column=0, columnspan=3, sticky="w", pady=(8, 0))
 
-       root.destroy()
- 
-   ButtonOK = ttk.Button(root, text='Launch', command=lambda:select( apikey.get().rstrip("\n") , DOTENV_FILE , cpu_dropdown.get(), ram_dropdown.get(), scripts_dropdown.get(), folderPath.get() ) ).place( x=window_width-160, y=window_height-30 )
-   ButtonCancel = ttk.Button( root, text='Cancel', command=root.destroy ).place( x=window_width-80, y=window_height-30 )
+    if apikey.get():
+        load_options()
 
-else:
-   def saveapikey(APIKEY):
-       #Saving APIKEY
-       write_apikey( APIKEY )
+    root.mainloop()
 
-   ButtonOK   = ttk.Button(root, text='Save', command=lambda: saveapikey( apikey.get().rstrip("\n") ) ).place( x=window_width-160, y=window_height-30 )
-   ButtonEXIT = ttk.Button(root, text='Exit', command=root.destroy).place( x=window_width-80, y=window_height-30 )
 
-# keep the window displaying
-root.mainloop()
-
-if 'folderPath' in locals():
-   os.remove( os.path.join( folderPath.get(), os.pardir, "simulation.zip" ) )
+if __name__ == "__main__":
+    main()
