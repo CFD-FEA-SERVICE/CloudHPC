@@ -3,39 +3,39 @@
 </p>
 
 # Welcome to the CloudHPC User Guide!
-CFD FEA SERVICE offers the use of a CloudHPC service to run Your scripts for CFD, FEM and other simulations. The scripts accepted are: codeAster, code Saturne, FDS, OpenFoam, paraview and snappyHexMesh. The innovative CloudHPC system (High Performance Computing) allows you to rent the computational capacity made available, in order to run heavy and long engineering analyses. This method permits you to run your simulations in Cloud, thus directly on the [web-app](https://cloud.cfdfeaservice.it/), avoiding the use of your own local computer for this process. The results would be generated in the Web-app and easily downloaded.
+CFD FEA SERVICE provides cloudHPC, a cloud service for running CFD, FEM and other engineering simulations. Supported solvers include OpenFOAM, FDS, code_aster, CalculiX, SU2, code_saturne, OpenRADIOSS, EnergyPlus and many more, as well as your own bash or Python scripts (see the [full list of available software](https://cloudhpc.cloud/#softwareavail)). cloudHPC (High Performance Computing) lets you rent computing power on demand to run heavy, long-running engineering analyses. Your simulations run in the cloud and are managed entirely from the [web app](https://cloud.cfdfeaservice.it/), so your local computer stays free. The results are stored in the web app, where you can easily download them.
 
-The offered service is restricted to only run the simulations, in order to:
+The service is dedicated to running simulations, so that you can:
 
-* take advantage of the large computational capabilities offered to your disposition; 
-* avoid using your own servers or computers; 
-* saving time for the simulations’ duration given the possibility to monitor properly the advance of the analyses and optimize the use of the computation capacity available.
+* take advantage of large computing resources available on demand;
+* avoid using your own servers or workstations;
+* save time, by monitoring your analyses as they run and making the best use of the computing capacity you select.
 
 ## Workflow
-The Workflow for the proper use of the CloudHPC system of CFD FEA SERVICE, to run your simulations, is the following:
+Running a simulation on cloudHPC follows these steps:
 
-* **Create File**: First of all, the script[s] file[s] should be developed on your local computer. Before using the cloud HPC, it is necessary to complete the model creation locally. The model script[s], input file[s], should be completed in your software.
-Consider that each script to upload should have a different name. For instance, if you want to modify the script and re-upload it, without losing the results of the previous simulation, then you have to rename the file. Simulations of file with the same name, lead to losing the monitoring and simulation's results of previous analysis. This would not happen only if the script is implemented with the restart string (check Restart paragraph). If so, the simulation would not delete the previous results even if the script has the same name, because the simulation will continue from where it was stopped.
+* **Prepare the input files**: build the model on your local computer. The input files must be complete before you upload them to cloudHPC. Our [templates](https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/template) contain the recommended settings for the most common solvers, and the [ready-to-run examples](https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleCloudHPC) show how a case folder must be organised for each solver.
+Give each case a unique name. If you modify a case and want to keep the results of the previous run, upload it under a new name: running a simulation on a file or folder with the same name overwrites the monitoring data and results of the previous run. The only exception is a case set up for restart (see the [Restart](simulation.md#restart) section): the new run continues from where the previous one stopped, so the earlier results are not lost.
 
-* **Upload File**: The input file should be uploaded in the web-app STORAGE available in your account. The script[s] can be uploaded in different ways as a single file or a compressed one.
+* **Upload the input files**: upload your input files to the STORAGE of your account in the web app, either as single files or as a compressed archive (see [Storage](storage.md)).
 
-* **Execute Analysis**: It is possible to run the analyses in the SIMULATION menu. To execute the analysis, it is necessary to size the computational power and memory. Therefore, assigning the amount of vCPU and RAM to use. These characteristics are chosen depending on the size of your simulations and it is possible to monitor your analysis while running, in order to optimize your choice.
+* **Run the analysis**: start your analyses from the SIMULATIONS menu. Before launching, choose the computing power and memory by selecting the number of vCPU and the amount of RAM. Base this choice on the size of your model: you can then monitor the analysis while it runs and adjust the settings for the next runs (see [Simulations](simulation.md)).
 
-* **Download results**: it is possible to download the results from the STORAGE menu. The results are uploaded by the web-app directly in the folder in which you uploaded the input file.
+* **Download the results**: download the results from the STORAGE menu. They are saved in the same folder where you uploaded the input files.
 
-All these steps are explored in this Guide.
+Each of these steps is described in detail in this guide.
 
 ## Case settings
-Every case should have tailored settings in terms of computational capacity. The CluodHPC System offers you machines with:
+Every case needs computing resources suited to its size. cloudHPC offers machines with:
 
-* vCPU from 1 to 224 [Each virtual CPU (vCPU) is implemented as a single hardware hyper-thread]
-* RAM available of 1.0 GB RAM / 4.0 GB RAM / 8.0 GB RAM for each vCPU or 2.0 GB per each CORE
-* 400 Gb Hard Disk [standard for all simulations with few exceptions]
-* Unlimited Cloud Storage Space, for a maximum of 60 days. After this, the files will be automatically deleted.
+* from 1 to 224 vCPU [each virtual CPU (vCPU) is a single hardware hyper-thread]
+* 1.0 GB, 4.0 GB or 8.0 GB of RAM per vCPU, or 2.0 GB per physical core
+* a 400 GB hard disk [standard for all simulations, with a few exceptions: see [Instance hard disk](simulation.md#instance_hard_disk)]
+* unlimited cloud storage space, with files kept for a maximum of 60 days. After that, they are automatically deleted.
 
-Each simulation you execute is performed on a virtual machine generated right for the time the simulation requires it and destroyed at the end of your analysis. The virtual machines allocated can be of two types:
+Each simulation runs on a virtual machine created when the simulation starts and destroyed when it ends. Two types of virtual machine are available:
 
-- hyperthreaded [with physical and logical processing units]
-- multicore only [with only physical processing units]
+- hyper-threaded [with both physical and logical processing units]
+- multi-core only [with physical processing units only]
 
-The software you are going to run can benefit of physical only processing units or both physical and logical processing units. The users is strongly recommended to contact either the support team of cloudHPC or the software manufacturer in order to get information about the software features and benefit of the best possible scalability.
+Depending on the software, your simulation may run best on physical cores only, or it may also benefit from logical (hyper-threaded) cores. We strongly recommend contacting the cloudHPC support team or the software developer to learn how your software behaves and achieve the best possible scalability. See also the [Scalability](scalability.md) section.

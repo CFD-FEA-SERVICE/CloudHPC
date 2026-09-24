@@ -1,15 +1,15 @@
-The API is a methodology which allow to controll all the cloudHPC functionalities by web calls. This methodology is highly useful in case of integration of third part software with our functionalities.
+The API lets you control all the cloudHPC features through web calls. It is especially useful to integrate third-party software with cloudHPC. A working client, `cloudHPCexec`, is available in the [exampleAPI folder](https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleAPI) of our repository.
 
-Before entering the details of each API, keep in mind that every use is assigned a unique _{api_key}_ which is required by any API call to work properly. Api\_key is available in the user account page as described in the following image:
+Before going into the details of each API, keep in mind that every user is assigned a unique _{api_key}_, which is required by every API call. The api\_key is available on the user account page, as shown in the following image:
 
 <p align="center">
    <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/APIKEY.jpg">
 </p>
 
-The cloud HPC system also provide a _lincense file_ - a JSON with username and apikey - which can be used to avoid mistakes by the user when copying and pasting its apikey.
+cloudHPC also provides a _license file_, a JSON file with your username and apikey, which avoids mistakes when copying and pasting the apikey.
 
 ## Simulation status codes
-The API calls we are going to mention later refer to some coding. The most important of which is the STATUS of every simulation. The following table gives an explanation of the codes used.
+The API calls described in the following pages use some codes, the most important being the STATUS of each simulation. The following table explains these codes.
 
 | CODE | NAME | Description |
 |------|------|-------------|
