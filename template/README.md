@@ -37,9 +37,29 @@ Files: [`OpenFOAM/system/controlDict`](OpenFOAM/system/controlDict), [`OpenFOAM/
   * `writeInterval` is also the restart frequency on SPOT instances; `purgeWrite N` keeps only the last N saved times.
   * Every function object in `functions` writing into `postProcessing/` becomes a runtime chart.
   * To restart a finished or soft-stopped run, increase `endTime` and launch a new simulation with the same vCPU, RAM, folder and script.
+  * Custom cloudHPC entries (see below) switch on extra steps of the run.
 * `decomposeParDict`
   * Use `method scotch;` (suggested) or `hierarchical`. `numberOfSubdomains` and the `n` coefficients are updated automatically to match the vCPU selected. Other methods trigger the `incorrect decomposeParDict file` error and are not adapted to the vCPU.
   * OpenFOAM always runs in parallel: select at least vCPU = 2 on _highcore_/_hypercore_ or vCPU = 4 on the other instances.
+
+### Custom `controlDict` entries
+
+cloudHPC reads a few extra entries from `system/controlDict` to trigger optional steps. OpenFOAM ignores them, so they can stay in the file when running elsewhere. They are listed, commented out, in the template: uncomment the ones you need. Boolean switches must be written exactly as `true` (`yes`/`on` are not recognised).
+
+Mesh stage — applied only when the mesh is generated during the run (no `constant/polyMesh` uploaded, or a meshing script selected), in the order of the table, after snappyHexMesh/cfMesh/blockMesh:
+
+| Entry | Values | Effect | Extra files required |
+|---|---|---|---|
+| `splitMesh` | `true` | splits the mesh into one region per cellZone (every cell must belong to a cellZone), e.g. for CHT cases | — |
+| | `largest` | keeps only the largest connected region, removing mesh generated on the wrong side of the STL surfaces | — |
+| `nExtrusion` | `N` | performs N mesh extrusions from boundary patches, in sequence | `system/extrudeMeshDict.0` … `system/extrudeMeshDict.<N-1>` |
+| `scaleFactor` | number | scales the final mesh uniformly, e.g. `0.001` for a geometry drawn in mm | — |
+
+Solver stage:
+
+| Entry | Values | Effect |
+|---|---|---|
+| `potentialFoam` | `true` | runs potentialFoam before the solver to initialise the U and p fields |
 
 ## OpenFOAM custom code
 

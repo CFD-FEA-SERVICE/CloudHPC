@@ -60,6 +60,36 @@ maxCo       1.0;
 maxAlphaCo  1.0;
 maxDeltaT   1.0;
 
+// cloudHPC custom entries -------------------------------------------------
+// Read by the cloudHPC OpenFOAM script only, ignored by the solver.
+// Uncomment the ones you need. Boolean switches must be written exactly
+// as "true": yes/on are not recognised.
+//
+// Mesh stage: applied only when the mesh is generated during the run
+// (no constant/polyMesh uploaded, or a meshing script selected), in the
+// order listed below, after snappyHexMesh/cfMesh/blockMesh.
+//
+//   true    -> split the mesh into one region per cellZone (every cell
+//              must belong to a cellZone), e.g. for CHT cases
+//   largest -> keep only the largest connected region: removes the mesh
+//              generated on the wrong side of the STL surfaces
+//splitMesh           true;
+//
+// Number of mesh extrusions to perform from boundary patches. Requires
+// system/extrudeMeshDict.0 ... system/extrudeMeshDict.<N-1>, executed in
+// sequence
+//nExtrusion          1;
+//
+// Uniform scale factor applied to the final mesh, e.g. 0.001 for a
+// geometry drawn in mm
+//scaleFactor         0.001;
+//
+// Solver stage
+//
+// Run potentialFoam before the solver to initialise U and p
+//potentialFoam       true;
+// --------------------------------------------------------------------------
+
 // Every function object below writes into postProcessing/ and is converted
 // into a runtime chart by cloudHPC
 functions
