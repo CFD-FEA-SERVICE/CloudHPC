@@ -103,7 +103,7 @@ the cloudHPC API with the user's own key. `--timeout 3600` lets
 | Variable | Default | |
 |---|---|---|
 | `CLOUDHPC_MCP_MODE` | `local` | `local` (stdio) or `remote` (streamable HTTP) |
-| `CLOUDHPC_API_URL` | `https://cloud.cfdfeaservice.it/api/v2` | Staging: `https://testcloud.cfdfeaservice.it/api/v2` |
+| `CLOUDHPC_API_URL` | `https://cloud.cfdfeaservice.it/api/v2` | Staging - not available |
 | `CLOUDHPC_APIKEY` | – | local mode only |
 | `HOST` / `PORT` | `0.0.0.0` / `8080` | remote mode |
 
