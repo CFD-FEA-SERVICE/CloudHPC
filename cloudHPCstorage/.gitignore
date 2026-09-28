@@ -1,0 +1,8 @@
+# Credentials: never commit them
+*.json
+
+# Downloaded / built binaries (see vendor.lock and admin/build-exe.ps1)
+vendor/
+dist/
+Win64/install.exe
+Win64/install.exe.sha256

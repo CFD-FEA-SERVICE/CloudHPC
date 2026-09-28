@@ -1,0 +1,88 @@
+name: cloudHPCstorage package build
+
+# Builds cloudHPCstorage.zip from the cloudHPCstorage/ folder:
+#  1. compiles Win64/install.ps1 into install.exe with ps2exe (Windows runner)
+#  2. downloads the rclone/WinFsp versions pinned in vendor.lock and packs the
+#     ZIP with build.sh (Linux runner)
+#
+# Runs:
+#  - automatically when cloudHPCstorage/ changes on master: build only, the ZIP
+#    is kept as a workflow artifact to be tested
+#  - manually from the Actions tab (workflow_dispatch): also publishes the ZIP
+#    on the v0.1-alpha release, replacing the previous one
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths:
+      - 'cloudHPCstorage/**'
+      - '.github/workflows/cloudhpc-storage.yml'
+
+permissions:
+  contents: write   # required to upload release assets
+
+env:
+  RELEASE_TAG: v0.1-alpha
+  PKG_DIR: cloudHPCstorage
+
+jobs:
+  install-exe:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: powershell   # Windows PowerShell 5.1, the target of ps2exe
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compile install.exe (ps2exe)
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          & "$env:PKG_DIR\admin\build-exe.ps1"
+
+      - name: Keep install.exe for the package job
+        uses: actions/upload-artifact@v4
+        with:
+          name: install-exe
+          path: |
+            ${{ env.PKG_DIR }}/Win64/install.exe
+            ${{ env.PKG_DIR }}/Win64/install.exe.sha256
+
+  package:
+    runs-on: ubuntu-latest
+    needs: install-exe
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get install.exe
+        uses: actions/download-artifact@v4
+        with:
+          name: install-exe
+          path: ${{ env.PKG_DIR }}/Win64
+
+      - name: Build cloudHPCstorage.zip
+        run: |
+          sudo apt-get install -y -qq zip unzip jq
+          "${PKG_DIR}/build.sh"
+          # build.sh leaves install.exe out when it is older than install.ps1
+          # (hash mismatch, e.g. line endings): never publish a ZIP without it.
+          unzip -l "${PKG_DIR}/dist/cloudHPCstorage.zip" | grep -q 'Win64/install.exe$' \
+            || { echo "install.exe missing from the ZIP"; exit 1; }
+
+      - name: Keep the ZIP as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudHPCstorage
+          path: |
+            ${{ env.PKG_DIR }}/dist/cloudHPCstorage.zip
+            ${{ env.PKG_DIR }}/dist/VERSIONS.txt
+
+      - name: Publish on release ${{ env.RELEASE_TAG }}
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${RELEASE_TAG}" "${PKG_DIR}/dist/cloudHPCstorage.zip" --clobber

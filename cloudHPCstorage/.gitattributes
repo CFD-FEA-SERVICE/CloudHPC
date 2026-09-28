@@ -1,0 +1,6 @@
+# Same bytes on Windows and Linux checkouts: build.sh compares the SHA256 of
+# install.ps1 with the one recorded by admin/build-exe.ps1 on Windows.
+*.sh  text eol=lf
+*.ps1 text eol=lf
+*.cmd text eol=crlf
+*.md  text eol=lf
