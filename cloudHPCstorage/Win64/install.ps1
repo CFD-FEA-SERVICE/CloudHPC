@@ -1,24 +1,33 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  cloudHPCstorage setup for Windows: mounts the cloudHPC storage as a drive.
+  cloudHPCstorage setup for Windows: mounts cloudHPC storages as drives.
 
 .DESCRIPTION
-  - removes any previous installation (old "cloudHPCstorage" Windows service,
-    previous scheduled task, old files)
-  - installs/updates WinFsp; copies rclone.exe, the activation file (service
-    account key + "storage" field) and rclone.conf to
-    C:\Program Files (x86)\CFD FEA Service\cloudHPCstorage (key and config
-    readable only by SYSTEM, Administrators and the user)
-  - registers the scheduled task "\CFD FEA Service\cloudHPCstorage" that runs
-    "rclone mount" hidden at every logon of the user
-  - registers "cloudHPCstorage" in Settings > Apps for the uninstall
+  Several storages (activation files) can be mounted at the same time, each one on
+  its own drive letter: run the setup once per activation file. Installing an
+  activation file whose storage is already mounted replaces only that drive.
+
+  - converts the previous single-drive installation (setup 2.0) to this layout,
+    keeping its drive, and removes the older "cloudHPCstorage" Windows service
+  - installs/updates WinFsp; copies rclone.exe to
+    C:\Program Files (x86)\CFD FEA Service\cloudHPCstorage
+  - per storage: copies the activation file (service account key + "storage"
+    field) and writes rclone.conf in ...\cloudHPCstorage\instances\<storage>
+    (key and config readable only by SYSTEM, Administrators and the user), and
+    registers the scheduled task "\CFD FEA Service\cloudHPCstorage-<storage>"
+    that runs "rclone mount" hidden at every logon of the user
+  - registers "cloudHPCstorage" in Settings > Apps for the uninstall (all storages)
 
   Compile to install.exe with admin\build-exe.ps1 (ps2exe).
   Without the exe use install.cmd (same script, self-elevating).
 
 .PARAMETER Uninstall
-  Remove cloudHPCstorage (WinFsp is left installed).
+  Remove cloudHPCstorage: all the storages, or only the one given with -Storage
+  (WinFsp is left installed).
+.PARAMETER Storage
+  With -Uninstall: name of the storage to remove (the "storage" field of its
+  activation file).
 .PARAMETER Silent
   No window. Install requires -Drive; -ActivationFile defaults to the
   key file next to the installer. Exit codes: 0 ok, 3010 reboot needed, 1 error.
@@ -28,30 +37,36 @@ param(
     [switch]$Uninstall,
     [switch]$Silent,
     [string]$Drive,
-    [string]$ActivationFile
+    [string]$ActivationFile,
+    [string]$Storage
 )
 
 $ErrorActionPreference = 'Stop'
 
-$SetupVersion   = '2.0.1'
+$SetupVersion   = '2.1.0'
 $RemoteName     = 'cloudHPCstorage'
 $KeyFileName    = 'cfd-fea-service-cloud.json'
 $SupportMail    = 'info@cloudhpc.cloud'
 $InstallDir     = Join-Path ${env:ProgramFiles(x86)} 'CFD FEA Service\cloudHPCstorage'
-$ConfFile       = Join-Path $InstallDir 'rclone.conf'
-$KeyFile        = Join-Path $InstallDir $KeyFileName
-$MountLog       = Join-Path $InstallDir 'rclone.log'
+$InstancesDir   = Join-Path $InstallDir 'instances'
+$RcloneExe      = Join-Path $InstallDir 'rclone.exe'
 $SetupLog       = Join-Path $env:TEMP 'cloudHPCstorage-setup.log'
 $TaskPath       = '\CFD FEA Service\'
-$TaskName       = 'cloudHPCstorage'
+$TaskPrefix     = 'cloudHPCstorage-'
 $UninstallKey   = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\cloudHPCstorage'
-# Previous version (service account key + Windows service running as SYSTEM)
+# Setup 2.0: a single storage, files directly in $InstallDir, task "cloudHPCstorage"
+$LegacyTaskName = 'cloudHPCstorage'
+$LegacyKey      = Join-Path $InstallDir $KeyFileName
+$LegacyConf     = Join-Path $InstallDir 'rclone.conf'
+$LegacyLog      = Join-Path $InstallDir 'rclone.log'
+# Older versions: Windows service running as SYSTEM
 $LegacyService  = 'cloudHPCstorage'
 
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing
 
-$script:LogBox   = $null
-$script:Progress = $null
+$script:LogBox       = $null
+$script:Progress     = $null
+$script:StoppedTasks = @()   # drives stopped during the setup, restarted at the end
 
 #region Helpers ----------------------------------------------------------------
 
@@ -103,30 +118,52 @@ function Get-TargetUser {
         if ($o -and $o.ReturnValue -eq 0 -and $o.User) { $owner = "$($o.Domain)\$($o.User)"; break }
     }
     if (-not $owner) { $owner = [Security.Principal.WindowsIdentity]::GetCurrent().Name }
-    $sid = (New-Object Security.Principal.NTAccount($owner)).Translate([Security.Principal.SecurityIdentifier]).Value
-    return [pscustomobject]@{ Name = $owner; Sid = $sid }
+    return Resolve-User $owner
 }
 
-function Get-InstalledTask {
-    return Get-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName -ErrorAction SilentlyContinue
+function Resolve-User([string]$Name) {
+    $sid = (New-Object Security.Principal.NTAccount($Name)).Translate([Security.Principal.SecurityIdentifier]).Value
+    return [pscustomobject]@{ Name = $Name; Sid = $sid }
+}
+
+function Get-InstancePaths([string]$Bucket) {
+    $dir = Join-Path $InstancesDir $Bucket
+    return [pscustomobject]@{
+        Bucket   = $Bucket
+        TaskName = "$TaskPrefix$Bucket"
+        Dir      = $dir
+        Key      = Join-Path $dir $KeyFileName
+        Conf     = Join-Path $dir 'rclone.conf'
+        Log      = Join-Path $dir 'rclone.log'
+    }
+}
+
+# Installed drives, from their scheduled tasks (setup 2.0 one included, Legacy = $true)
+function Get-Instances {
+    foreach ($t in @(Get-ScheduledTask -TaskPath $TaskPath -ErrorAction SilentlyContinue)) {
+        if ($t.TaskName -ne $LegacyTaskName -and -not $t.TaskName.StartsWith($TaskPrefix)) { continue }
+        $a = [string]$t.Actions[0].Arguments
+        if ($a -notmatch "mount\s+${RemoteName}:([a-z0-9._-]+)\s+([A-Za-z]:)") { continue }
+        [pscustomobject]@{
+            Bucket   = $Matches[1]
+            Drive    = $Matches[2].ToUpper()
+            TaskName = $t.TaskName
+            User     = $t.Principal.UserId
+            Legacy   = ($t.TaskName -eq $LegacyTaskName)
+        }
+    }
 }
 
 function Test-Installed {
-    return [bool]((Get-InstalledTask) -or (Get-Service -Name $LegacyService -ErrorAction SilentlyContinue) -or
+    return [bool](@(Get-Instances).Count -or (Get-Service -Name $LegacyService -ErrorAction SilentlyContinue) -or
                   (Test-Path -LiteralPath $InstallDir))
 }
 
-function Get-PreviousDrive {
-    $task = Get-InstalledTask
-    if ($task -and $task.Actions[0].Arguments -match '\s([A-Z]:)\s') { return $Matches[1] }
-    $svc = Get-CimInstance Win32_Service -Filter "Name='$LegacyService'" -ErrorAction SilentlyContinue
-    if ($svc -and $svc.PathName -match '\s([A-Z]):\\?(\s|$)') { return "$($Matches[1]):" }
-    return $null
-}
-
-function Get-FreeDriveLetters([string]$Sid) {
+function Get-FreeDriveLetters([string]$Sid, $Instances) {
     $used = @{}
     foreach ($d in [System.IO.DriveInfo]::GetDrives()) { $used[$d.Name.Substring(0, 1).ToUpper()] = $true }
+    # Letters of the installed drives, mounted or not (e.g. other users, reboot pending)
+    foreach ($i in $Instances) { $used[$i.Drive.Substring(0, 1)] = $true }
     # Network drives mapped by the user are not visible from the elevated setup
     $net = "Registry::HKEY_USERS\$Sid\Network"
     if (Test-Path $net) { Get-ChildItem $net | ForEach-Object { $used[$_.PSChildName.ToUpper()] = $true } }
@@ -225,39 +262,68 @@ function Test-StorageAccess($Act, [string]$RcloneExe, [string]$Conf) {
     throw "Cannot reach the cloudHPC storage '$($Act.storage)':`r`n$detail"
 }
 
-function Stop-Mounts {
-    $task = Get-InstalledTask
-    if ($task) {
-        Write-Log 'Stopping the current cloudHPCstorage drive...'
-        Stop-ScheduledTask -InputObject $task -ErrorAction SilentlyContinue
-    }
-    if (Get-Service -Name $LegacyService -ErrorAction SilentlyContinue) {
-        Write-Log 'Stopping the previous cloudHPCstorage service...'
-        # sc.exe does not wait: rclone.exe does not answer service controls
-        & sc.exe stop $LegacyService 2>&1 | Out-Null
-    }
-    Get-CimInstance Win32_Process -Filter "Name='rclone.exe'" -ErrorAction SilentlyContinue | Where-Object {
-        $_.ExecutablePath -and $_.ExecutablePath.StartsWith($InstallDir, [StringComparison]::OrdinalIgnoreCase)
-    } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
-    Start-Sleep -Seconds 2
+# rclone.exe processes of the drives; with $ConfPath only the one using that config
+function Get-RcloneProcesses([string]$ConfPath) {
+    return @(Get-CimInstance Win32_Process -Filter "Name='rclone.exe'" -ErrorAction SilentlyContinue | Where-Object {
+        $_.ExecutablePath -and $_.ExecutablePath.StartsWith($InstallDir, [StringComparison]::OrdinalIgnoreCase) -and
+        (-not $ConfPath -or ($_.CommandLine -and $_.CommandLine.IndexOf($ConfPath, [StringComparison]::OrdinalIgnoreCase) -ge 0))
+    })
 }
 
-function Remove-Previous {
-    Stop-Mounts
+function Stop-Rclone([string]$ConfPath) {
+    $procs = @(Get-RcloneProcesses $ConfPath)
+    foreach ($p in $procs) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
+    if ($procs.Count) { Start-Sleep -Seconds 2 }
+}
+
+# Stops every running drive (rclone.exe or WinFsp are about to be replaced); they are
+# restarted at the end of the setup
+function Stop-AllDrives([string]$Reason) {
+    foreach ($i in @(Get-Instances)) {
+        $t = Get-ScheduledTask -TaskPath $TaskPath -TaskName $i.TaskName -ErrorAction SilentlyContinue
+        if ($t -and $t.State -eq 'Running') {
+            if ($script:StoppedTasks -notcontains $i.TaskName) { $script:StoppedTasks += $i.TaskName }
+            Stop-ScheduledTask -InputObject $t -ErrorAction SilentlyContinue | Out-Null
+        }
+    }
+    if ($script:StoppedTasks.Count) { Write-Log "Stopping the other drives ($Reason)..." }
+    Stop-Rclone
+}
+
+function Remove-Instance([string]$Bucket) {
+    $p = Get-InstancePaths $Bucket
+    $task = Get-ScheduledTask -TaskPath $TaskPath -TaskName $p.TaskName -ErrorAction SilentlyContinue
+    if ($task) {
+        Write-Log "Stopping the drive of the storage '$Bucket'..."
+        Stop-ScheduledTask -InputObject $task -ErrorAction SilentlyContinue | Out-Null
+    }
+    Stop-Rclone $p.Conf
+    if ($task) { Unregister-ScheduledTask -TaskPath $TaskPath -TaskName $p.TaskName -Confirm:$false }
+    $script:StoppedTasks = @($script:StoppedTasks | Where-Object { $_ -ne $p.TaskName })
+    if (Test-Path -LiteralPath $p.Dir) { Remove-Item -LiteralPath $p.Dir -Recurse -Force }
+}
+
+# Setup 2.0 drive and older Windows service
+function Remove-Legacy {
+    $task = Get-ScheduledTask -TaskPath $TaskPath -TaskName $LegacyTaskName -ErrorAction SilentlyContinue
+    if ($task) {
+        Write-Log 'Stopping the drive of the previous installation...'
+        Stop-ScheduledTask -InputObject $task -ErrorAction SilentlyContinue | Out-Null
+        Stop-Rclone $LegacyConf
+        Unregister-ScheduledTask -TaskPath $TaskPath -TaskName $LegacyTaskName -Confirm:$false
+    }
     if (Get-Service -Name $LegacyService -ErrorAction SilentlyContinue) {
         Write-Log 'Removing the previous cloudHPCstorage service...'
+        # sc.exe does not wait: rclone.exe does not answer service controls
+        & sc.exe stop $LegacyService 2>&1 | Out-Null
+        Get-RcloneProcesses | Where-Object {
+            -not $_.CommandLine -or $_.CommandLine.IndexOf($InstancesDir, [StringComparison]::OrdinalIgnoreCase) -lt 0
+        } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+        Start-Sleep -Seconds 2
         & sc.exe delete $LegacyService 2>&1 | Out-Null
     }
-    if (Get-InstalledTask) {
-        Unregister-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName -Confirm:$false
-    }
-    if (Test-Path -LiteralPath $InstallDir) {
-        Write-Log "Removing $InstallDir"
-        Remove-Item -LiteralPath $InstallDir -Recurse -Force
-        $parent = Split-Path -Parent $InstallDir
-        if ((Test-Path -LiteralPath $parent) -and -not (Get-ChildItem -LiteralPath $parent -Force)) {
-            Remove-Item -LiteralPath $parent -Force
-        }
+    foreach ($f in $LegacyKey, $LegacyConf, $LegacyLog) {
+        if (Test-Path -LiteralPath $f) { Remove-Item -LiteralPath $f -Force }
     }
 }
 
@@ -290,6 +356,7 @@ function Install-WinFsp([string]$BaseDir) {
         return $false
     }
 
+    Stop-AllDrives 'WinFsp update'
     $reboot = $false
     # WinFsp cannot upgrade across major versions (e.g. 1.x -> 2.x): remove the old one first
     foreach ($old in $installed) {
@@ -319,7 +386,13 @@ function Install-WinFsp([string]$BaseDir) {
 
 function Install-Files([string]$BaseDir) {
     New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
-    Copy-Item -LiteralPath (Join-Path $BaseDir 'rclone.exe') -Destination $InstallDir -Force
+    $src = Join-Path $BaseDir 'rclone.exe'
+    if (-not (Test-Path -LiteralPath $RcloneExe) -or
+        (Get-FileHash -LiteralPath $src).Hash -ne (Get-FileHash -LiteralPath $RcloneExe).Hash) {
+        # Shared by all the drives: it cannot be replaced while one of them uses it
+        Stop-AllDrives 'rclone update'
+        Copy-Item -LiteralPath $src -Destination $InstallDir -Force
+    }
     # Kept for the uninstall from Settings > Apps
     Copy-Item -LiteralPath (Join-Path $BaseDir 'install.ps1') -Destination $InstallDir -Force
     Get-ChildItem -LiteralPath $InstallDir -File | Unblock-File
@@ -332,7 +405,7 @@ function Install-Files([string]$BaseDir) {
         Publisher       = 'CFD FEA Service'
         URLInfoAbout    = 'https://cloudhpc.cloud'
         InstallLocation = $InstallDir
-        DisplayIcon     = Join-Path $InstallDir 'rclone.exe'
+        DisplayIcon     = $RcloneExe
         UninstallString = "`"$ps`" -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$InstallDir\install.ps1`" -Uninstall"
     }
     foreach ($k in $values.Keys) { Set-ItemProperty -Path $UninstallKey -Name $k -Value $values[$k] }
@@ -340,28 +413,30 @@ function Install-Files([string]$BaseDir) {
     Set-ItemProperty -Path $UninstallKey -Name NoRepair -Value 1 -Type DWord
 }
 
-function Install-Config($Act, [string]$KeyPath, $User) {
-    Copy-Item -LiteralPath $KeyPath -Destination $KeyFile -Force
-    Write-Utf8File $ConfFile (Get-RcloneConfigText $Act $KeyFile)
+function Install-Config($Act, [string]$KeyPath, $User, $Paths) {
+    New-Item -ItemType Directory -Force -Path $Paths.Dir | Out-Null
+    Copy-Item -LiteralPath $KeyPath -Destination $Paths.Key -Force
+    Write-Utf8File $Paths.Conf (Get-RcloneConfigText $Act $Paths.Key)
     # Key and config: only SYSTEM, Administrators and the user (read)
-    foreach ($f in $KeyFile, $ConfFile) {
+    foreach ($f in $Paths.Key, $Paths.Conf) {
         & icacls.exe $f /inheritance:r /grant:r '*S-1-5-18:F' '*S-1-5-32-544:F' "*$($User.Sid):R" 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) { throw "Unable to set the permissions of $f" }
     }
     # The mount runs as the user, who must be able to write its log
-    Write-Utf8File $MountLog ''
-    & icacls.exe $MountLog /grant "*$($User.Sid):M" 2>&1 | Out-Null
+    Write-Utf8File $Paths.Log ''
+    & icacls.exe $Paths.Log /grant "*$($User.Sid):M" 2>&1 | Out-Null
 }
 
-function Register-MountTask($Act, [string]$DriveLetter, $User) {
-    $exe = Join-Path $InstallDir 'rclone.exe'
+function Register-MountTask($Act, [string]$DriveLetter, $User, $Paths) {
+    $exe = $RcloneExe
+    # Each drive needs its own network name: \\cloudHPC\<storage>
     $arguments = @(
         'mount', "${RemoteName}:$($Act.storage)", $DriveLetter,
-        '--config', "`"$ConfFile`"",
+        '--config', "`"$($Paths.Conf)`"",
         '--vfs-cache-mode', 'full',
-        '--network-mode', '--volname', '\\cloudHPC\cloudHPCstorage',
+        '--network-mode', '--volname', "\\cloudHPC\$($Act.storage)",
         '--no-console',
-        '--log-file', "`"$MountLog`"", '--log-level', 'NOTICE'
+        '--log-file', "`"$($Paths.Log)`"", '--log-level', 'NOTICE'
     ) -join ' '
     # rclone.exe is a console program: started directly it gets a console window (on
     # Windows 11 a Windows Terminal tab that --no-console cannot hide) and closing it
@@ -373,12 +448,12 @@ function Register-MountTask($Act, [string]$DriveLetter, $User) {
     $principal = New-ScheduledTaskPrincipal -UserId $User.Name -LogonType Interactive -RunLevel Limited
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable `
         -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 10 -RestartInterval (New-TimeSpan -Minutes 1) -MultipleInstances IgnoreNew
-    Register-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName -Action $action -Trigger $trigger -Principal $principal `
-        -Settings $settings -Description 'Mounts the cloudHPC storage (https://cloudhpc.cloud) as a drive.' -Force | Out-Null
+    Register-ScheduledTask -TaskPath $TaskPath -TaskName $Paths.TaskName -Action $action -Trigger $trigger -Principal $principal `
+        -Settings $settings -Description "Mounts the cloudHPC storage '$($Act.storage)' (https://cloudhpc.cloud) as drive $DriveLetter." -Force | Out-Null
 }
 
-function Start-Mount([string]$DriveLetter) {
-    Start-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName
+function Start-Mount([string]$DriveLetter, $Paths) {
+    Start-ScheduledTask -TaskPath $TaskPath -TaskName $Paths.TaskName
     # The drive belongs to the user session and may be invisible from this elevated
     # process, so success = rclone still running after a few seconds without errors
     for ($i = 0; $i -lt 16; $i++) {
@@ -386,13 +461,12 @@ function Start-Mount([string]$DriveLetter) {
         Update-UI
         if (Test-Path "$DriveLetter\") { return }
     }
-    $running = Get-CimInstance Win32_Process -Filter "Name='rclone.exe'" -ErrorAction SilentlyContinue |
-        Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($InstallDir, [StringComparison]::OrdinalIgnoreCase) }
-    $errors = if (Test-Path -LiteralPath $MountLog) {
-        Get-Content -LiteralPath $MountLog -Tail 20 | Where-Object { $_ -match 'ERROR|CRITICAL|Fatal' }
+    $running = @(Get-RcloneProcesses $Paths.Conf)
+    $errors = if (Test-Path -LiteralPath $Paths.Log) {
+        Get-Content -LiteralPath $Paths.Log -Tail 20 | Where-Object { $_ -match 'ERROR|CRITICAL|Fatal' }
     }
-    if (-not $running) {
-        throw "The drive $DriveLetter could not be started.`r`n$($errors -join "`r`n")`r`nLog: $MountLog"
+    if (-not $running.Count) {
+        throw "The drive $DriveLetter could not be started.`r`n$($errors -join "`r`n")`r`nLog: $($Paths.Log)"
     }
 }
 
@@ -404,12 +478,21 @@ function Invoke-Install([string]$BaseDir, [string]$KeyPath, [string]$DriveLetter
     Set-Step 5 'Checking the activation file...'
     $act = Read-Activation $KeyPath
     $user = Get-TargetUser
+    $paths = Get-InstancePaths $act.storage
     Write-Log "Storage: $($act.storage) - user: $($user.Name) - drive: $DriveLetter"
 
-    # Work on a copy: the key may be inside the previous installation, removed below
+    $instances = @(Get-Instances)
+    $busy = $instances | Where-Object { $_.Bucket -ne $act.storage -and $_.Drive -eq $DriveLetter } | Select-Object -First 1
+    if ($busy) { throw "The drive $DriveLetter is already used by the storage '$($busy.Bucket)'. Choose another letter." }
+    $legacy = $instances | Where-Object { $_.Legacy } | Select-Object -First 1
+    $script:StoppedTasks = @()
+
+    # Work on copies: the keys may be inside the installations removed below
     $tempId = [guid]::NewGuid()
     $tempConf = Join-Path $env:TEMP "cloudHPCstorage-$tempId.conf"
     $tempKey = Join-Path $env:TEMP "cloudHPCstorage-$tempId.json"
+    $tempLegacyKey = Join-Path $env:TEMP "cloudHPCstorage-$tempId-legacy.json"
+    $reboot = $false
     try {
         Copy-Item -LiteralPath $KeyPath -Destination $tempKey -Force
         $KeyPath = $tempKey
@@ -419,8 +502,17 @@ function Invoke-Install([string]$BaseDir, [string]$KeyPath, [string]$DriveLetter
         Test-StorageAccess $act (Join-Path $BaseDir 'rclone.exe') $tempConf
         Write-Log 'Access OK.'
 
-        Set-Step 35 'Removing the previous installation (if any)...'
-        Remove-Previous
+        Set-Step 35 'Removing the previous installation of this storage (if any)...'
+        # Setup 2.0 drive of another storage: kept, converted to the new layout below
+        $migrate = $null
+        if ($legacy -and $legacy.Bucket -ne $act.storage -and (Test-Path -LiteralPath $LegacyKey)) {
+            try {
+                Copy-Item -LiteralPath $LegacyKey -Destination $tempLegacyKey -Force
+                $migrate = [pscustomobject]@{ Act = (Read-Activation $tempLegacyKey); Drive = $legacy.Drive; User = $legacy.User }
+            } catch { Write-Log "WARNING: the previous drive $($legacy.Drive) cannot be kept: $($_.Exception.Message)" }
+        }
+        Remove-Legacy
+        Remove-Instance $act.storage
 
         Set-Step 50 'Installing WinFsp...'
         $reboot = Install-WinFsp $BaseDir
@@ -429,22 +521,61 @@ function Invoke-Install([string]$BaseDir, [string]$KeyPath, [string]$DriveLetter
         Install-Files $BaseDir
 
         Set-Step 80 'Saving the configuration...'
-        Install-Config $act $KeyPath $user
+        Install-Config $act $KeyPath $user $paths
+
+        if ($migrate) {
+            try {
+                $mUser = Resolve-User $migrate.User
+                $mPaths = Get-InstancePaths $migrate.Act.storage
+                Install-Config $migrate.Act $tempLegacyKey $mUser $mPaths
+                Register-MountTask $migrate.Act $migrate.Drive $mUser $mPaths
+                $script:StoppedTasks += $mPaths.TaskName
+                Write-Log "The drive $($migrate.Drive) of the storage '$($migrate.Act.storage)' has been kept."
+            } catch {
+                Write-Log "WARNING: the drive $($migrate.Drive) of the storage '$($migrate.Act.storage)' could not be kept: $($_.Exception.Message). Install it again with its activation file."
+            }
+        }
     } finally {
-        Remove-Item -LiteralPath $tempConf, $tempKey -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $tempConf, $tempKey, $tempLegacyKey -Force -ErrorAction SilentlyContinue
     }
 
     Set-Step 90 "Creating the drive $DriveLetter..."
-    Register-MountTask $act $DriveLetter $user
-    if (-not $reboot) { Start-Mount $DriveLetter }
+    Register-MountTask $act $DriveLetter $user $paths
+    if (-not $reboot) {
+        Start-Mount $DriveLetter $paths
+        foreach ($n in $script:StoppedTasks) {
+            Write-Log "Restarting $n..."
+            Start-ScheduledTask -TaskPath $TaskPath -TaskName $n -ErrorAction SilentlyContinue
+        }
+    }
     Set-Step 100 'Done.'
     return $reboot
 }
 
+function Invoke-RemoveStorage([string]$Bucket) {
+    Write-Log "cloudHPCstorage $SetupVersion - removing the storage '$Bucket'"
+    $found = @(Get-Instances | Where-Object { $_.Bucket -eq $Bucket })
+    if (-not $found.Count) { throw "The storage '$Bucket' is not installed on this PC." }
+    Set-Step 20 "Stopping the drive $($found[0].Drive)..."
+    foreach ($i in $found) { if ($i.Legacy) { Remove-Legacy } else { Remove-Instance $Bucket } }
+    if (-not @(Get-Instances).Count) { Invoke-Uninstall; return }
+    Set-Step 100 "Storage '$Bucket' removed."
+}
+
 function Invoke-Uninstall {
     Write-Log "cloudHPCstorage uninstall $SetupVersion"
-    Set-Step 20 'Stopping the drive...'
-    Remove-Previous
+    Set-Step 20 'Stopping the drives...'
+    foreach ($i in @(Get-Instances)) { if ($i.Legacy) { Remove-Legacy } else { Remove-Instance $i.Bucket } }
+    Remove-Legacy
+    Stop-Rclone
+    if (Test-Path -LiteralPath $InstallDir) {
+        Write-Log "Removing $InstallDir"
+        Remove-Item -LiteralPath $InstallDir -Recurse -Force
+        $parent = Split-Path -Parent $InstallDir
+        if ((Test-Path -LiteralPath $parent) -and -not (Get-ChildItem -LiteralPath $parent -Force)) {
+            Remove-Item -LiteralPath $parent -Force
+        }
+    }
     Remove-Item -Path $UninstallKey -Recurse -Force -ErrorAction SilentlyContinue
     Set-Step 100 'cloudHPCstorage removed (WinFsp is left installed).'
 }
@@ -456,10 +587,11 @@ function Invoke-Uninstall {
 function Show-Gui([string]$BaseDir) {
     [System.Windows.Forms.Application]::EnableVisualStyles()
     $user = Get-TargetUser
+    $script:GuiInstances = @()
 
     $form = New-Object System.Windows.Forms.Form
     $form.Text = "cloudHPCstorage setup $SetupVersion"
-    $form.ClientSize = New-Object System.Drawing.Size(560, 480)
+    $form.ClientSize = New-Object System.Drawing.Size(560, 552)
     $form.FormBorderStyle = 'FixedDialog'
     $form.MaximizeBox = $false
     $form.StartPosition = 'CenterScreen'
@@ -472,8 +604,7 @@ function Show-Gui([string]$BaseDir) {
     $form.Controls.Add($title)
 
     $subtitle = New-Object System.Windows.Forms.Label
-    $subtitle.Text = "Your cloudHPC storage as a drive in File Explorer (user $($user.Name))."
-    if (Test-Installed) { $subtitle.Text += "`r`nAn existing installation was found: it will be replaced." }
+    $subtitle.Text = "Your cloudHPC storages as drives in File Explorer (user $($user.Name)).`r`nInstall once per activation file: each storage gets its own drive."
     $subtitle.SetBounds(18, 48, 530, 34)
     $form.Controls.Add($subtitle)
 
@@ -485,8 +616,6 @@ function Show-Gui([string]$BaseDir) {
 
     $txtKey = New-Object System.Windows.Forms.TextBox
     $txtKey.SetBounds(18, 114, 430, 24)
-    $found = if ($ActivationFile) { $ActivationFile } else { Find-ActivationFile $BaseDir }
-    if ($found) { $txtKey.Text = $found }
     $form.Controls.Add($txtKey)
 
     $btnBrowse = New-Object System.Windows.Forms.Button
@@ -517,23 +646,31 @@ function Show-Gui([string]$BaseDir) {
     $cmbDrive = New-Object System.Windows.Forms.ComboBox
     $cmbDrive.DropDownStyle = 'DropDownList'
     $cmbDrive.SetBounds(18, 194, 90, 24)
-    $letters = @(Get-FreeDriveLetters $user.Sid)
-    $previous = Get-PreviousDrive
-    if ($previous -and $letters -notcontains $previous) { $letters = @($previous) + $letters }
-    foreach ($l in $letters) { [void]$cmbDrive.Items.Add($l) }
-    $default = if ($previous) { $previous } elseif ($Drive) { $Drive.ToUpper() } else { $letters | Where-Object { $_ -ge 'G:' } | Select-Object -First 1 }
-    if ($default -and $cmbDrive.Items.Contains($default)) { $cmbDrive.SelectedItem = $default }
-    elseif ($cmbDrive.Items.Count) { $cmbDrive.SelectedIndex = 0 }
     $form.Controls.Add($cmbDrive)
 
     $lblDriveHint = New-Object System.Windows.Forms.Label
-    $lblDriveHint.Text = 'Only free letters are listed.'
     $lblDriveHint.ForeColor = [System.Drawing.Color]::DimGray
-    $lblDriveHint.SetBounds(118, 198, 400, 20)
+    $lblDriveHint.SetBounds(118, 198, 426, 20)
     $form.Controls.Add($lblDriveHint)
 
+    $lblInst = New-Object System.Windows.Forms.Label
+    $lblInst.Text = 'Installed storages'
+    $lblInst.Font = $lblKey.Font
+    $lblInst.SetBounds(16, 228, 300, 20)
+    $form.Controls.Add($lblInst)
+
+    $lstInst = New-Object System.Windows.Forms.ListBox
+    $lstInst.SetBounds(18, 250, 430, 70)
+    $lstInst.Font = New-Object System.Drawing.Font('Consolas', 9)
+    $form.Controls.Add($lstInst)
+
+    $btnRemove = New-Object System.Windows.Forms.Button
+    $btnRemove.Text = 'Remove'
+    $btnRemove.SetBounds(456, 249, 88, 26)
+    $form.Controls.Add($btnRemove)
+
     $progress = New-Object System.Windows.Forms.ProgressBar
-    $progress.SetBounds(18, 234, 526, 16)
+    $progress.SetBounds(18, 332, 526, 16)
     $form.Controls.Add($progress)
     $script:Progress = $progress
 
@@ -543,34 +680,65 @@ function Show-Gui([string]$BaseDir) {
     $log.ScrollBars = 'Vertical'
     $log.BackColor = [System.Drawing.Color]::White
     $log.Font = New-Object System.Drawing.Font('Consolas', 8.5)
-    $log.SetBounds(18, 258, 526, 164)
+    $log.SetBounds(18, 356, 526, 140)
     $form.Controls.Add($log)
     $script:LogBox = $log
 
     $btnInstall = New-Object System.Windows.Forms.Button
     $btnInstall.Text = 'Install'
-    $btnInstall.SetBounds(284, 436, 84, 30)
+    $btnInstall.SetBounds(268, 510, 84, 30)
     $form.Controls.Add($btnInstall)
     $form.AcceptButton = $btnInstall
 
     $btnUninstall = New-Object System.Windows.Forms.Button
-    $btnUninstall.Text = 'Uninstall'
-    $btnUninstall.SetBounds(372, 436, 84, 30)
-    $btnUninstall.Enabled = Test-Installed
+    $btnUninstall.Text = 'Uninstall all'
+    $btnUninstall.SetBounds(356, 510, 96, 30)
     $form.Controls.Add($btnUninstall)
 
     $btnClose = New-Object System.Windows.Forms.Button
     $btnClose.Text = 'Close'
-    $btnClose.SetBounds(460, 436, 84, 30)
+    $btnClose.SetBounds(460, 510, 84, 30)
     $btnClose.Add_Click({ $form.Close() })
     $form.Controls.Add($btnClose)
     $form.CancelButton = $btnClose
 
+    $refreshList = {
+        $script:GuiInstances = @(Get-Instances | Sort-Object Drive)
+        $lstInst.Items.Clear()
+        foreach ($i in $script:GuiInstances) {
+            [void]$lstInst.Items.Add(('{0}  {1}  ({2})' -f $i.Drive, $i.Bucket, $i.User))
+        }
+        if (-not $script:GuiInstances.Count) { [void]$lstInst.Items.Add('(none)') }
+        $btnRemove.Enabled = [bool]$script:GuiInstances.Count
+        $btnUninstall.Enabled = Test-Installed
+    }
+
+    # Drive letters: the free ones, plus the current one of the storage of the selected
+    # activation file (reinstalling it replaces that drive)
+    $refreshDrives = {
+        $bucket = $null
+        try { if ($txtKey.Text) { $bucket = (Read-Activation $txtKey.Text).storage } } catch {}
+        $mine = $script:GuiInstances | Where-Object { $bucket -and $_.Bucket -eq $bucket } | Select-Object -First 1
+        $current = [string]$cmbDrive.SelectedItem
+        $letters = @(Get-FreeDriveLetters $user.Sid $script:GuiInstances)
+        if ($mine) { $letters = @($mine.Drive) + $letters }
+        $cmbDrive.Items.Clear()
+        foreach ($l in $letters) { [void]$cmbDrive.Items.Add($l) }
+        $default = if ($mine) { $mine.Drive }
+                   elseif ($current -and $letters -contains $current) { $current }
+                   elseif ($Drive) { $Drive.ToUpper() }
+                   else { $letters | Where-Object { $_ -ge 'G:' } | Select-Object -First 1 }
+        if ($default -and $cmbDrive.Items.Contains($default)) { $cmbDrive.SelectedItem = $default }
+        elseif ($cmbDrive.Items.Count) { $cmbDrive.SelectedIndex = 0 }
+        $lblDriveHint.Text = if ($mine) { "'$bucket' is already installed on $($mine.Drive): it will be replaced." }
+                             else { 'Only free letters are listed.' }
+    }
+
     $setBusy = {
         param([bool]$Busy)
-        foreach ($c in $btnInstall, $btnUninstall, $btnClose, $btnBrowse, $txtKey, $cmbDrive) { $c.Enabled = -not $Busy }
+        foreach ($c in $btnInstall, $btnUninstall, $btnClose, $btnBrowse, $txtKey, $cmbDrive, $lstInst, $btnRemove) { $c.Enabled = -not $Busy }
         $form.UseWaitCursor = $Busy
-        if (-not $Busy) { $btnUninstall.Enabled = Test-Installed }
+        if (-not $Busy) { & $refreshList; & $refreshDrives }
     }
 
     $btnInstall.Add_Click({
@@ -582,7 +750,7 @@ function Show-Gui([string]$BaseDir) {
             if ($reboot) {
                 Show-Message "cloudHPCstorage is installed.`r`n`r`nPlease RESTART the PC: after the restart your storage will appear as drive $letter in File Explorer > This PC."
             } else {
-                Show-Message "cloudHPCstorage is ready!`r`n`r`nYour storage is the drive $letter in File Explorer > This PC.`r`nIt is connected automatically at every logon."
+                Show-Message "cloudHPCstorage is ready!`r`n`r`nYour storage is the drive $letter in File Explorer > This PC.`r`nIt is connected automatically at every logon.`r`n`r`nTo add another storage, select its activation file and click Install again."
                 try { Start-Process explorer.exe "$letter\" } catch {}
             }
         } catch {
@@ -595,8 +763,27 @@ function Show-Gui([string]$BaseDir) {
         }
     })
 
+    $btnRemove.Add_Click({
+        $idx = $lstInst.SelectedIndex
+        if ($idx -lt 0 -or $idx -ge $script:GuiInstances.Count) { Show-Message 'Select a storage in the list.' 'Warning'; return }
+        $inst = $script:GuiInstances[$idx]
+        $answer = [System.Windows.Forms.MessageBox]::Show("Remove the drive $($inst.Drive) (storage '$($inst.Bucket)') from this PC?",
+            'cloudHPCstorage', 'YesNo', 'Question')
+        if ($answer -ne 'Yes') { return }
+        & $setBusy $true
+        try {
+            Invoke-RemoveStorage $inst.Bucket
+            Show-Message "The drive $($inst.Drive) has been removed."
+        } catch {
+            Write-Log "ERROR: $($_.Exception.Message)"
+            Show-Message $_.Exception.Message 'Error'
+        } finally {
+            & $setBusy $false
+        }
+    })
+
     $btnUninstall.Add_Click({
-        $answer = [System.Windows.Forms.MessageBox]::Show('Remove cloudHPCstorage from this PC?', 'cloudHPCstorage', 'YesNo', 'Question')
+        $answer = [System.Windows.Forms.MessageBox]::Show('Remove cloudHPCstorage and ALL its drives from this PC?', 'cloudHPCstorage', 'YesNo', 'Question')
         if ($answer -ne 'Yes') { return }
         & $setBusy $true
         try {
@@ -609,6 +796,12 @@ function Show-Gui([string]$BaseDir) {
             & $setBusy $false
         }
     })
+
+    & $refreshList
+    $found = if ($ActivationFile) { $ActivationFile } else { Find-ActivationFile $BaseDir }
+    if ($found) { $txtKey.Text = $found }
+    & $refreshDrives
+    $txtKey.Add_TextChanged({ & $refreshDrives })
 
     $form.Add_Shown({
         $form.Activate()
@@ -640,6 +833,7 @@ if (-not (Test-IsAdmin)) {
     if ($Silent)         { $argList += '-Silent' }
     if ($Drive)          { $argList += @('-Drive', $Drive) }
     if ($ActivationFile) { $argList += @('-ActivationFile', "`"$ActivationFile`"") }
+    if ($Storage)        { $argList += @('-Storage', $Storage) }
     try {
         $p = Start-Process powershell.exe -Verb RunAs -ArgumentList $argList -PassThru -Wait:$Silent
         if ($Silent) { exit $p.ExitCode }
@@ -653,13 +847,14 @@ if (-not (Test-IsAdmin)) {
 $BaseDir = Get-BaseDir
 
 if ($Uninstall) {
+    $what = if ($Storage) { "the storage '$Storage'" } else { 'cloudHPCstorage and ALL its drives' }
     if (-not $Silent) {
-        $answer = [System.Windows.Forms.MessageBox]::Show('Remove cloudHPCstorage from this PC?', 'cloudHPCstorage', 'YesNo', 'Question')
+        $answer = [System.Windows.Forms.MessageBox]::Show("Remove $what from this PC?", 'cloudHPCstorage', 'YesNo', 'Question')
         if ($answer -ne 'Yes') { exit 0 }
     }
     try {
-        Invoke-Uninstall
-        Show-Message 'cloudHPCstorage has been removed.'
+        if ($Storage) { Invoke-RemoveStorage $Storage.ToLower() } else { Invoke-Uninstall }
+        Show-Message "Removed $what."
         exit 0
     } catch {
         Write-Log "ERROR: $($_.Exception.Message)"

@@ -1,15 +1,22 @@
 #!/usr/bin/env bash
 # cloudHPCstorage setup for Ubuntu / Debian (amd64).
-# Mounts the cloudHPC storage in $HOME/cloudHPCstorage through rclone.
+# Mounts a cloudHPC storage in $HOME/cloudHPCstorage/<storage> through rclone.
 #
 # Usage:  bash install.sh [activation-file.json]
 #
-# - removes any previous installation (service account version included)
+# Several storages can be mounted at the same time: run the script once per
+# activation file. Each storage has its own folder, configuration and systemd
+# service (cloudHPCstorage-<user>-<storage>.service); installing an activation file
+# whose storage is already mounted replaces only that mount. Other users of the same
+# machine can install their own storages too.
+#
+# - converts the previous single-mount installation (storage mounted directly in
+#   ~/cloudHPCstorage) to this layout, keeping its storage mounted
 # - installs rclone (bundled .deb), fuse3 and jq
 # - copies the activation file (service account key + "storage" field) and writes
-#   ~/.config/cloudHPCstorage/rclone.conf
-# - creates and starts the systemd service cloudHPCstorage.service
-# Logs: sudo journalctl -u cloudHPCstorage.service
+#   ~/.config/cloudHPCstorage/<storage>/rclone.conf
+# - creates and starts the systemd service of the storage
+# Logs: sudo journalctl -u 'cloudHPCstorage-*'
 set -euo pipefail
 
 APP=cloudHPCstorage
@@ -17,10 +24,13 @@ REMOTE=cloudHPCstorage
 KEY_NAME=cfd-fea-service-cloud.json
 SUPPORT=info@cloudhpc.cloud
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONF_DIR="$HOME/.config/$APP"
-CONF="$CONF_DIR/rclone.conf"
-MOUNT="$HOME/$APP"
-UNIT="/etc/systemd/system/$APP.service"
+ME="$(id -un)"
+CONF_ROOT="$HOME/.config/$APP"
+BASE="$HOME/$APP"
+UNIT_DIR=/etc/systemd/system
+# Previous layout: a single storage, mounted in $BASE itself by $APP.service
+LEGACY_UNIT="$UNIT_DIR/$APP.service"
+BUCKET_RE='^[a-z0-9][a-z0-9._-]{1,221}[a-z0-9]$'
 
 info() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 ok()   { printf '\033[1;32m OK\033[0m %s\n' "$*"; }
@@ -66,11 +76,32 @@ RCLONE="$(command -v rclone)"
 FUSERMOUNT="$(command -v fusermount3 || command -v fusermount)"
 ok "$("$RCLONE" version | head -n 1)"
 
-# --- Configuration --------------------------------------------------------------
-jq -e '.type == "service_account" and .storage and .client_email and .private_key' "$KEY" >/dev/null 2>&1 \
-    || die "$(basename "$KEY") is not a valid cloudHPCstorage activation file."
-BUCKET="$(jq -r .storage "$KEY")"
-[[ "$BUCKET" =~ ^[a-z0-9][a-z0-9._-]{1,221}[a-z0-9]$ ]] || die "Invalid storage name '$BUCKET' in the activation file."
+# --- Helpers --------------------------------------------------------------------
+unit_name() { printf '%s-%s-%s.service' "$APP" "$ME" "$1"; }  # $1 = storage
+
+list_storages() {  # storages mounted by this user, one per line
+    local f
+    for f in "$UNIT_DIR/$APP"-*.service; do
+        [ -f "$f" ] || continue
+        grep -qx "X-CloudHPC-User=$ME" "$f" || continue
+        sed -n 's/^X-CloudHPC-Storage=//p' "$f"
+    done
+}
+
+unmount() {  # $1 = folder
+    if mountpoint -q "$1"; then
+        "$FUSERMOUNT" -uz "$1" 2>/dev/null || sudo umount -l "$1" || true
+    fi
+}
+
+set_aside() {  # $1 = folder: rclone does not mount on a non-empty folder, keep local leftovers
+    if [ -d "$1" ] && [ -n "$(ls -A "$1" 2>/dev/null)" ]; then
+        local saved
+        saved="$1.local-$(date +%Y%m%d-%H%M%S)"
+        mv "$1" "$saved"
+        warn "$1 contained local files: moved to $saved"
+    fi
+}
 
 write_conf() (  # $1 = destination, $2 = key file
     umask 077
@@ -81,14 +112,93 @@ write_conf() (  # $1 = destination, $2 = key file
         echo "anonymous = false"
         echo "object_acl = bucketOwnerFullControl"
         echo "bucket_acl = private"
-        if [ "$(jq -r '.bucket_policy_only // false' "$KEY")" = true ]; then echo "bucket_policy_only = true"; fi
+        if [ "$(jq -r '.bucket_policy_only // false' "$2")" = true ]; then echo "bucket_policy_only = true"; fi
     } > "$1"
 )
+
+remove_storage() {  # $1 = storage: stops and removes its service, mount and configuration
+    local unit
+    unit="$(unit_name "$1")"
+    sudo systemctl disable --now "$unit" >/dev/null 2>&1 || true
+    unmount "$BASE/$1"
+    sudo rm -f "$UNIT_DIR/$unit"
+    rm -rf "${CONF_ROOT:?}/$1"
+}
+
+install_storage() {  # $1 = key file, $2 = storage; returns 1 if the mount does not start
+    local key="$1" bucket="$2" dir="$CONF_ROOT/$2" mnt="$BASE/$2" unit
+    unit="$(unit_name "$bucket")"
+    info "Mounting the storage '$bucket' in $mnt..."
+    mkdir -p "$dir"
+    chmod 700 "$CONF_ROOT" "$dir"
+    install -m 600 "$key" "$dir/$KEY_NAME"
+    write_conf "$dir/rclone.conf" "$dir/$KEY_NAME"
+    set_aside "$mnt"
+    mkdir -p "$mnt"
+
+    sudo tee "$UNIT_DIR/$unit" >/dev/null <<EOF
+[Unit]
+Description=cloudHPCstorage - storage $bucket mounted in $mnt
+Wants=network-online.target
+After=network-online.target
+X-CloudHPC-User=$ME
+X-CloudHPC-Storage=$bucket
+
+[Service]
+Type=notify
+User=$ME
+Group=$(id -gn)
+ExecStart=$RCLONE mount "$REMOTE:$bucket" "$mnt" --config "$dir/rclone.conf" --vfs-cache-mode full --log-level NOTICE
+ExecStop=$FUSERMOUNT -uz "$mnt"
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now "$unit" >/dev/null 2>&1 || true
+
+    for _ in $(seq 1 20); do mountpoint -q "$mnt" && return 0; sleep 1; done
+    sudo journalctl -u "$unit" -n 30 --no-pager || true
+    return 1
+}
+
+# Previous single-mount installation of this user: stopped and removed; its storage,
+# when different from the one being installed, is mounted again in the new layout.
+MIGRATE_KEY="" MIGRATE_BUCKET=""
+migrate_legacy() {  # $1 = storage being installed
+    [ -f "$LEGACY_UNIT" ] || return 0
+    local owner old_key="$CONF_ROOT/$KEY_NAME" old_bucket=""
+    owner="$(sed -n 's/^User=//p' "$LEGACY_UNIT")"
+    if [ -n "$owner" ] && [ "$owner" != "$ME" ]; then
+        warn "The previous cloudHPCstorage installation of user '$owner' is left untouched."
+        return 0
+    fi
+    [ -f "$old_key" ] && old_bucket="$(jq -r '.storage // empty' "$old_key" 2>/dev/null || true)"
+    info "Converting the previous installation (storage '${old_bucket:-?}' mounted in $BASE)..."
+    sudo systemctl disable --now "$APP.service" >/dev/null 2>&1 || true
+    unmount "$BASE"
+    sudo rm -f "$LEGACY_UNIT" /usr/bin/cloudHPCstorage-service
+    sudo systemctl daemon-reload
+    set_aside "$BASE"
+    if [[ "$old_bucket" =~ $BUCKET_RE ]] && [ "$old_bucket" != "$1" ]; then
+        install -m 600 "$old_key" "$TMP/legacy-key.json"
+        MIGRATE_KEY="$TMP/legacy-key.json" MIGRATE_BUCKET="$old_bucket"
+    fi
+    rm -f "$old_key" "$CONF_ROOT/rclone.conf"
+}
+
+# --- Configuration --------------------------------------------------------------
+jq -e '.type == "service_account" and .storage and .client_email and .private_key' "$KEY" >/dev/null 2>&1 \
+    || die "$(basename "$KEY") is not a valid cloudHPCstorage activation file."
+BUCKET="$(jq -r .storage "$KEY")"
+[[ "$BUCKET" =~ $BUCKET_RE ]] || die "Invalid storage name '$BUCKET' in the activation file."
 
 info "Checking the access to the storage '$BUCKET'..."
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-# Work on a copy: the key may be the one of the previous installation, removed below
+# Work on a copy: the key may be the one of the installation removed below
 install -m 600 "$KEY" "$TMP/key.json"
 KEY="$TMP/key.json"
 write_conf "$TMP/rclone.conf" "$KEY"
@@ -103,71 +213,37 @@ fi
 ok "Access OK."
 
 # --- Previous installation ------------------------------------------------------
-info "Removing the previous installation (if any)..."
-sudo systemctl disable --now "$APP.service" >/dev/null 2>&1 || true
-if mountpoint -q "$MOUNT"; then
-    "$FUSERMOUNT" -uz "$MOUNT" 2>/dev/null || sudo umount -l "$MOUNT" || true
-fi
-sudo rm -f "$UNIT" /usr/bin/cloudHPCstorage-service
-# Service account version: remote inside the default rclone.conf + JSON key
+info "Removing the previous installation of '$BUCKET' (if any)..."
+migrate_legacy "$BUCKET"
+# Oldest version: remote inside the default rclone.conf + JSON key
 OLD_CONF="$HOME/.config/rclone/rclone.conf"
 if [ -f "$OLD_CONF" ] && grep -q "^\[$REMOTE\]" "$OLD_CONF"; then
     "$RCLONE" config delete "$REMOTE" --config "$OLD_CONF" || true
 fi
 rm -f "$HOME/.config/rclone/cfd-fea-service-cloud.json"
+remove_storage "$BUCKET"
 sudo systemctl daemon-reload
-
-# rclone refuses to mount on a non-empty folder: keep local leftovers aside
-if [ -d "$MOUNT" ] && [ -n "$(ls -A "$MOUNT" 2>/dev/null)" ]; then
-    SAVED="$MOUNT.local-$(date +%Y%m%d-%H%M%S)"
-    mv "$MOUNT" "$SAVED"
-    warn "$MOUNT contained local files: moved to $SAVED"
-fi
-mkdir -p "$MOUNT"
 
 # --- Install ------------------------------------------------------------------
-info "Saving the configuration in $CONF..."
-mkdir -p "$CONF_DIR"
-chmod 700 "$CONF_DIR"
-install -m 600 "$KEY" "$CONF_DIR/$KEY_NAME"
-write_conf "$CONF" "$CONF_DIR/$KEY_NAME"
+mkdir -p "$BASE"
+install_storage "$KEY" "$BUCKET" || die "The storage '$BUCKET' could not be mounted (see the log above). Contact $SUPPORT."
 
-info "Creating the service $APP.service..."
-sudo tee "$UNIT" >/dev/null <<EOF
-[Unit]
-Description=cloudHPCstorage - cloudHPC storage mounted in $MOUNT
-Wants=network-online.target
-After=network-online.target
-
-[Service]
-Type=notify
-User=$(id -un)
-Group=$(id -gn)
-ExecStart=$RCLONE mount "$REMOTE:$BUCKET" "$MOUNT" --config "$CONF" --vfs-cache-mode full --log-level NOTICE
-ExecStop=$FUSERMOUNT -uz "$MOUNT"
-Restart=on-failure
-RestartSec=15
-
-[Install]
-WantedBy=multi-user.target
-EOF
-sudo systemctl daemon-reload
-sudo systemctl enable --now "$APP.service" >/dev/null 2>&1 || true
-
-for _ in $(seq 1 20); do mountpoint -q "$MOUNT" && break; sleep 1; done
-if ! mountpoint -q "$MOUNT"; then
-    sudo journalctl -u "$APP.service" -n 30 --no-pager || true
-    die "The storage could not be mounted (see the log above). Contact $SUPPORT."
+if [ -n "$MIGRATE_KEY" ]; then
+    remove_storage "$MIGRATE_BUCKET"
+    install_storage "$MIGRATE_KEY" "$MIGRATE_BUCKET" \
+        || warn "The previous storage '$MIGRATE_BUCKET' could not be mounted again: run this script with its activation file."
 fi
 
 # Bookmark in the file manager sidebar (GNOME / Nautilus)
 BOOKMARKS="$HOME/.config/gtk-3.0/bookmarks"
-if [ -f "$BOOKMARKS" ] && ! grep -q "^file://$MOUNT " "$BOOKMARKS"; then
-    echo "file://$MOUNT cloudHPCstorage" >> "$BOOKMARKS"
+if [ -f "$BOOKMARKS" ] && ! grep -q "^file://$BASE " "$BOOKMARKS"; then
+    echo "file://$BASE cloudHPCstorage" >> "$BOOKMARKS"
 fi
 
 echo
-ok "cloudHPCstorage is ready: your storage is in $MOUNT"
-echo "    It is mounted automatically at every boot."
-echo "    Logs:      sudo journalctl -u $APP.service"
-echo "    Uninstall: bash $HERE/uninstall.sh"
+ok "cloudHPCstorage is ready: your storage '$BUCKET' is in $BASE/$BUCKET"
+echo "    Storages mounted for $ME (automatically at every boot):"
+list_storages | sort | sed "s|^|        $BASE/|"
+echo "    Add another storage: bash $HERE/install.sh <activation-file.json>"
+echo "    Logs:      sudo journalctl -u '$APP-$ME-*'"
+echo "    Uninstall: bash $HERE/uninstall.sh [storage]"

@@ -9,7 +9,9 @@ Access your cloudHPC storage as a local drive, directly from File Explorer (Wind
 
 > **Keep the key file private:** anyone who has it can access your storage.
 
-Any previous cloudHPCstorage installation is detected and replaced automatically: you don't need to uninstall it first.
+Any previous cloudHPCstorage installation is detected and updated automatically: you don't need to uninstall it first.
+
+**More than one storage?** Run the installer again with the other key file: every storage gets its own drive (Windows) or folder (Ubuntu / Debian). Installing a key file of a storage that is already connected replaces only that one.
 
 ## Windows
 
@@ -25,11 +27,12 @@ Any previous cloudHPCstorage installation is detected and replaced automatically
    - choose a free **drive letter**;
    - click **Install**.
 5. Open **File Explorer → This PC**: your cloudHPC storage appears as a network drive.
+6. Another storage? Select its key file with **Browse...**, choose another letter and click **Install** again.
 
 The drive is connected automatically every time you log in.
 If the setup asks you to restart the PC, do it: the drive will appear after the restart.
 
-**Uninstall:** *Settings → Apps → cloudHPCstorage*, or double-click `uninstall.cmd`.
+**Uninstall:** to remove one drive, run the installer, select it under *Installed storages* and click **Remove**. To remove all of them: *Settings → Apps → cloudHPCstorage*, or double-click `uninstall.cmd`.
 
 ## Ubuntu / Debian
 
@@ -43,18 +46,22 @@ If the setup asks you to restart the PC, do it: the drive will appear after the 
    ```
 
 3. Enter your password when asked.
-4. Your storage is now available at:
+4. Your storage is now available at (`<storage>` is its name, shown at the end of the installation):
 
    ```bash
-   cd $HOME/cloudHPCstorage
+   cd $HOME/cloudHPCstorage/<storage>
    ```
 
-The storage is mounted automatically at every boot.
+5. Another storage? Run `bash install.sh /path/to/other-key.json`.
+
+The storages are mounted automatically at every boot.
 
 **Uninstall:**
 
 ```bash
-bash uninstall.sh
+bash uninstall.sh --list        # your storages
+bash uninstall.sh <storage>     # remove one
+bash uninstall.sh               # remove all
 ```
 
 ## Troubleshooting
@@ -68,5 +75,5 @@ bash uninstall.sh
 
 When you contact us, please attach the log files:
 
-- **Windows** – setup: `%TEMP%\cloudHPCstorage-setup.log`; drive: `C:\Program Files (x86)\CFD FEA Service\cloudHPCstorage\rclone.log`
-- **Ubuntu / Debian** – output of `sudo journalctl -u cloudHPCstorage.service`
+- **Windows** – setup: `%TEMP%\cloudHPCstorage-setup.log`; drive: `C:\Program Files (x86)\CFD FEA Service\cloudHPCstorage\instances\<storage>\rclone.log`
+- **Ubuntu / Debian** – output of `sudo journalctl -u 'cloudHPCstorage-*'`
