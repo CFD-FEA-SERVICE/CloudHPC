@@ -95,7 +95,8 @@
              	   <CarParkFIRE-12101 type="frame">
                  	<Talpha type="float">150.0</Talpha>
                  	<RHRmax type="float">5e6</RHRmax>
-                 	<Energy  type="float">30000e6</Energy>
+			<Energy  type="float">30000e6</Energy>
+			<RatioDecay  type="float">0.3</RatioDecay>
                  	<Xc      type="float">1.00</Xc>
                  	<Tsprinkler type="float">20e3</Tsprinkler>
 			<Texhaust   type="float">100.0</Texhaust>
