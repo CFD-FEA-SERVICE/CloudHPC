@@ -3,7 +3,7 @@
 </p>
 
 # Welcome to the CloudHPC User Guide!
-CFD FEA SERVICE provides cloudHPC, a cloud service for running CFD, FEM and other engineering simulations. Supported solvers include OpenFOAM, FDS, code_aster, CalculiX, SU2, code_saturne, OpenRADIOSS, EnergyPlus and many more, as well as your own bash or Python scripts (see the [full list of available software](https://cloudhpc.cloud/#softwareavail)). cloudHPC (High Performance Computing) lets you rent computing power on demand to run heavy, long-running engineering analyses. Your simulations run in the cloud and are managed entirely from the [web app](https://cloud.cfdfeaservice.it/), so your local computer stays free. The results are stored in the web app, where you can easily download them.
+CFD FEA SERVICE provides cloudHPC, a cloud service for running CFD, FEM and other engineering simulations. Supported solvers include OpenFOAM, FDS, code_aster, CalculiX, SU2, code_saturne, OpenCourant, EnergyPlus and many more, as well as your own bash or Python scripts (see the [full list of available software](https://cloudhpc.cloud/#softwareavail)). cloudHPC (High Performance Computing) lets you rent computing power on demand to run heavy, long-running engineering analyses. Your simulations run in the cloud and are managed entirely from the [web app](https://cloud.cfdfeaservice.it/), so your local computer stays free. The results are stored in the web app, where you can easily download them.
 
 The service is dedicated to running simulations, so that you can:
 

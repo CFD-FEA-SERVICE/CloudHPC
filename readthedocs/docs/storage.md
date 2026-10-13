@@ -147,7 +147,7 @@ To download the results, open the folder in the storage and download the results
 
 * CALCULIX.tar.gz
 
-* OPENRADIOSS.tar.gz
+* OPENCOURANT.tar.gz
 
 <p align="center">
    <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_09_dwonload_results.png">

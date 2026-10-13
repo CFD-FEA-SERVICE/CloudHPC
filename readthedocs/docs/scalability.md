@@ -202,7 +202,7 @@ In short, the name of each CalculiX solver tells you what is inside: the standar
 * <a href="https://cloudhpc.cloud/2024/10/02/scalability-performance-code_aster-vs-calculix/" target="_blank">Scalability performance code_aster Vs calculiX</a>
 * <a href="https://cloudhpc.cloud/2025/09/15/decoding-performance-a-scalability-showdown-between-calculix-and-code_aster/" target="_blank">Decoding Performance: A Scalability Showdown Between CalculiX and Code_Aster</a>
 
-## OpenRADIOSS
+## OpenCourant / OpenRADIOSS
 * <a href="https://cloudhpc.cloud/2025/05/27/unlocking-extreme-performance-openradioss-scalability-on-cloudhpc-with-amd-epyc-processors/" target="_blank">Unlocking Extreme Performance: OpenRADIOSS Scalability on CloudHPC with AMD EPYC Processors</a>
 
 ## SU2
