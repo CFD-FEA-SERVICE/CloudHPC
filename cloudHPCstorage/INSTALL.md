@@ -70,7 +70,7 @@ bash uninstall.sh               # remove all
 |---|---|
 | *"Google rejected the activation file"* | Your key has been disabled: ask [info@cloudhpc.cloud](mailto:info@cloudhpc.cloud) for a new one and run the installer again. |
 | *"Activation file not found"* | Put `cfd-fea-service-cloud.json` in the same folder as the installer (Windows: or select it with **Browse...**). |
-| The drive does not appear (Windows) | Log out and log in again, or restart the PC. |
+| The drive does not appear or has a red X (Windows) | Wait 5 minutes: the drive reconnects by itself when the network comes back. If it does not, log out and log in again. The file `rclone.log` (below) tells why: lines with `LAUNCHER` show when the drive waited for the network or was restarted. |
 | `install.exe` blocked | Use `install.cmd` from the same folder. |
 
 When you contact us, please attach the log files:

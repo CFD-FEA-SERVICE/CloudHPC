@@ -72,7 +72,7 @@ and lists the installed storages (each one can be removed on its own). Then it:
    keeping its drive letter;
 2. installs or updates WinFsp (only if the installed one is older; the other drives are
    stopped first; reports if a reboot is needed);
-3. copies `rclone.exe` and `install.ps1` to
+3. copies `rclone.exe` and `install.ps1`, and writes the drive launcher `mount.ps1`, to
    `C:\Program Files (x86)\CFD FEA Service\cloudHPCstorage` (shared by all the drives:
    when rclone changes, the running drives are stopped, updated and restarted) and
    registers *cloudHPCstorage* in *Settings → Apps* (uninstall of all the drives);
@@ -80,9 +80,25 @@ and lists the installed storages (each one can be removed on its own). Then it:
    `...\cloudHPCstorage\instances\<storage>`, readable only by SYSTEM, Administrators and
    the user;
 5. creates the scheduled task `\CFD FEA Service\cloudHPCstorage-<storage>` that runs
-   `rclone mount` hidden at every logon of the user (through `conhost.exe --headless`:
-   started directly, rclone would open a console window that unmounts the drive when
-   closed) with the network name `\\cloudHPC\<storage>`, and starts it immediately.
+   the launcher hidden at every logon of the user (through `conhost.exe --headless`:
+   started directly, a console program opens a window that unmounts the drive when
+   closed), and starts it immediately. The launcher (`mount.ps1 -Storage <storage>
+   -Drive X:`):
+   - waits until `oauth2.googleapis.com` resolves before starting `rclone mount`
+     (at logon the network, a VPN or Cloudflare WARP may not be ready yet, and rclone
+     started without DNS gives a drive that cannot list its files);
+   - starts `rclone mount` again whenever it exits (sleep / resume, network loss,
+     crash): after 15 s, doubling up to 5 minutes when it keeps failing quickly;
+   - keeps `rclone.log` under 10 MB and writes its own lines there (`LAUNCHER :`);
+   - runs once per storage (named mutex), and adopts an rclone already running.
+
+   The task also repeats every 5 minutes as a watchdog: while the launcher runs the new
+   instance is ignored (`MultipleInstances IgnoreNew`), if the launcher was killed it
+   starts again. Task Scheduler's own "restart on failure" does not help here: it
+   reacts only when the task cannot be started, not when the program exits with an error;
+6. updates the drives of the other storages to the current task definition. Drives of
+   setup 2.1.0 (task running `rclone mount` directly) are stopped and restarted with the
+   launcher.
 
 The drive belongs to the user who opened the session, even when the UAC elevation uses
 a different administrator account. A logon task is used instead of a Windows service
@@ -102,6 +118,11 @@ Exit codes: 0 ok, 3010 reboot needed, 1 error.
 Logs: `%TEMP%\cloudHPCstorage-setup.log` (setup),
 `C:\Program Files (x86)\CFD FEA Service\cloudHPCstorage\instances\<storage>\rclone.log` (drive).
 
+The tasks are in the `\CFD FEA Service\` folder of Task Scheduler. From PowerShell use
+`Get-ScheduledTask -TaskName 'cloudHPCstorage-*' | Start-ScheduledTask`, or pass
+`-TaskPath '\CFD FEA Service\'`: `Start-ScheduledTask -TaskName ...` alone looks only in
+the root folder and fails with "file not found".
+
 Limit: the scheduled task name is per storage, not per user, so on a PC shared by several
 Windows users a storage can be mounted for one of them at a time.
 
@@ -119,10 +140,16 @@ asked only when needed:
 3. copies the activation file and writes `rclone.conf` in
    `~/.config/cloudHPCstorage/<storage>/` (mode 600);
 4. creates `/etc/systemd/system/cloudHPCstorage-<user>-<storage>.service` (`Type=notify`,
-   runs as the user, restarts on failure) that mounts the bucket in
-   `~/cloudHPCstorage/<storage>`; the unit carries `X-CloudHPC-User=` / `X-CloudHPC-Storage=`
-   (ignored by systemd) used to list the storages of each user;
-5. adds a bookmark to `~/cloudHPCstorage` in the file manager (GNOME).
+   runs as the user) that mounts the bucket in `~/cloudHPCstorage/<storage>`. Before
+   mounting it clears a stale FUSE mount left by a crashed rclone and waits up to 60 s
+   for DNS (`getent hosts oauth2.googleapis.com`: `network-online.target` can be reached
+   before DNS works); `Restart=always`, `RestartSec=15`, `StartLimitIntervalSec=0`, so it
+   never gives up. The unit carries `X-CloudHPC-User=` / `X-CloudHPC-Storage=` /
+   `X-CloudHPC-Setup=` (ignored by systemd) used to list the storages of each user and to
+   find units written by an older setup;
+5. rewrites the units of the other storages of the user written by an older setup (the
+   change applies from their next start; the mounts are not interrupted);
+6. adds a bookmark to `~/cloudHPCstorage` in the file manager (GNOME).
 
 Different users of the same machine can mount their storages (also the same one) independently.
 

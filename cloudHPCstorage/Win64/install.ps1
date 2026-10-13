@@ -12,11 +12,17 @@
     keeping its drive, and removes the older "cloudHPCstorage" Windows service
   - installs/updates WinFsp; copies rclone.exe to
     C:\Program Files (x86)\CFD FEA Service\cloudHPCstorage
+  - writes the drive launcher mount.ps1 next to rclone.exe: it waits until the
+    network (DNS) is up, starts "rclone mount" and starts it again whenever it
+    exits (sleep/resume, network loss, crash)
   - per storage: copies the activation file (service account key + "storage"
     field) and writes rclone.conf in ...\cloudHPCstorage\instances\<storage>
     (key and config readable only by SYSTEM, Administrators and the user), and
     registers the scheduled task "\CFD FEA Service\cloudHPCstorage-<storage>"
-    that runs "rclone mount" hidden at every logon of the user
+    that runs the launcher hidden at every logon of the user, and every 5
+    minutes as a watchdog (ignored while the launcher is running)
+  - converts the drives of setup 2.1.0 (task running rclone directly) to the
+    launcher
   - registers "cloudHPCstorage" in Settings > Apps for the uninstall (all storages)
 
   Compile to install.exe with admin\build-exe.ps1 (ps2exe).
@@ -43,13 +49,15 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$SetupVersion   = '2.1.0'
+$SetupVersion   = '2.1.1'
 $RemoteName     = 'cloudHPCstorage'
 $KeyFileName    = 'cfd-fea-service-cloud.json'
 $SupportMail    = 'info@cloudhpc.cloud'
 $InstallDir     = Join-Path ${env:ProgramFiles(x86)} 'CFD FEA Service\cloudHPCstorage'
 $InstancesDir   = Join-Path $InstallDir 'instances'
 $RcloneExe      = Join-Path $InstallDir 'rclone.exe'
+$LauncherPs1    = Join-Path $InstallDir 'mount.ps1'
+$WatchdogMin    = 5
 $SetupLog       = Join-Path $env:TEMP 'cloudHPCstorage-setup.log'
 $TaskPath       = '\CFD FEA Service\'
 $TaskPrefix     = 'cloudHPCstorage-'
@@ -143,13 +151,17 @@ function Get-Instances {
     foreach ($t in @(Get-ScheduledTask -TaskPath $TaskPath -ErrorAction SilentlyContinue)) {
         if ($t.TaskName -ne $LegacyTaskName -and -not $t.TaskName.StartsWith($TaskPrefix)) { continue }
         $a = [string]$t.Actions[0].Arguments
-        if ($a -notmatch "mount\s+${RemoteName}:([a-z0-9._-]+)\s+([A-Za-z]:)") { continue }
+        # 2.1.1+: launcher "-Storage <storage> -Drive X:"; older: "rclone mount cloudHPCstorage:<storage> X:"
+        if ($a -match '-Storage\s+([a-z0-9._-]+)\s+-Drive\s+([A-Za-z]:)') { $launcher = $true }
+        elseif ($a -match "mount\s+${RemoteName}:([a-z0-9._-]+)\s+([A-Za-z]:)") { $launcher = $false }
+        else { continue }
         [pscustomobject]@{
             Bucket   = $Matches[1]
             Drive    = $Matches[2].ToUpper()
             TaskName = $t.TaskName
             User     = $t.Principal.UserId
             Legacy   = ($t.TaskName -eq $LegacyTaskName)
+            Launcher = $launcher
         }
     }
 }
@@ -243,6 +255,127 @@ function Write-Utf8File([string]$Path, [string]$Text) {
     [System.IO.File]::WriteAllText($Path, $Text, (New-Object System.Text.UTF8Encoding($false)))
 }
 
+
+# Drive launcher, written to $LauncherPs1 and run by the scheduled task of each drive
+# as the user (ASCII only: PowerShell 5 reads BOM-less files as ANSI).
+$LauncherText = @'
+# cloudHPCstorage drive launcher - written by the cloudHPCstorage setup, do not edit.
+# Waits until the network (DNS) is up, then runs "rclone mount" and starts it again
+# whenever it exits. The scheduled task runs it at logon and every few minutes; a
+# second copy for the same storage exits at once.
+param(
+    [Parameter(Mandatory = $true)][string]$Storage,
+    [Parameter(Mandatory = $true)][string]$Drive
+)
+$ErrorActionPreference = 'Continue'
+$Remote  = 'cloudHPCstorage'
+$Probe   = 'oauth2.googleapis.com'
+$Version = '__SETUP_VERSION__'
+$dir  = Join-Path $PSScriptRoot "instances\$Storage"
+$conf = Join-Path $dir 'rclone.conf'
+$log  = Join-Path $dir 'rclone.log'
+$exe  = Join-Path $PSScriptRoot 'rclone.exe'
+
+function Write-LauncherLog([string]$Message) {
+    $line = '{0:yyyy/MM/dd HH:mm:ss} LAUNCHER : {1}' -f (Get-Date), $Message
+    try { Add-Content -LiteralPath $log -Value $line -Encoding ASCII } catch {}
+}
+
+function Get-MyRclone {
+    @(Get-CimInstance Win32_Process -Filter "Name='rclone.exe'" -ErrorAction SilentlyContinue | Where-Object {
+        $_.CommandLine -and $_.CommandLine.IndexOf($conf, [StringComparison]::OrdinalIgnoreCase) -ge 0
+    })
+}
+
+function Test-Dns {
+    try { [void][System.Net.Dns]::GetHostAddresses($Probe); return $true } catch { return $false }
+}
+
+function Limit-Log {
+    # rclone appends forever: keep the last lines when the log passes 10 MB
+    try {
+        if ((Test-Path -LiteralPath $log) -and (Get-Item -LiteralPath $log).Length -gt 10MB) {
+            $tail = @(Get-Content -LiteralPath $log -Tail 2000)
+            Set-Content -LiteralPath $log -Value $tail -Encoding ASCII
+        }
+    } catch {}
+}
+
+# One launcher per storage: the named mutex is held for the whole life of this process
+$created = $false
+$mutex = [System.Threading.Mutex]::new($true, "Local\cloudHPCstorage-$Storage", [ref]$created)
+if (-not $created) { exit 0 }
+
+if (-not (Test-Path -LiteralPath $conf)) { Write-LauncherLog "configuration $conf not found: reinstall this storage."; exit 1 }
+$arguments = @(
+    'mount', "${Remote}:$Storage", $Drive,
+    '--config', "`"$conf`"",
+    '--vfs-cache-mode', 'full',
+    '--network-mode', '--volname', "\\cloudHPC\$Storage",
+    '--no-console',
+    '--log-file', "`"$log`"", '--log-level', 'NOTICE'
+) -join ' '
+
+Write-LauncherLog "launcher $Version started for drive $Drive."
+$delay = 15
+while ($true) {
+    # rclone already running for this storage (e.g. started by the previous setup): watch it
+    $running = @(Get-MyRclone)
+    if ($running.Count) {
+        Wait-Process -Id $running[0].ProcessId -ErrorAction SilentlyContinue
+        Write-LauncherLog 'rclone stopped: restarting the drive.'
+        Start-Sleep -Seconds 5
+        continue
+    }
+
+    if (-not (Test-Dns)) {
+        Write-LauncherLog "waiting for the network ($Probe cannot be resolved yet)..."
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
+        while (-not (Test-Dns)) {
+            Start-Sleep -Seconds 5
+            if ($sw.Elapsed.TotalMinutes -ge 30) { Write-LauncherLog 'still waiting for the network...'; $sw.Restart() }
+        }
+        Write-LauncherLog 'network available.'
+    }
+
+    Limit-Log
+    $started = Get-Date
+    try {
+        $p = Start-Process -FilePath $exe -ArgumentList $arguments -NoNewWindow -PassThru
+        $null = $p.Handle  # keeps ExitCode available after exit
+        $p.WaitForExit()
+        $code = $p.ExitCode
+    } catch {
+        $code = "n/a ($($_.Exception.Message))"
+    }
+    $minutes = [int]((Get-Date) - $started).TotalMinutes
+    # Long run: restart quickly. Repeated quick failures: back off up to 5 minutes.
+    if ($minutes -ge 10) { $delay = 15 } else { $delay = [Math]::Min($delay * 2, 300) }
+    Write-LauncherLog "rclone exited (code $code) after $minutes min: restarting in $delay s."
+    Start-Sleep -Seconds $delay
+}
+'@
+
+# powershell.exe processes of the drive launchers; with $Bucket only that storage's one
+function Get-LauncherProcesses([string]$Bucket) {
+    return @(Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue | Where-Object {
+        $_.CommandLine -and $_.CommandLine.IndexOf($LauncherPs1, [StringComparison]::OrdinalIgnoreCase) -ge 0 -and
+        (-not $Bucket -or $_.CommandLine -match ("-Storage\s+" + [regex]::Escape($Bucket) + "\s"))
+    })
+}
+
+# Stops the launcher first (it would restart rclone), then rclone
+function Stop-Drive([string]$Bucket, [string]$ConfPath) {
+    $l = @(Get-LauncherProcesses $Bucket)
+    foreach ($p in $l) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
+    if ($l.Count) { Start-Sleep -Milliseconds 500 }
+    Stop-Rclone $ConfPath
+}
+
+function Install-Launcher {
+    Write-Utf8File $LauncherPs1 ($LauncherText.Replace('__SETUP_VERSION__', $SetupVersion) -replace "`r?`n", "`r`n")
+}
+
 #endregion
 
 #region Steps ------------------------------------------------------------------
@@ -287,7 +420,7 @@ function Stop-AllDrives([string]$Reason) {
         }
     }
     if ($script:StoppedTasks.Count) { Write-Log "Stopping the other drives ($Reason)..." }
-    Stop-Rclone
+    Stop-Drive
 }
 
 function Remove-Instance([string]$Bucket) {
@@ -297,7 +430,7 @@ function Remove-Instance([string]$Bucket) {
         Write-Log "Stopping the drive of the storage '$Bucket'..."
         Stop-ScheduledTask -InputObject $task -ErrorAction SilentlyContinue | Out-Null
     }
-    Stop-Rclone $p.Conf
+    Stop-Drive $Bucket $p.Conf
     if ($task) { Unregister-ScheduledTask -TaskPath $TaskPath -TaskName $p.TaskName -Confirm:$false }
     $script:StoppedTasks = @($script:StoppedTasks | Where-Object { $_ -ne $p.TaskName })
     if (Test-Path -LiteralPath $p.Dir) { Remove-Item -LiteralPath $p.Dir -Recurse -Force }
@@ -393,6 +526,7 @@ function Install-Files([string]$BaseDir) {
         Stop-AllDrives 'rclone update'
         Copy-Item -LiteralPath $src -Destination $InstallDir -Force
     }
+    Install-Launcher
     # Kept for the uninstall from Settings > Apps
     Copy-Item -LiteralPath (Join-Path $BaseDir 'install.ps1') -Destination $InstallDir -Force
     Get-ChildItem -LiteralPath $InstallDir -File | Unblock-File
@@ -427,43 +561,70 @@ function Install-Config($Act, [string]$KeyPath, $User, $Paths) {
     & icacls.exe $Paths.Log /grant "*$($User.Sid):M" 2>&1 | Out-Null
 }
 
-function Register-MountTask($Act, [string]$DriveLetter, $User, $Paths) {
-    $exe = $RcloneExe
-    # Each drive needs its own network name: \\cloudHPC\<storage>
-    $arguments = @(
-        'mount', "${RemoteName}:$($Act.storage)", $DriveLetter,
-        '--config', "`"$($Paths.Conf)`"",
-        '--vfs-cache-mode', 'full',
-        '--network-mode', '--volname', "\\cloudHPC\$($Act.storage)",
-        '--no-console',
-        '--log-file', "`"$($Paths.Log)`"", '--log-level', 'NOTICE'
-    ) -join ' '
-    # rclone.exe is a console program: started directly it gets a console window (on
-    # Windows 11 a Windows Terminal tab that --no-console cannot hide) and closing it
-    # kills the mount. "conhost --headless" gives it a console without any window.
+function Register-MountTask([string]$Bucket, [string]$DriveLetter, $User, $Paths) {
+    # The launcher waits for the network and keeps rclone running (see $LauncherText).
+    # powershell.exe is a console program: started directly it gets a console window (on
+    # Windows 11 a Windows Terminal tab) and closing it kills the drive.
+    # "conhost --headless" gives it, and rclone, a console without any window.
+    $ps = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
     $conhost = Join-Path $env:SystemRoot 'System32\conhost.exe'
-    $action = New-ScheduledTaskAction -Execute $conhost -Argument "--headless `"$exe`" $arguments" -WorkingDirectory $InstallDir
+    $arguments = "--headless `"$ps`" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File `"$LauncherPs1`" -Storage $Bucket -Drive $DriveLetter"
+    $action = New-ScheduledTaskAction -Execute $conhost -Argument $arguments -WorkingDirectory $InstallDir
     $trigger = New-ScheduledTaskTrigger -AtLogOn -User $User.Name
     $trigger.Delay = 'PT10S'
+    # Watchdog: the task runs again every few minutes; while the launcher runs the new
+    # instance is ignored (MultipleInstances IgnoreNew), if it was killed it starts again
+    try {
+        $trigger.Repetition = (New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes $WatchdogMin)).Repetition
+    } catch {
+        try {
+            $trigger.Repetition = (New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes $WatchdogMin) `
+                -RepetitionDuration (New-TimeSpan -Days 3650)).Repetition
+        } catch { Write-Log "WARNING: watchdog repetition not available on this Windows: $($_.Exception.Message)" }
+    }
     $principal = New-ScheduledTaskPrincipal -UserId $User.Name -LogonType Interactive -RunLevel Limited
-    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable `
+    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -StartWhenAvailable `
         -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 10 -RestartInterval (New-TimeSpan -Minutes 1) -MultipleInstances IgnoreNew
     Register-ScheduledTask -TaskPath $TaskPath -TaskName $Paths.TaskName -Action $action -Trigger $trigger -Principal $principal `
-        -Settings $settings -Description "Mounts the cloudHPC storage '$($Act.storage)' (https://cloudhpc.cloud) as drive $DriveLetter." -Force | Out-Null
+        -Settings $settings -Description "Mounts the cloudHPC storage '$Bucket' (https://cloudhpc.cloud) as drive $DriveLetter." -Force | Out-Null
+}
+
+# Drives of the other storages: refreshes their task (launcher, watchdog). The ones of
+# setup 2.1.0 run rclone directly: they are stopped and restarted at the end of the setup.
+function Update-OtherInstances([string]$Except) {
+    foreach ($i in @(Get-Instances | Where-Object { -not $_.Legacy -and $_.Bucket -ne $Except })) {
+        try {
+            $p = Get-InstancePaths $i.Bucket
+            if (-not (Test-Path -LiteralPath $p.Conf)) { throw "configuration $($p.Conf) not found" }
+            $u = Resolve-User $i.User
+            if (-not $i.Launcher) {
+                Write-Log "Updating the drive $($i.Drive) of the storage '$($i.Bucket)'..."
+                $t = Get-ScheduledTask -TaskPath $TaskPath -TaskName $p.TaskName -ErrorAction SilentlyContinue
+                if ($t) { Stop-ScheduledTask -InputObject $t -ErrorAction SilentlyContinue | Out-Null }
+                Stop-Drive $i.Bucket $p.Conf
+                if ($script:StoppedTasks -notcontains $p.TaskName) { $script:StoppedTasks += $p.TaskName }
+            }
+            Register-MountTask $i.Bucket $i.Drive $u $p
+        } catch {
+            Write-Log "WARNING: the drive $($i.Drive) of the storage '$($i.Bucket)' could not be updated: $($_.Exception.Message). Install it again with its activation file."
+        }
+    }
 }
 
 function Start-Mount([string]$DriveLetter, $Paths) {
     Start-ScheduledTask -TaskPath $TaskPath -TaskName $Paths.TaskName
     # The drive belongs to the user session and may be invisible from this elevated
     # process, so success = rclone still running after a few seconds without errors
-    for ($i = 0; $i -lt 16; $i++) {
+    # (the launcher starts PowerShell first: allow ~20 s)
+    for ($i = 0; $i -lt 40; $i++) {
         Start-Sleep -Milliseconds 500
         Update-UI
         if (Test-Path "$DriveLetter\") { return }
+        if ($i -ge 10 -and @(Get-RcloneProcesses $Paths.Conf).Count) { return }
     }
     $running = @(Get-RcloneProcesses $Paths.Conf)
     $errors = if (Test-Path -LiteralPath $Paths.Log) {
-        Get-Content -LiteralPath $Paths.Log -Tail 20 | Where-Object { $_ -match 'ERROR|CRITICAL|Fatal' }
+        Get-Content -LiteralPath $Paths.Log -Tail 20 | Where-Object { $_ -match 'ERROR|CRITICAL|Fatal|LAUNCHER' }
     }
     if (-not $running.Count) {
         throw "The drive $DriveLetter could not be started.`r`n$($errors -join "`r`n")`r`nLog: $($Paths.Log)"
@@ -522,13 +683,14 @@ function Invoke-Install([string]$BaseDir, [string]$KeyPath, [string]$DriveLetter
 
         Set-Step 80 'Saving the configuration...'
         Install-Config $act $KeyPath $user $paths
+        Update-OtherInstances $act.storage
 
         if ($migrate) {
             try {
                 $mUser = Resolve-User $migrate.User
                 $mPaths = Get-InstancePaths $migrate.Act.storage
                 Install-Config $migrate.Act $tempLegacyKey $mUser $mPaths
-                Register-MountTask $migrate.Act $migrate.Drive $mUser $mPaths
+                Register-MountTask $migrate.Act.storage $migrate.Drive $mUser $mPaths
                 $script:StoppedTasks += $mPaths.TaskName
                 Write-Log "The drive $($migrate.Drive) of the storage '$($migrate.Act.storage)' has been kept."
             } catch {
@@ -540,7 +702,7 @@ function Invoke-Install([string]$BaseDir, [string]$KeyPath, [string]$DriveLetter
     }
 
     Set-Step 90 "Creating the drive $DriveLetter..."
-    Register-MountTask $act $DriveLetter $user $paths
+    Register-MountTask $act.storage $DriveLetter $user $paths
     if (-not $reboot) {
         Start-Mount $DriveLetter $paths
         foreach ($n in $script:StoppedTasks) {
@@ -567,7 +729,7 @@ function Invoke-Uninstall {
     Set-Step 20 'Stopping the drives...'
     foreach ($i in @(Get-Instances)) { if ($i.Legacy) { Remove-Legacy } else { Remove-Instance $i.Bucket } }
     Remove-Legacy
-    Stop-Rclone
+    Stop-Drive
     if (Test-Path -LiteralPath $InstallDir) {
         Write-Log "Removing $InstallDir"
         Remove-Item -LiteralPath $InstallDir -Recurse -Force

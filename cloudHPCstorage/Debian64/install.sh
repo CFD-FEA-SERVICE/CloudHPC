@@ -15,7 +15,9 @@
 # - installs rclone (bundled .deb), fuse3 and jq
 # - copies the activation file (service account key + "storage" field) and writes
 #   ~/.config/cloudHPCstorage/<storage>/rclone.conf
-# - creates and starts the systemd service of the storage
+# - creates and starts the systemd service of the storage: it waits until the network
+#   (DNS) is up before mounting and restarts rclone whenever it exits
+# - updates the services of the other storages of this user to the current version
 # Logs: sudo journalctl -u 'cloudHPCstorage-*'
 set -euo pipefail
 
@@ -31,6 +33,8 @@ UNIT_DIR=/etc/systemd/system
 # Previous layout: a single storage, mounted in $BASE itself by $APP.service
 LEGACY_UNIT="$UNIT_DIR/$APP.service"
 BUCKET_RE='^[a-z0-9][a-z0-9._-]{1,221}[a-z0-9]$'
+SETUP_VERSION=2.1.1
+DNS_PROBE=oauth2.googleapis.com
 
 info() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 ok()   { printf '\033[1;32m OK\033[0m %s\n' "$*"; }
@@ -125,6 +129,59 @@ remove_storage() {  # $1 = storage: stops and removes its service, mount and con
     rm -rf "${CONF_ROOT:?}/$1"
 }
 
+write_unit() {  # $1 = storage: writes its systemd service
+    local bucket="$1" dir="$CONF_ROOT/$1" mnt="$BASE/$1"
+    # ExecStartPre: at boot network-online.target can be reached before DNS works, and
+    # rclone started without DNS gives an empty / failing mount. Wait up to 60 s; if
+    # DNS is still down the start fails and systemd tries again after RestartSec.
+    # Restart=always + StartLimitIntervalSec=0: never give up while the machine is up.
+    sudo tee "$UNIT_DIR/$(unit_name "$bucket")" >/dev/null <<EOF
+[Unit]
+Description=cloudHPCstorage - storage $bucket mounted in $mnt
+Wants=network-online.target
+After=network-online.target nss-lookup.target
+StartLimitIntervalSec=0
+X-CloudHPC-User=$ME
+X-CloudHPC-Storage=$bucket
+X-CloudHPC-Setup=$SETUP_VERSION
+
+[Service]
+Type=notify
+User=$ME
+Group=$(id -gn)
+# leftover of a crashed rclone ("Transport endpoint is not connected") blocks the mount
+ExecStartPre=-$FUSERMOUNT -uz "$mnt"
+ExecStartPre=/usr/bin/timeout 60 /bin/sh -c 'until getent hosts $DNS_PROBE >/dev/null; do sleep 2; done'
+ExecStart=$RCLONE mount "$REMOTE:$bucket" "$mnt" --config "$dir/rclone.conf" --vfs-cache-mode full --log-level NOTICE
+ExecStop=$FUSERMOUNT -uz "$mnt"
+Restart=always
+RestartSec=15
+TimeoutStartSec=150
+
+[Install]
+WantedBy=multi-user.target
+EOF
+}
+
+# Services of the other storages of this user written by an older setup: rewritten
+# (the change applies from their next start, the mounts are not interrupted)
+update_other_units() {  # $@ = storages to skip
+    local b f skip
+    while IFS= read -r b; do
+        [ -n "$b" ] || continue
+        for skip in "$@"; do [ "$b" = "$skip" ] && continue 2; done
+        f="$UNIT_DIR/$(unit_name "$b")"
+        grep -qx "X-CloudHPC-Setup=$SETUP_VERSION" "$f" && continue
+        if [ -f "$CONF_ROOT/$b/rclone.conf" ]; then
+            info "Updating the service of the storage '$b'..."
+            write_unit "$b"
+        else
+            warn "The storage '$b' has no configuration in $CONF_ROOT/$b: run this script again with its activation file."
+        fi
+    done < <(list_storages)
+    sudo systemctl daemon-reload
+}
+
 install_storage() {  # $1 = key file, $2 = storage; returns 1 if the mount does not start
     local key="$1" bucket="$2" dir="$CONF_ROOT/$2" mnt="$BASE/$2" unit
     unit="$(unit_name "$bucket")"
@@ -136,26 +193,7 @@ install_storage() {  # $1 = key file, $2 = storage; returns 1 if the mount does 
     set_aside "$mnt"
     mkdir -p "$mnt"
 
-    sudo tee "$UNIT_DIR/$unit" >/dev/null <<EOF
-[Unit]
-Description=cloudHPCstorage - storage $bucket mounted in $mnt
-Wants=network-online.target
-After=network-online.target
-X-CloudHPC-User=$ME
-X-CloudHPC-Storage=$bucket
-
-[Service]
-Type=notify
-User=$ME
-Group=$(id -gn)
-ExecStart=$RCLONE mount "$REMOTE:$bucket" "$mnt" --config "$dir/rclone.conf" --vfs-cache-mode full --log-level NOTICE
-ExecStop=$FUSERMOUNT -uz "$mnt"
-Restart=on-failure
-RestartSec=15
-
-[Install]
-WantedBy=multi-user.target
-EOF
+    write_unit "$bucket"
     sudo systemctl daemon-reload
     sudo systemctl enable --now "$unit" >/dev/null 2>&1 || true
 
@@ -233,6 +271,7 @@ if [ -n "$MIGRATE_KEY" ]; then
     install_storage "$MIGRATE_KEY" "$MIGRATE_BUCKET" \
         || warn "The previous storage '$MIGRATE_BUCKET' could not be mounted again: run this script with its activation file."
 fi
+update_other_units "$BUCKET" "$MIGRATE_BUCKET"
 
 # Bookmark in the file manager sidebar (GNOME / Nautilus)
 BOOKMARKS="$HOME/.config/gtk-3.0/bookmarks"
