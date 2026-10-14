@@ -2,15 +2,12 @@
 
 ###############################################################################
 #
-#   Script developped in 2020 by
-#   CFD FEA SERVICE SRL - via Borgo Grande 19, 37044 Cologna Veneta VR
+#   Script developped by
+#   CFD FEA SERVICE SRL - via A. Fogazzaro 13, 37047 San Bonifacio VR
 #
 #   License: GPLv3
 #
 ###############################################################################
-
-#TODO default OpenFOAM CFD  -> sceglie la macchina e PRE
-#TODO default Snappy   MESH -> sceglie la macchina e PRE
 BASEURL="cloud.cfdfeaservice.it"
 
 #API FUNCTION VERIFICATION ####################################################
@@ -51,7 +48,7 @@ then
 
       #setting autocomplete
       sudo sh -c "echo '#/usr/bin/env bash'                                                               > /etc/bash_completion.d/cloudHPCexec"
-      sudo sh -c "echo 'complete -W \"-apikey -help -mesh -update -download -batch -batchREG -batchONL -delete -deleteSIM -ssh -vnc -scp -wait -transfer -soft -hard\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
+      sudo sh -c "echo 'complete -W \"-apikey -help -update -download -batch -batchREG -batchONL -delete -deleteSIM -ssh -vnc -scp -wait -transfer -soft -hard\" cloudHPCexec' >> /etc/bash_completion.d/cloudHPCexec"
 
       echo "#####################################################################"
       echo "cloudHPCexec updated and installed successfully - Available for usage"
@@ -84,12 +81,11 @@ then
    echo "List of options available:"
    echo ""
    echo "CLOUDHPC ARGUMENTS #######################################################################################"
-   echo "-mesh                 In prompt, show also mesh menu"
    echo "-download [path]      Download results from STORAGE"
    echo "                          path when specified download a specific file from the storage"
    echo "-batch                Insert command from batch without dialogs"
-   echo "                          Expected 4+1 arguments: vCPU, RAM, SCRIPT and FOLDER + MESH [optional]"
-   echo "                          Example: cloudHPCexec -batch 1 standard fds6.7.1 FOLDER-NAME [MESH-FOLDER-NAME]"
+   echo "                          Expected 4 arguments: vCPU, RAM, SCRIPT and FOLDER"
+   echo "                          Example: cloudHPCexec -batch 1 standard fds6.7.1 FOLDER-NAME"
    echo "-batchREG             Like batch, but execute analysis on REG instances"
    echo "-batchONL             Like batch, but execute analysis on a pre-uploaded folder in the storage"
    echo "-wait ID              Wait for simulation ID to finish"
@@ -496,12 +492,6 @@ then
    script=$4 
    folder_storage=$5
 
-   if [ ! -z "$6" ]
-   then
-      mesh_storage=$6
-      echo "Given mesh: $mesh_storage"
-   fi
-
    regular=0
 
    if [ "$option" = "-batchREG" ]
@@ -562,30 +552,6 @@ else
    script=$(dialog --clear --nocancel --menu "Pick the solver you use" 13 60 12 "${scriptoptions[@]}" 2>&1 >/dev/tty)
    script=${script_options[$(($script - 1))]}
  
-   #FOLDER LIST EXTRACTION FROM CLOUD [MESH PART] ################################
-   if [ "$option" = "-mesh" ]
-   then
-      APIcloudHPC 'GET' "https://$BASEURL/api/v2/storage/index/name/asc/1" 
-      folder_storage_options=$( echo $APIcloudHPC_reply | python3 -m json.tool | jq .response[].basename | tr -d \" )
-      folder_storage_options=($(echo $folder_storage_options | tr " " "\n"))
-  
-      folder_options=()
-      count=0
-
-      for i in "${folder_storage_options[@]}"
-      do :
-   	count=$[count+1]
-    	folder_options+=( ${count} $i )
-      done
-
-      mesh_storage=$(dialog --clear --nocancel --menu "Pick the MESH FOLDER" 13 60 19 "${folder_options[@]}" 2>&1 >/dev/tty)
-      mesh_storage=${folder_storage_options[$(($mesh_storage - 1))]}
-  
-   else
-      mesh_storage=""
-
-   fi
-
    #SELECT CASE FOLDER ###########################################################
    clear
 
@@ -593,7 +559,7 @@ else
    read -e -p "Insert folder name or ENTER to confirm current folder name [$current_folder]: " folder_storage
    folder_storage=${folder_storage:-$current_folder}
 
-   echo "Equivalent BATCH command: cloudHPCexec -batch $cpu $ram $script $folder_storage $mesh_storage"
+   echo "Equivalent BATCH command: cloudHPCexec -batch $cpu $ram $script $folder_storage"
 fi
 
 if [ ! "$option" = "-batchONL" ]
@@ -629,8 +595,7 @@ JSON_STRING=$( jq -n \
                   --arg script "$script" \
                   --arg folder "$folder_storage" \
                   --arg nopre  "$regular" \
-                  --arg mesh   "$mesh_storage" \
-                  '{ cpu: $cpu, ram: $ram, folder: $folder, script: $script, nopre: $nopre, mesh: $mesh }' )
+                  '{ cpu: $cpu, ram: $ram, folder: $folder, script: $script, nopre: $nopre }' )
 
 APIcloudHPC 'POST' "https://$BASEURL/api/v2/simulation/add" "$JSON_STRING"
 
