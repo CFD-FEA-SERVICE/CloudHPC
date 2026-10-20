@@ -76,6 +76,13 @@ On enabled accounts, you can access the virtual machine running your simulation 
 
 The remote desktop is available for all simulations with status RUNNING. To access it, open the "view" page of the simulation and scroll to the bottom of the page.
 
+!!! warning "Post-processing shares resources with your simulation"
+    The remote desktop runs on the same virtual machine as your simulation and shares its vCPU and RAM. Post-processing software such as Smokeview, ParaView or SALOME, especially when loading large result files (slices, isosurfaces, 3D smoke) or playing animations, takes CPU and memory away from the solver and can slow down the simulation significantly. This is more likely on machines with less RAM per vCPU, such as highcpu instances.
+
+    For quick checks while the simulation is running, use the [runtime plots](#runtime_plots), [logs](#runtime_logs) and [hardware monitor](#hardware_monitor). For heavier post-processing, download the results and open them on your own computer, and close any post-processing software on the instance as soon as you are done.
+
+    The instance is billed for the whole time it runs, regardless of how its resources are used. CFD FEA SERVICE SRL can't take responsibility for slowdowns caused by software run by the user on the instance.
+
 <p align="center">
    <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/RemoteDesktop.jpg">
 </p>
@@ -93,6 +100,8 @@ As a general rule, try to always keep at least 1000 MB available on the _Free_ l
    <img width="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_16_CPU_good.png">
    <img width="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_17_RAM_good.png">
 </p>
+
+If the free memory drops close to zero after you open post-processing software in the remote desktop, close it: the solver is competing for memory and will slow down.
 
 ## SSH Connection
 Advanced users can also connect via SSH to the instance running the simulation. This gives you full control of the running analysis: for example, you can create, edit or delete files.
