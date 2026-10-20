@@ -223,6 +223,12 @@ For example, suppose you want to simulate 600 seconds and, after 2 hours, 120 se
 <li>run your preferred post-processing software such as ParaView, SALOME or Smokeview</li>
 </ul>
 <p>The remote desktop is available for all simulations with status RUNNING. To access it, open the "view" page of the simulation and scroll to the bottom of the page.</p>
+<div class="admonition warning">
+<p class="admonition-title">Post-processing shares resources with your simulation</p>
+<p>The remote desktop runs on the same virtual machine as your simulation and shares its vCPU and RAM. Post-processing software such as Smokeview, ParaView or SALOME, especially when loading large result files (slices, isosurfaces, 3D smoke) or playing animations, takes CPU and memory away from the solver and can slow down the simulation significantly. This is more likely on machines with less RAM per vCPU, such as highcpu instances.</p>
+<p>For quick checks while the simulation is running, use the <a href="#runtime_plots">runtime plots</a>, <a href="#runtime_logs">logs</a> and <a href="#hardware_monitor">hardware monitor</a>. For heavier post-processing, download the results and open them on your own computer, and close any post-processing software on the instance as soon as you are done.</p>
+<p>The instance is billed for the whole time it runs, regardless of how its resources are used. CFD FEA SERVICE SRL can't take responsibility for slowdowns caused by software run by the user on the instance.</p>
+</div>
 <p align="center">
    <img width="600" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/RemoteDesktop.jpg">
 </p>
@@ -239,6 +245,7 @@ For example, suppose you want to simulate 600 seconds and, after 2 hours, 120 se
    <img width="300" src="https://cfdfeaservice.it/wiki/cloud-hpc/images/FIG_17_RAM_good.png">
 </p>
 
+<p>If the free memory drops close to zero after you open post-processing software in the remote desktop, close it: the solver is competing for memory and will slow down.</p>
 <h2 id="ssh_connection">SSH Connection<a class="headerlink" href="#ssh_connection" title="Permanent link">#</a></h2>
 <p>Advanced users can also connect via SSH to the instance running the simulation. This gives you full control of the running analysis: for example, you can create, edit or delete files.</p>
 <div class="admonition note">
