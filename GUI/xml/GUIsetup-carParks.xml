@@ -109,7 +109,7 @@
 		</CarParkFIRE-12101>
 
 		<custom_slice  type="float">2.2</custom_slice>
-
+		<!--
 	           <opening type="frame">
                	        <openConditionU type="dropdown">pressureInletOutletVelocity<option type="string">pressureInletOutletVelocity</option>
 						<option type="string">pressureInletVelocity</option>
@@ -124,7 +124,8 @@
              	                                <option type="string">fixedValue</option>
              	                                <option type="string">zeroGradient</option>
                         </openConditionp_rgh>
-	           </opening>
+ 		   </opening>
+		-->
                    <turbulence type="frame">
              	   	<intensityInlet type="float">0.05</intensityInlet>
              	   	<mixingLengthInlet type="float">0.2</mixingLengthInlet>
