@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://docs.cloudhpc.cloud/MCP/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>MCP server - AI assistants - cloudHPC online help</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "MCP server - AI assistants";
+        var mkdocs_page_input_path = "MCP.md";
+        var mkdocs_page_url = "/MCP/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> cloudHPC online help
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">INTRODUCTION</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../account/">ACCOUNT</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../storage/">STORAGE</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../simulation/">SIMULATIONS</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../monitor/">MONITOR</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../scalability/">SCALABILITY</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../executions/">EXECUTIONS</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../errors/">ERRORS</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../billing/">BILLING</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="" href="https://www.youtube.com/playlist?list=PLQGw2-08T-MFtKEKscwJyyzJMfLwKA6Cw">TUTORIALS</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">TOOLS</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="" href="https://github.com/CFD-FEA-SERVICE/CloudHPC/releases">cloudHPC dedicated tools</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://cloudhpc.cloud/2022/05/07/execute-analysis-using-pyrosim-on-cloudhpc/">PYROSIM    - Execution analysis</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://cloudhpc.cloud/2023/03/07/import-cloudhpc-fds-results-in-pyrosim/">PYROSIM    - Import results</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://cloudhpc.cloud/2026/01/12/streamlining-fire-safety-engineering-how-to-import-cloudhpc-results-into-namirial-cpi-win-fse/">NAMIRIAL   - Import results</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">MCP server - AI assistants</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#what_you_can_ask">What you can ask</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#safe_first_prompts">Safe first prompts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#tools">Tools</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connect_your_ai_assistant">Connect your AI assistant</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#good_to_know">Good to know</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#support">Support</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">REST API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-INTRODUCTION/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../APIKEY/">APIKEY</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-v2/">API v2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API-v1/">API v1</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleAPI">Example</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">cloudHPC online help</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">TOOLS</li>
+      <li class="breadcrumb-item active">MCP server - AI assistants</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="cloudhpc_mcp_server_user_guide">cloudHPC MCP server: user guide<a class="headerlink" href="#cloudhpc_mcp_server_user_guide" title="Permanent link">#</a></h1>
+<p>Run engineering simulations on <a href="https://cloudhpc.cloud">cloudHPC</a> from AI assistants
+that support the Model Context Protocol (MCP): Claude, ChatGPT/Codex, Gemini,
+GitHub Copilot and others, from their desktop apps, terminal apps and, where
+supported, web apps. Inspect a local case, get vCPU/RAM advice, upload the
+folder, launch, monitor, diagnose errors and download the results, all from a
+conversation.</p>
+<p>Supported solvers: everything available on cloudHPC (FDS, OpenFOAM,
+snappyHexMesh, DAFoam, code_aster, CalculiX, OpenRadioss/OpenCourant, SU2, openTELEMAC,
+LIGGGHTS, LAMMPS, Kratos Multiphysics, OpenLB, Palabos, FreeFEM, T-Flows, DualSPHysics, PhasicFlowPlus (CFD-DEM), XBeach, openEMS, ELMFIRE, Project Chrono, Basilisk, preCICE coupled
+OpenFOAM/CalculiX/code_aster/FDS, EnergyPlus, CONTAM, ...). Resource advice
+follows the <a href="https://docs.cloudhpc.cloud/scalability/">cloudHPC scalability rules</a>
+and run diagnosis follows the <a href="https://docs.cloudhpc.cloud/errors/">cloudHPC errors guide</a>.</p>
+<ul>
+<li><a href="#what-you-can-ask">What you can ask</a></li>
+<li><a href="#safe-first-prompts">Safe first prompts</a></li>
+<li><a href="#tools">Tools</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#connect-your-ai-assistant">Connect your AI assistant</a></li>
+<li><a href="#claude">Claude</a> · <a href="#chatgpt--codex">ChatGPT / Codex</a> · <a href="#gemini">Gemini</a> · <a href="#github-copilot">GitHub Copilot</a> · <a href="#other-mcp-clients">Other clients</a></li>
+<li><a href="#web-apps-hosted-endpoint">Web apps (hosted endpoint)</a></li>
+<li><a href="#good-to-know">Good to know</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#support">Support</a></li>
+</ul>
+<h2 id="what_you_can_ask">What you can ask<a class="headerlink" href="#what_you_can_ask" title="Permanent link">#</a></h2>
+<ul>
+<li><em>"Check the FDS case in this folder and tell me which resources to use."</em></li>
+<li><em>"Run it on cloudHPC and download the results when it finishes."</em></li>
+<li><em>"What is the status of my running simulations?"</em></li>
+<li><em>"My last run failed: what went wrong?"</em></li>
+<li><em>"My OpenFOAM run is converging well: extend endTime to 2000 without stopping it."</em></li>
+</ul>
+<h2 id="safe_first_prompts">Safe first prompts<a class="headerlink" href="#safe_first_prompts" title="Permanent link">#</a></h2>
+<p>Start with questions that only read data, then move on to actions that cost
+money once you are comfortable with how the assistant works:</p>
+<ol>
+<li><em>"How do I prepare an OpenFOAM case for cloudHPC?"</em> (no account needed)</li>
+<li><em>"List my last simulations and summarise their status."</em></li>
+<li><em>"Why did my last simulation fail? Check the log."</em></li>
+<li><em>"Which vCPU and RAM type should I use for an FDS model with 8 meshes and 2
+   million cells?"</em></li>
+<li><em>"What is in the storage folder of my last run, and which files are results?"</em></li>
+</ol>
+<p>Only then: <em>"Upload this case and launch it"</em>, <em>"Resume simulation 1234"</em>. Every
+action that costs money or deletes data asks for your confirmation first, and
+the assistant shows you what it will do. With OAuth sign-in you can also
+connect with <strong>read-only access</strong> (see <a href="#sign-in-with-oauth">Sign-in with OAuth</a>).</p>
+<h2 id="tools">Tools<a class="headerlink" href="#tools" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>inspect_case</code> ¹</td>
+<td>Detect solver and model size of a local folder (FDS meshes/MPI groups, OpenFOAM cells, CalculiX nodes, ...) and run pre-flight checks</td>
+</tr>
+<tr>
+<td><code>suggest_resources</code></td>
+<td>vCPU and RAM type recommendation, with reasoning</td>
+</tr>
+<tr>
+<td><code>solver_guide</code></td>
+<td>How to prepare a case for a solver: input files, what cloudHPC does automatically, restart, optional settings, parallelism, logs</td>
+</tr>
+<tr>
+<td><code>search_docs</code></td>
+<td>Search the official manual of the solver version in use (FDS User's Guide and Technical Reference Guide 6.7-6.11): matching sections with section number, page and link to the PDF page</td>
+</tr>
+<tr>
+<td><code>list_solvers</code>, <code>list_machine_options</code></td>
+<td>Available solvers, vCPU counts and RAM types</td>
+</tr>
+<tr>
+<td><code>upload_folder</code> ¹</td>
+<td>Compress a local case folder and upload it to your storage</td>
+</tr>
+<tr>
+<td><code>launch_simulation</code></td>
+<td>Launch a run (<strong>asks for confirmation</strong>)</td>
+</tr>
+<tr>
+<td><code>list_simulations</code>, <code>get_simulation</code>, <code>wait_for_simulation</code></td>
+<td>Follow your runs; finished runs include a diagnosis of known errors</td>
+</tr>
+<tr>
+<td><code>sync_simulation</code></td>
+<td>Upload partial results of a running job</td>
+</tr>
+<tr>
+<td><code>stop_simulation</code></td>
+<td>Soft or hard stop (<strong>asks for confirmation</strong>)</td>
+</tr>
+<tr>
+<td><code>resume_simulation</code></td>
+<td>Resume a stopped run with the same solver, vCPU, RAM type and folder (FDS and OpenFOAM; <strong>asks for confirmation</strong>)</td>
+</tr>
+<tr>
+<td><code>start_desktop</code></td>
+<td>Start a Linux or Windows remote desktop for post-processing; billed until you stop it (<strong>asks for confirmation</strong>)</td>
+</tr>
+<tr>
+<td><code>live_settings</code></td>
+<td>What can be changed in a running simulation, the current content of those files and the state of previous live updates</td>
+</tr>
+<tr>
+<td><code>update_running_simulation</code></td>
+<td>Change a running simulation without stopping it: OpenFOAM <code>system/controlDict</code>, <code>fvSolution</code>, <code>fvSchemes</code>; FDS <code>&lt;CHID&gt;.stop</code>; code_saturne <code>RESU/&lt;run&gt;/control_file</code>; OpenRadioss/OpenCourant <code>&lt;root&gt;_0001.ctl</code>. The files go to the <code>_push</code> folder of the case and a sync is requested automatically, so the machine applies them within a few minutes (<strong>asks for confirmation</strong>)</td>
+</tr>
+<tr>
+<td><code>open_remote_desktop</code></td>
+<td>Browser remote-desktop link of a running job</td>
+</tr>
+<tr>
+<td><code>list_storage</code>, <code>list_results</code></td>
+<td>Browse your storage and result archives</td>
+</tr>
+<tr>
+<td><code>download_results</code> ¹</td>
+<td>Download result archives and extract them locally</td>
+</tr>
+<tr>
+<td><code>get_upload_link</code>, <code>get_download_link</code></td>
+<td>Temporary links to upload/download single files</td>
+</tr>
+<tr>
+<td><code>delete_storage</code></td>
+<td>Delete one or more files or folders (a folder with all its content) with a single confirmation; deletion is asynchronous and takes a few minutes (<strong>asks for confirmation</strong>)</td>
+</tr>
+<tr>
+<td><code>api_usage</code></td>
+<td>API rate limits and calls used</td>
+</tr>
+</tbody>
+</table>
+<p>Actions that cost money or delete data (launching a run, a hard stop,
+deleting from storage) always need your confirmation. In apps that support it
+(e.g. Claude Code) the server shows you a confirmation dialog directly, so the
+assistant cannot confirm on your behalf; in other apps the assistant shows you
+a summary and waits for your OK.</p>
+<p>¹ Only with the local installation: they work on files on your computer. In web
+apps (hosted endpoint) use <code>get_upload_link</code> / <code>get_download_link</code> instead.</p>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">#</a></h2>
+<p>Requirements:</p>
+<ul>
+<li>Python 3.10 or newer</li>
+<li>A cloudHPC account and its API key: open your cloudHPC profile page
+  (<a href="https://docs.cloudhpc.cloud/APIKEY/">APIKEY docs</a>). The key gives full access
+  to your account: keep it private.</li>
+</ul>
+<p>Download the server package (a <code>.whl</code> file) from</p>
+<!-- TODO: link to the download page / customer area -->
+<p><a href="https://cloudhpc.cloud">the cloudHPC download page</a>, then install it with
+<a href="https://pipx.pypa.io">pipx</a> (recommended: isolated, and the command ends up in
+<code>~/.local/bin</code>, easy to find for desktop apps):</p>
+<div class="highlight"><pre><span></span><code>pipx<span class="w"> </span>install<span class="w"> </span>./cloudhpc_mcp-&lt;version&gt;-py3-none-any.whl
+</code></pre></div>
+<p>or with pip:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>./cloudhpc_mcp-&lt;version&gt;-py3-none-any.whl
+</code></pre></div>
+<p>To update, download the new package and run <code>pipx install --force</code> (or
+<code>pip install --upgrade</code>) with the new file.</p>
+<p>This installs the <code>cloudhpc-mcp</code> command. Find its full path, you may need it
+below:</p>
+<div class="highlight"><pre><span></span><code>which<span class="w"> </span>cloudhpc-mcp<span class="w">          </span><span class="c1"># Linux / macOS</span>
+where<span class="w"> </span>cloudhpc-mcp<span class="w">          </span><span class="c1"># Windows</span>
+</code></pre></div>
+<p>The API key is read from the <code>CLOUDHPC_APIKEY</code> environment variable or, if that
+is not set, from the file <code>~/.cfscloudhpc/apikey</code> created by
+<a href="https://github.com/CFD-FEA-SERVICE/CloudHPC/tree/master/exampleAPI">cloudHPCexec</a>.</p>
+<h2 id="connect_your_ai_assistant">Connect your AI assistant<a class="headerlink" href="#connect_your_ai_assistant" title="Permanent link">#</a></h2>
+<p>There are two ways to connect:</p>
+<ul>
+<li><strong>Local installation</strong> (desktop and terminal apps): the server runs on your
+  computer, so it can read your case folders and save results next to them. All
+  tools are available. Recommended.</li>
+<li><strong>Hosted endpoint</strong> (web apps): <code>https://mcp.cloudhpc.cloud/mcp</code>, nothing to
+  install. You connect by signing in once with your API key (OAuth) or by
+  sending the key in a header. It cannot read files on your computer: you
+  upload cases and download results with temporary links (or from the cloudHPC
+  web app). See <a href="#web-apps-hosted-endpoint">Web apps</a>.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Assistant</th>
+<th>Desktop app</th>
+<th>Terminal (Linux)</th>
+<th>Web app</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude</td>
+<td><a href="#claude-desktop">Claude Desktop</a> (Windows, macOS, Linux beta)</td>
+<td><a href="#claude-code">Claude Code</a></td>
+<td><a href="#claudeai">claude.ai</a> (custom connector)</td>
+</tr>
+<tr>
+<td>ChatGPT</td>
+<td><a href="#chatgpt-desktop-app">ChatGPT desktop app</a> (where MCP servers are available)</td>
+<td><a href="#codex-cli">Codex CLI</a></td>
+<td><a href="#chatgpt-web">ChatGPT</a> (OAuth sign-in)</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td>not supported: no Gemini desktop app with MCP support</td>
+<td><a href="#gemini-cli">Gemini CLI</a></td>
+<td><a href="#gemini-web">Gemini</a> (OAuth sign-in)</td>
+</tr>
+<tr>
+<td>GitHub Copilot</td>
+<td><a href="#vs-code-copilot-agent-mode">VS Code (Copilot agent mode)</a></td>
+<td><a href="#copilot-cli">Copilot CLI</a></td>
+<td>not supported</td>
+</tr>
+</tbody>
+</table>
+<p>In every example replace <code>your-api-key</code> with your key. If the assistant cannot
+find the <code>cloudhpc-mcp</code> command, write its full path instead (see
+<a href="#installation">Installation</a>).</p>
+<h3 id="claude">Claude<a class="headerlink" href="#claude" title="Permanent link">#</a></h3>
+<h4 id="claude_desktop">Claude Desktop<a class="headerlink" href="#claude_desktop" title="Permanent link">#</a></h4>
+<p>Open <strong>Settings &gt; Developer &gt; Edit Config</strong> and add the server to
+<code>claude_desktop_config.json</code>:</p>
+<ul>
+<li>macOS: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
+<li>Windows: <code>%APPDATA%\Claude\claude_desktop_config.json</code></li>
+<li>Linux: use <strong>Edit Config</strong> to open the file</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;mcpServers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;cloudhpc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cloudhpc-mcp&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;env&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;CLOUDHPC_APIKEY&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;your-api-key&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Restart Claude Desktop. The cloudHPC tools appear in the tools menu of a new
+conversation.</p>
+<h4 id="claude_code">Claude Code<a class="headerlink" href="#claude_code" title="Permanent link">#</a></h4>
+<div class="highlight"><pre><span></span><code>claude<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>--scope<span class="w"> </span>user<span class="w"> </span>cloudhpc<span class="w"> </span>-e<span class="w"> </span><span class="nv">CLOUDHPC_APIKEY</span><span class="o">=</span>your-api-key<span class="w"> </span>--<span class="w"> </span>cloudhpc-mcp
+</code></pre></div>
+<p><code>--scope user</code> makes it available in every folder. Check it with <code>claude mcp list</code>
+or <code>/mcp</code> inside Claude Code.</p>
+<h3 id="chatgpt_codex">ChatGPT / Codex<a class="headerlink" href="#chatgpt_codex" title="Permanent link">#</a></h3>
+<h4 id="chatgpt_desktop_app">ChatGPT desktop app<a class="headerlink" href="#chatgpt_desktop_app" title="Permanent link">#</a></h4>
+<p>In recent versions of the ChatGPT desktop app: <strong>Settings &gt; MCP servers &gt; Add
+server</strong>, choose <strong>STDIO</strong>:</p>
+<ul>
+<li>Command: <code>cloudhpc-mcp</code></li>
+<li>Environment variable: <code>CLOUDHPC_APIKEY</code> = <code>your-api-key</code></li>
+</ul>
+<p>The app shares its MCP configuration with Codex (<code>~/.codex/config.toml</code>, see
+below), so a server added in one is available in the other. Availability
+depends on app version and plan. The ChatGPT <strong>web</strong> app only supports remote
+connectors and cannot run this local server.</p>
+<h4 id="codex_cli">Codex CLI<a class="headerlink" href="#codex_cli" title="Permanent link">#</a></h4>
+<div class="highlight"><pre><span></span><code>codex<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>cloudhpc<span class="w"> </span>--env<span class="w"> </span><span class="nv">CLOUDHPC_APIKEY</span><span class="o">=</span>your-api-key<span class="w"> </span>--<span class="w"> </span>cloudhpc-mcp
+</code></pre></div>
+<p>or edit <code>~/.codex/config.toml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[mcp_servers.cloudhpc]</span>
+<span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;cloudhpc-mcp&quot;</span>
+<span class="n">tool_timeout_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1900</span><span class="w">        </span><span class="c1"># wait_for_simulation can wait up to 30 minutes</span>
+
+<span class="k">[mcp_servers.cloudhpc.env]</span>
+<span class="n">CLOUDHPC_APIKEY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;your-api-key&quot;</span>
+</code></pre></div>
+<p>Check it with <code>codex mcp list</code>.</p>
+<h3 id="gemini">Gemini<a class="headerlink" href="#gemini" title="Permanent link">#</a></h3>
+<h4 id="gemini_cli">Gemini CLI<a class="headerlink" href="#gemini_cli" title="Permanent link">#</a></h4>
+<div class="highlight"><pre><span></span><code>gemini<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>-s<span class="w"> </span>user<span class="w"> </span>-e<span class="w"> </span><span class="nv">CLOUDHPC_APIKEY</span><span class="o">=</span>your-api-key<span class="w"> </span>cloudhpc<span class="w"> </span>cloudhpc-mcp
+</code></pre></div>
+<p>or edit <code>~/.gemini/settings.json</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;mcpServers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;cloudhpc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cloudhpc-mcp&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;env&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;CLOUDHPC_APIKEY&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;$CLOUDHPC_APIKEY&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1900000</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><code>$CLOUDHPC_APIKEY</code> takes the key from your shell (<code>export CLOUDHPC_APIKEY=...</code>);
+<code>timeout</code> (milliseconds) lets <code>wait_for_simulation</code> wait up to 30 minutes.
+Check it with <code>/mcp</code> inside Gemini CLI.</p>
+<p>The Gemini desktop and web apps do not support custom MCP servers.</p>
+<h3 id="github_copilot">GitHub Copilot<a class="headerlink" href="#github_copilot" title="Permanent link">#</a></h3>
+<h4 id="vs_code_copilot_agent_mode">VS Code (Copilot agent mode)<a class="headerlink" href="#vs_code_copilot_agent_mode" title="Permanent link">#</a></h4>
+<p>Run <strong>MCP: Open User Configuration</strong> from the Command Palette (or create
+<code>.vscode/mcp.json</code> in a project) and add:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;inputs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;promptString&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cloudhpc-key&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cloudHPC API key&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;password&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;servers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;cloudhpc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;stdio&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cloudhpc-mcp&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;env&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;CLOUDHPC_APIKEY&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${input:cloudhpc-key}&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>VS Code asks for the key once and stores it securely. Open Copilot Chat in
+<strong>Agent</strong> mode and enable the cloudHPC tools from the tools picker.</p>
+<h4 id="copilot_cli">Copilot CLI<a class="headerlink" href="#copilot_cli" title="Permanent link">#</a></h4>
+<p>Edit <code>~/.copilot/mcp-config.json</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;mcpServers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;cloudhpc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cloudhpc-mcp&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">      </span><span class="nt">&quot;env&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;CLOUDHPC_APIKEY&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;your-api-key&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;*&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>or use <code>/mcp add</code> inside a Copilot CLI session. The Microsoft Copilot app for
+Windows does not support custom MCP servers.</p>
+<h3 id="other_mcp_clients">Other MCP clients<a class="headerlink" href="#other_mcp_clients" title="Permanent link">#</a></h3>
+<p>Configure a <strong>stdio</strong> server with command <code>cloudhpc-mcp</code> and the environment
+variable <code>CLOUDHPC_APIKEY</code>.</p>
+<h3 id="web_apps_hosted_endpoint">Web apps (hosted endpoint)<a class="headerlink" href="#web_apps_hosted_endpoint" title="Permanent link">#</a></h3>
+<p>Endpoint: <code>https://mcp.cloudhpc.cloud/mcp</code> (streamable HTTP). Two ways to
+authenticate:</p>
+<ul>
+<li><strong>Sign in with OAuth</strong> (ChatGPT, Gemini, claude.ai and any client that
+  supports OAuth for MCP servers): see <a href="#sign-in-with-oauth">Sign-in with OAuth</a>.</li>
+<li><strong>API key header</strong>: the client sends your key with every request in the
+  <code>X-API-Key</code> header (or <code>Authorization: Bearer &lt;key&gt;</code>). The endpoint stores
+  nothing: the key is only forwarded to the cloudHPC API for that request.</li>
+</ul>
+<p>What changes compared with the local installation:</p>
+<ul>
+<li><code>inspect_case</code>, <code>upload_folder</code> and <code>download_results</code> are not available: the
+  hosted server cannot see your computer.</li>
+<li>To upload a case, compress the <strong>content</strong> of the case folder (files at the
+  root of the archive) and ask the assistant for an upload link
+  (<code>get_upload_link</code>): it gives you a ready <code>curl</code> command. Or upload it from
+  the cloudHPC web app.</li>
+<li>To get results, ask for a download link (<code>get_download_link</code>).</li>
+</ul>
+<h4 id="sign-in_with_oauth">Sign-in with OAuth<a class="headerlink" href="#sign-in_with_oauth" title="Permanent link">#</a></h4>
+<p>When you add the connector with OAuth, the assistant opens a cloudHPC sign-in
+page:</p>
+<ol>
+<li>Check the name of the app asking for access. It will be able to see your
+   simulations and storage, upload files and <strong>launch or stop simulations,
+   which are billed to your account</strong>.</li>
+<li>Paste your API key (<a href="https://docs.cloudhpc.cloud/APIKEY/">how to find your API key</a>).</li>
+<li>Optionally tick <strong>Read-only access</strong>: the assistant can then see simulations,
+   storage and results, but cannot launch, stop, resume, upload, delete or open
+   remote desktops. Useful to try the connector safely, or for colleagues who
+   only need to follow the runs.</li>
+<li>Click <strong>Connect</strong>.</li>
+</ol>
+<p>The assistant never sees the key: it receives tokens that expire after one
+hour and are renewed automatically for 30 days, then you sign in again. To
+revoke access for every connected assistant, regenerate the API key in your
+cloudHPC profile: access stops within an hour.</p>
+<h4 id="claudeai">claude.ai<a class="headerlink" href="#claudeai" title="Permanent link">#</a></h4>
+<p>On plans with custom connectors: <strong>Settings &gt; Connectors &gt; Add custom
+connector</strong>, URL <code>https://mcp.cloudhpc.cloud/mcp</code>, then either:</p>
+<ul>
+<li>leave the authentication on OAuth and sign in when asked
+  (<a href="#sign-in-with-oauth">Sign-in with OAuth</a>), or</li>
+<li>choose <strong>No sign-in</strong> and under <strong>Request headers</strong> add
+  <code>X-API-Key</code> = <code>your-api-key</code>.</li>
+</ul>
+<p>Enable the connector in a conversation from the tools menu. The same connector
+is also available in the Claude desktop and mobile apps.</p>
+<h4 id="chatgpt_web">ChatGPT web<a class="headerlink" href="#chatgpt_web" title="Permanent link">#</a></h4>
+<p>In ChatGPT, turn on developer mode and add a custom connector (app):</p>
+<ul>
+<li>URL: <code>https://mcp.cloudhpc.cloud/mcp</code></li>
+<li>Authentication: <strong>OAuth</strong></li>
+</ul>
+<p>Then sign in on the cloudHPC page (<a href="#sign-in-with-oauth">Sign-in with OAuth</a>).</p>
+<h4 id="gemini_web">Gemini web<a class="headerlink" href="#gemini_web" title="Permanent link">#</a></h4>
+<p>In the Gemini app (gemini.google.com):</p>
+<ol>
+<li>Click <strong>Customise</strong> in the left sidebar.</li>
+<li>Open the <strong>Connectors</strong> tab.</li>
+<li>Click <strong>+ Custom</strong>, enter the URL <code>https://mcp.cloudhpc.cloud/mcp</code> and click
+   <strong>Next</strong>.</li>
+<li>Sign in on the cloudHPC page that opens
+   (<a href="#sign-in-with-oauth">Sign-in with OAuth</a>).</li>
+</ol>
+<p>Gemini registers itself automatically: you do not need an OAuth client ID or
+secret. The connector then appears under <strong>Connected apps</strong>.</p>
+<h4 id="copilot_web">Copilot web<a class="headerlink" href="#copilot_web" title="Permanent link">#</a></h4>
+<p>Microsoft Copilot and Copilot Chat on github.com do not support custom MCP
+servers.</p>
+<h4 id="other_clients_using_the_hosted_endpoint">Other clients using the hosted endpoint<a class="headerlink" href="#other_clients_using_the_hosted_endpoint" title="Permanent link">#</a></h4>
+<p>Any MCP client that supports streamable HTTP with custom headers works, for
+example:</p>
+<div class="highlight"><pre><span></span><code>claude<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>--transport<span class="w"> </span>http<span class="w"> </span>cloudhpc<span class="w"> </span>https://mcp.cloudhpc.cloud/mcp<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--header<span class="w"> </span><span class="s2">&quot;X-API-Key: your-api-key&quot;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"> </span><span class="nt">&quot;mcpServers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;cloudhpc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;httpUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://mcp.cloudhpc.cloud/mcp&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;headers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;X-API-Key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;your-api-key&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>(the second is the Gemini CLI format; VS Code uses <code>"type": "http"</code>, <code>"url"</code>
+and <code>"headers"</code>; Codex CLI uses <code>url</code> and <code>http_headers</code> in <code>config.toml</code>).</p>
+<h2 id="good_to_know">Good to know<a class="headerlink" href="#good_to_know" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Upload layout</strong>: the content of the case folder is archived at the root of
+  <code>upload.tar.gz</code> and uploaded into a storage folder with the same name as the
+  local folder. Hidden files are skipped. Folder names must not contain
+  <code>, ( ) ' $ ~ " #</code> or spaces.</li>
+<li><strong>Resources</strong>: FDS, CalculiX and code_aster start on <code>highcpu</code>; after a memory
+  error move to <code>standard</code>, then <code>highmem</code>. OpenFOAM and other MPI-only solvers
+  use <code>highcore</code> or <code>hypercore</code>. 1 vCPU on <code>highcpu</code> is never suggested for a
+  solver: it has too little RAM to start.</li>
+<li><strong>Checking runs</strong>: a run can end as COMPLETED even if the solver failed. When
+  a run ends the server scans its output for the errors listed in the
+  <a href="https://docs.cloudhpc.cloud/errors/">errors guide</a> and suggests the fix;
+  after downloading, it also checks the solver's own logs (OpenFOAM <code>log.*</code>,
+  FDS <code>.out</code>).</li>
+<li><strong>Costs</strong> are billed per vCPU-hour and shown in euro when a run ends.</li>
+<li><strong>Storage</strong>: files are deleted automatically 60 days after creation. Download
+  your results.</li>
+<li><strong>Rate limits</strong>: 100 API calls/hour on free accounts, 500 on full accounts (no daily limit).
+  The server reads the rate-limit headers and stops before exceeding them.</li>
+<li><strong>Your data</strong>: what the tools return (simulation names, logs, file lists,
+  costs) is sent to the AI provider of the assistant you use, under your own
+  account and its terms. For confidential projects check your provider's data
+  settings (e.g. training opt-out, business plans). With the local installation
+  your API key stays on your computer; the hosted endpoint only forwards it and
+  stores nothing. With OAuth sign-in the assistant only holds encrypted,
+  expiring tokens, not the key.</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The assistant does not see the cloudHPC tools</td>
+<td>Restart the app after editing its configuration; in terminal apps check with <code>/mcp</code> or <code>mcp list</code>.</td>
+</tr>
+<tr>
+<td><code>command not found</code> / server fails to start</td>
+<td>Use the full path of <code>cloudhpc-mcp</code> (<code>which cloudhpc-mcp</code>). Desktop apps do not load your shell's PATH, conda or virtual environments.</td>
+</tr>
+<tr>
+<td><code>Unauthorized: the API key is invalid</code></td>
+<td>Copy the key again from your cloudHPC profile page.</td>
+</tr>
+<tr>
+<td>Upload or download fails with 403, "host not allowed" or a network error</td>
+<td>Files are transferred directly to/from <code>storage.googleapis.com</code>. Allow that domain in your AI client's network settings (in Claude: the organisation's Capabilities / network access settings) or your company firewall, or open the link in a browser.</td>
+</tr>
+<tr>
+<td>Hosted endpoint: <code>Invalid header name</code></td>
+<td>Write the header exactly as <code>X-API-Key: your-api-key</code> (name, colon, space, key).</td>
+</tr>
+<tr>
+<td>Sign-in page: "The API key was not accepted"</td>
+<td>Copy the key again from your profile (<a href="https://docs.cloudhpc.cloud/APIKEY/">how to find it</a>); paste only the key, without spaces.</td>
+</tr>
+<tr>
+<td>The assistant asks for an OAuth client ID and secret</td>
+<td>Remove the connector and add it again with the URL <code>https://mcp.cloudhpc.cloud/mcp</code>: it registers automatically, no client ID or secret is needed.</td>
+</tr>
+<tr>
+<td>The assistant asks you to sign in again</td>
+<td>Normal after 30 days, or after you regenerated the API key: sign in with the current key.</td>
+</tr>
+<tr>
+<td><code>rate limit reached</code></td>
+<td>Wait for the next hour, or ask the assistant to check less often.</td>
+</tr>
+<tr>
+<td>The wait for a run is cut off</td>
+<td>Raise the tool timeout of your client (see the examples above) or ask the assistant to wait in shorter steps.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="support">Support<a class="headerlink" href="#support" title="Permanent link">#</a></h2>
+<ul>
+<li>cloudHPC documentation: https://docs.cloudhpc.cloud</li>
+<li>Questions and problems with the MCP server: contact cloudHPC support from
+  https://cloudhpc.cloud</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../billing/" class="btn btn-neutral float-left" title="BILLING"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../API-INTRODUCTION/" class="btn btn-neutral float-right" title="Introduction">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright © 2026 CFD FEA SERVICE SRL A SOCIO UNICO</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../billing/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../API-INTRODUCTION/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
